@@ -1,13 +1,12 @@
 import { auth } from '@/lib/auth'
 import { getPool } from '@/lib/db'
-import { respondError } from '@/lib/errors'
+import { ApiError, withApiHandler } from '@/lib/errors'
 
-export async function GET() {
-  try {
+export async function GET(request: Request) {
+  return withApiHandler(request, 'hr.users.list', async () => {
     const session = await auth()
-    if (!session?.user || session.user.role !== 'hr_admin') {
-      return Response.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+    if (!session?.user) throw new ApiError('unauthenticated')
+    if (session.user.role !== 'hr_admin') throw new ApiError('forbidden')
 
     const result = await getPool().query(
       `SELECT id, name, email, role, manager_id FROM users
@@ -25,7 +24,5 @@ export async function GET() {
         managerId: row.manager_id,
       }))
     )
-  } catch (error) {
-    return respondError(error)
-  }
+  })
 }

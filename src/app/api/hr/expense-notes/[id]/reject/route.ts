@@ -1,13 +1,12 @@
 import { auth } from '@/lib/auth'
 import { withUserScope } from '@/lib/db'
-import { respondError } from '@/lib/errors'
+import { ApiError, withApiHandler } from '@/lib/errors'
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  return withApiHandler(request, 'hr.expense-notes.reject', async () => {
     const session = await auth()
-    if (!session?.user || session.user.role !== 'hr_admin') {
-      return Response.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+    if (!session?.user) throw new ApiError('unauthenticated')
+    if (session.user.role !== 'hr_admin') throw new ApiError('forbidden')
     const { id } = await params
 
     return withUserScope(session.user.id, async (client) => {
@@ -20,10 +19,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       )
       const row = existing.rows[0]
       if (!row) {
-        return Response.json({ error: 'Not found' }, { status: 404 })
+        throw new ApiError('not_found')
       }
       if (row.status !== 'pending') {
-        return Response.json({ error: 'Already decided' }, { status: 409 })
+        throw new ApiError('conflict')
       }
 
       const updated = await client.query(
@@ -42,7 +41,5 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         createdAt: new Date(note.created_at).toISOString(),
       })
     })
-  } catch (error) {
-    return respondError(error)
-  }
+  })
 }

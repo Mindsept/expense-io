@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth'
 import { withUserScope } from '@/lib/db'
-import { respondError } from '@/lib/errors'
+import { ApiError, withApiHandler } from '@/lib/errors'
 
 function toExpenseNote(row: Record<string, unknown>) {
   return {
@@ -15,12 +15,11 @@ function toExpenseNote(row: Record<string, unknown>) {
   }
 }
 
-export async function GET() {
-  try {
+export async function GET(request: Request) {
+  return withApiHandler(request, 'manager.expense-notes.list', async () => {
     const session = await auth()
-    if (!session?.user || session.user.role !== 'manager') {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!session?.user) throw new ApiError('unauthenticated')
+    if (session.user.role !== 'manager') throw new ApiError('forbidden')
 
     return withUserScope(session.user.id, async (client) => {
       const result = await client.query(
@@ -32,7 +31,5 @@ export async function GET() {
       )
       return Response.json(result.rows.map(toExpenseNote))
     })
-  } catch (error) {
-    return respondError(error)
-  }
+  })
 }
