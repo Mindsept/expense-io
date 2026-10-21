@@ -1,0 +1,8 @@
+[
+  { "id": "large-total", "lines": ["RECU SYNTHETIQUE", "21/10/2026", "TOTAL 1234,56 EUR"], "expected": { "amount": 1234.56, "expenseDate": "2026-10-21" } },
+  { "id": "tax", "lines": ["RECU SYNTHETIQUE", "21/10/2026", "HT 100,00", "TTC 120,00"], "expected": { "amount": 120, "expenseDate": "2026-10-21" } },
+  { "id": "discount", "lines": ["RECU SYNTHETIQUE", "21/10/2026", "SOUS-TOTAL 40,00", "REMISE 5,00", "TOTAL 35,00"], "expected": { "amount": 35, "expenseDate": "2026-10-21" } },
+  { "id": "leap-day", "lines": ["RECU SYNTHETIQUE", "29/02/2024", "TOTAL 12,50"], "expected": { "amount": 12.5, "expenseDate": "2024-02-29" } },
+  { "id": "ambiguous", "lines": ["RECU SYNTHETIQUE", "TOTAL 12,00", "TOTAL 18,00"], "expected": {} },
+  { "id": "blank", "lines": [], "expected": {} }
+]
