@@ -10,8 +10,15 @@ Application de gestion de notes de frais.
 ## Démarrage
 
 ```bash
+test -f .env || cp .env.example .env
+node scripts/generate-auth-secret.mjs
 make dev
 ```
+
+La génération configure un secret privé sans l'afficher et conserve une valeur
+valide déjà présente. Elle est requise aussi en local : le placeholder de
+l'exemple est refusé. Voir [la configuration d'authentification](docs/authentication-configuration.md)
+pour les variables, le build et la rotation des sessions.
 
 Ceci installe les dépendances, démarre Postgres et LocalStack, applique les
 migrations, crée le bucket de stockage, peuple des comptes de démonstration
@@ -21,8 +28,9 @@ http://localhost:3000.
 Sans `make`, l'équivalent manuel :
 
 ```bash
-npm install
-cp .env.example .env
+npm ci
+test -f .env || cp .env.example .env
+node scripts/generate-auth-secret.mjs
 docker compose up -d
 npm run migrate:up
 npm run ensure-bucket
@@ -50,7 +58,7 @@ seulement via le script de seed ou directement en base.
 
 ## Variables d'environnement
 
-Voir `.env.example`.
+Voir `.env.example` et [la configuration d'authentification](docs/authentication-configuration.md).
 
 ## Autres commandes
 
