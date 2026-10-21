@@ -1,5 +1,5 @@
 import { randomUUID, randomBytes } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { expect, test, type APIRequestContext } from '@playwright/test'
 import bcrypt from 'bcryptjs'
 import { runner } from 'node-pg-migrate'
@@ -178,10 +178,11 @@ test('real migration down fails closed and up restores isolation without changin
   const snapshot=async()=>Object.fromEntries(await Promise.all(tables.map(async table=>[table,(await fixture.admin.query(`SELECT * FROM ${table} ORDER BY id`)).rows])))
   const before=await snapshot(),quiet=()=>{}
   const options={databaseUrl:fixture.adminURL,dir:'migrations',migrationsTable:'pgmigrations',checkOrder:true,singleTransaction:true,logger:{debug:quiet,info:quiet,warn:quiet,error:quiet}}
-  expect(await runner({...options,direction:'down',count:1})).toHaveLength(1)
+  const rollbackCount=readdirSync('migrations').filter(name=>name.endsWith('.sql')&&Number(name.split('_')[0])>=1792764001000).length
+  expect(await runner({...options,direction:'down',count:rollbackCount})).toHaveLength(rollbackCount)
   expect(await snapshot()).toEqual(before)
   await expect(fixture.runtime.query('SELECT id FROM users')).rejects.toMatchObject({code:'42501'})
-  expect(await runner({...options,direction:'up'})).toHaveLength(1)
+  expect(await runner({...options,direction:'up'})).toHaveLength(rollbackCount)
   expect(await snapshot()).toEqual(before)
   await expect(assertRuntimeDatabase(fixture.runtime,{DATABASE_URL:fixture.runtimeURL})).resolves.toBeUndefined()
 })
