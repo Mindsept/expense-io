@@ -10,7 +10,7 @@ The wrapper is for HTTP route handlers only. **Do not use it around server actio
 
 The legacy `respondError(error)` export remains available while Leandro migrates his two route files. It now sanitizes exceptions, but cannot catch a promise that its caller failed to await. Its diagnostic uses `operation: "legacy.api"` and `durationMs: 0` (duration unavailable, not a measured latency).
 
-This change does not implement current-actor authorization, cross-company predicates, RLS or atomic decisions. Those remain HA-02/03/04. Manager assignment now rejects malformed JSON and absent/invalid `managerId` before querying the database; explicit `null` and UUID strings retain their existing behavior. This narrow request-shape check prevents a parse error from silently unassigning a manager. Same-company and cycle checks remain HA-02/06.
+HA-07 itself does not implement authorization, RLS or atomic decisions. The partial HA-02 implementation now adds current-actor authorization and cross-company predicates; RLS and atomic decisions remain HA-04/03. Manager assignment rejects malformed JSON and absent/invalid `managerId` before business-data queries; explicit `null` and UUID strings retain their existing behavior. This narrow request-shape check prevents a parse error from silently unassigning a manager. Same-company checks are added by the partial HA-02 implementation; full cycle checks remain HA-06. HA-02 buffers assignment input before taking database locks, then authorizes the current actor before reporting input errors, preserving 401/403 precedence. See [the current-actor contract](authz-current-actor.md).
 
 ## Response contract
 

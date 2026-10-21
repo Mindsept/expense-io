@@ -1,21 +1,17 @@
-import { auth } from '@/lib/auth'
-import { withUserScope } from '@/lib/db'
+import { expenseValidatorSql } from '@/lib/expense-access'
+import { withCurrentActor } from '@/lib/current-actor'
 import { ApiError, withApiHandler } from '@/lib/errors'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return withApiHandler(request, 'hr.expense-notes.reject', async () => {
-    const session = await auth()
-    if (!session?.user) throw new ApiError('unauthenticated')
-    if (session.user.role !== 'hr_admin') throw new ApiError('forbidden')
-    const { id } = await params
-
-    return withUserScope(session.user.id, async (client) => {
+    return withCurrentActor('hr_admin', async (client, actor) => {
+      const { id } = await params
       const existing = await client.query(
         `SELECT en.* FROM expense_notes en
          JOIN users u ON u.id = en.user_id
-         WHERE en.id = $1 AND u.role = 'manager' AND u.manager_id IS NULL
-           AND u.company_id = (SELECT company_id FROM users WHERE id = $2)`,
-        [id, session.user.id]
+         WHERE en.id = $1 AND ${expenseValidatorSql('hr_admin')}
+         FOR SHARE OF u`,
+        [id, actor.id, actor.companyId]
       )
       const row = existing.rows[0]
       if (!row) {

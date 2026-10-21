@@ -7,6 +7,7 @@ const problems = {
   not_found: { status: 404, title: 'Not found', detail: 'The requested resource was not found.' },
   conflict: { status: 409, title: 'Conflict', detail: 'This expense has already been decided.' },
   invalid_manager: { status: 409, title: 'Invalid manager', detail: 'The selected manager cannot be assigned.' },
+  manager_assignment_busy: { status: 409, title: 'Assignment busy', detail: 'This assignment is being used by another operation. Try again.' },
   technical_failure: { status: 500, title: 'Internal server error', detail: 'The operation could not be completed. Try again later.' },
 } as const
 
