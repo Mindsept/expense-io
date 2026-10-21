@@ -1,6 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { formatCivilDate } from '@/utils/civil-date'
+import { formatRequestFailure, getClientErrorMessage } from '@/utils/client-errors'
+import { selectOcrSuggestions } from '@/utils/ocr-suggestion'
 
 interface ExpenseNote {
   id: string
@@ -18,8 +21,6 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
   currency: 'EUR',
 })
-
-const dateFormatter = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' })
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
@@ -46,6 +47,7 @@ function StatusBadge({ status }: { status: string }) {
 export default function ExpensesPage() {
   const [notes, setNotes] = useState<ExpenseNote[]>([])
   const [loading, setLoading] = useState(true)
+  const [historyError, setHistoryError] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [extracting, setExtracting] = useState(false)
@@ -53,23 +55,52 @@ export default function ExpensesPage() {
   const [amount, setAmount] = useState('')
   const [expenseDate, setExpenseDate] = useState('')
   const receiptInputRef = useRef<HTMLInputElement>(null)
+  const suggestionGeneration = useRef(0)
+  const suggestionFieldsEdited = useRef({ amount: 0, expenseDate: 0 })
+  const mounted = useRef(true)
 
   const loadNotes = useCallback(async () => {
-    const response = await fetch('/api/expense-notes')
-    if (response.ok) {
-      setNotes(await response.json())
-    } else {
-      setError('Impossible de charger les notes de frais.')
+    try {
+      const response = await fetch('/api/expense-notes')
+      if (!response.ok) {
+        setHistoryError(true)
+        setError(await getClientErrorMessage(response, 'Impossible de charger les notes de frais.'))
+        return
+      }
+      const result: unknown = await response.json()
+      if (!Array.isArray(result)) throw new Error('Invalid note list')
+      setNotes(result as ExpenseNote[])
+      setHistoryError(false)
+      setError(null)
+    } catch {
+      setHistoryError(true)
+      setError('Impossible de charger les notes de frais. Vérifie ta connexion puis réessaie.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   useEffect(() => {
+    mounted.current = true
     // Le setState effectif n'intervient qu'après l'await dans loadNotes,
     // la règle react-hooks est ici trop conservatrice.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadNotes()
+    return () => {
+      mounted.current = false
+      suggestionGeneration.current += 1
+    }
   }, [loadNotes])
+
+  function updateAmount(value: string) {
+    suggestionFieldsEdited.current.amount += 1
+    setAmount(value)
+  }
+
+  function updateExpenseDate(value: string) {
+    suggestionFieldsEdited.current.expenseDate += 1
+    setExpenseDate(value)
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -78,25 +109,25 @@ export default function ExpensesPage() {
     const form = event.currentTarget
     const formData = new FormData(form)
 
-    const response = await fetch('/api/expense-notes', {
-      method: 'POST',
-      body: formData,
-    })
-    setSubmitting(false)
-
-    if (response.ok) {
+    try {
+      const response = await fetch('/api/expense-notes', {
+        method: 'POST',
+        body: formData,
+      })
+      if (!response.ok) {
+        setError(await getClientErrorMessage(response, 'Échec de la soumission de la note de frais.'))
+        return
+      }
       form.reset()
       setAmount('')
       setExpenseDate('')
       setSuggestionNotice(null)
+      suggestionGeneration.current += 1
       await loadNotes()
-    } else {
-      const body = await response.json().catch(() => null)
-      setError(
-        typeof body?.error === 'string'
-          ? body.error
-          : 'Échec de la soumission de la note de frais.'
-      )
+    } catch (failure) {
+      setError(formatRequestFailure(failure, 'Échec de la soumission de la note de frais.'))
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -109,47 +140,72 @@ export default function ExpensesPage() {
     setExtracting(true)
     setError(null)
     setSuggestionNotice(null)
+    const generation = ++suggestionGeneration.current
+    const fieldEditVersion = { ...suggestionFieldsEdited.current }
+    const amountAtStart = amount
+    const expenseDateAtStart = expenseDate
 
     const formData = new FormData()
     formData.set('receipt', receipt)
-    const response = await fetch('/api/expense-notes/receipt-suggestion', {
-      method: 'POST',
-      body: formData,
-    })
-    setExtracting(false)
-
-    if (!response.ok) {
-      setError('Impossible d’analyser ce reçu.')
-      return
-    }
-    // Une réponse vide est valide (rien à suggérer) : sans ce message, ça
-    // ne se distinguerait pas visuellement d'un bouton qui n'a rien fait.
-    const suggestion = (await response.json()) as { amount?: number; expenseDate?: string }
-    const foundAmount = typeof suggestion.amount === 'number'
-    const foundDate = typeof suggestion.expenseDate === 'string'
-    if (foundAmount) {
-      setAmount(String(suggestion.amount))
-    }
-    if (foundDate) {
-      setExpenseDate(suggestion.expenseDate as string)
-    }
-    if (!foundAmount && !foundDate) {
-      setSuggestionNotice('Aucune information reconnue sur ce reçu — saisis les champs manuellement.')
-    } else if (!foundAmount || !foundDate) {
-      setSuggestionNotice(
-        `${foundAmount ? 'Date' : 'Montant'} non reconnu(e) sur ce reçu — vérifie ce champ.`
-      )
+    try {
+      const response = await fetch('/api/expense-notes/receipt-suggestion', {
+        method: 'POST',
+        body: formData,
+      })
+      if (!response.ok) {
+        if (generation !== suggestionGeneration.current) return
+        setError(await getClientErrorMessage(response, 'Impossible d’analyser ce reçu.'))
+        return
+      }
+      const suggestion: unknown = await response.json()
+      if (!suggestion || typeof suggestion !== 'object') throw new Error('Invalid suggestion')
+      if (
+        !mounted.current ||
+        generation !== suggestionGeneration.current ||
+        receiptInputRef.current?.files?.[0] !== receipt
+      ) return
+      const fields = suggestion as { amount?: unknown; expenseDate?: unknown }
+      const selected = selectOcrSuggestions({
+        amount: fields.amount,
+        expenseDate: fields.expenseDate,
+        amountAtStart,
+        expenseDateAtStart,
+        amountEditedSinceStart: suggestionFieldsEdited.current.amount !== fieldEditVersion.amount,
+        expenseDateEditedSinceStart: suggestionFieldsEdited.current.expenseDate !== fieldEditVersion.expenseDate,
+      })
+      if (selected.amount !== null) setAmount(selected.amount)
+      if (selected.expenseDate !== null) setExpenseDate(selected.expenseDate)
+      const foundAmount = typeof fields.amount === 'number' && Number.isFinite(fields.amount) && fields.amount > 0
+      const foundDate = typeof fields.expenseDate === 'string' && formatCivilDate(fields.expenseDate) !== 'Date indisponible'
+      if (!foundAmount && !foundDate) {
+        setSuggestionNotice('Aucune information reconnue sur ce reçu — saisis les champs manuellement.')
+      } else if (!foundAmount || !foundDate) {
+        setSuggestionNotice(`${foundAmount ? 'Date' : 'Montant'} non reconnu(e) sur ce reçu — vérifie ce champ.`)
+      }
+    } catch {
+      if (generation === suggestionGeneration.current) {
+        setError('Impossible d’analyser ce reçu. Vérifie ta connexion puis réessaie.')
+      }
+    } finally {
+      if (generation === suggestionGeneration.current) setExtracting(false)
     }
   }
 
   async function handleViewReceipt(id: string) {
-    const response = await fetch(`/api/expense-notes/${id}/receipt-url`)
-    if (!response.ok) {
-      setError('Impossible de récupérer le reçu.')
-      return
+    try {
+      const response = await fetch(`/api/expense-notes/${id}/receipt-url`)
+      if (!response.ok) {
+        setError(await getClientErrorMessage(response, 'Impossible de récupérer le reçu.'))
+        return
+      }
+      const result: unknown = await response.json()
+      if (!result || typeof result !== 'object' || typeof (result as { url?: unknown }).url !== 'string') {
+        throw new Error('Invalid receipt URL')
+      }
+      window.open((result as { url: string }).url, '_blank', 'noopener,noreferrer')
+    } catch {
+      setError('Impossible de récupérer le reçu. Vérifie ta connexion puis réessaie.')
     }
-    const { url } = await response.json()
-    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   const total = notes.reduce((sum, note) => sum + note.amount, 0)
@@ -159,7 +215,9 @@ export default function ExpensesPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Mes notes de frais</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          {notes.length > 0
+          {historyError
+            ? 'Historique indisponible — utilise le bouton Réessayer dans la section Historique.'
+            : notes.length > 0
             ? `${notes.length} note${notes.length > 1 ? 's' : ''} · ${currencyFormatter.format(total)} au total`
             : 'Soumets ta première note de frais ci-dessous.'}
         </p>
@@ -181,7 +239,7 @@ export default function ExpensesPage() {
                 min="0.01"
                 required
                 value={amount}
-                onChange={(event) => setAmount(event.target.value)}
+                onChange={(event) => updateAmount(event.target.value)}
                 className={inputClass}
               />
             </div>
@@ -195,7 +253,7 @@ export default function ExpensesPage() {
                 type="date"
                 required
                 value={expenseDate}
-                onChange={(event) => setExpenseDate(event.target.value)}
+                onChange={(event) => updateExpenseDate(event.target.value)}
                 className={inputClass}
               />
             </div>
@@ -224,6 +282,11 @@ export default function ExpensesPage() {
               type="file"
               accept="image/png,image/jpeg,image/webp,application/pdf"
               required
+              onChange={() => {
+                suggestionGeneration.current += 1
+                setExtracting(false)
+                setSuggestionNotice(null)
+              }}
               className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100 dark:text-gray-400 dark:file:bg-gray-800 dark:file:text-brand-300"
             />
             <button
@@ -234,8 +297,9 @@ export default function ExpensesPage() {
             >
               {extracting ? 'Analyse du reçu…' : 'Pré-remplir depuis le reçu'}
             </button>
+            {extracting && <p role="status" className="text-sm text-gray-500">Analyse du reçu en cours.</p>}
             {suggestionNotice && (
-              <p className="text-sm text-amber-700 dark:text-amber-400">{suggestionNotice}</p>
+              <p role="status" className="text-sm text-amber-700 dark:text-amber-400">{suggestionNotice}</p>
             )}
           </div>
           <button
@@ -262,12 +326,19 @@ export default function ExpensesPage() {
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
           </p>
+        ) : historyError && notes.length === 0 ? (
+          <div className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <p>Historique indisponible.</p>
+            <button type="button" onClick={loadNotes} className="mt-2 font-medium text-brand-600 hover:underline">
+              Réessayer
+            </button>
+          </div>
         ) : notes.length === 0 ? (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Aucune note de frais pour le moment.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} aria-label="Historique des notes de frais, tableau défilant">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -282,7 +353,7 @@ export default function ExpensesPage() {
                 {notes.map((note) => (
                   <tr key={note.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="px-6 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">
-                      {dateFormatter.format(new Date(note.expenseDate))}
+                      {formatCivilDate(note.expenseDate)}
                     </td>
                     <td className="px-6 py-3">{note.description}</td>
                     <td className="px-6 py-3 text-right font-medium whitespace-nowrap">

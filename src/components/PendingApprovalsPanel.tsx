@@ -1,6 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { formatCivilDate } from '@/utils/civil-date'
+import { getClientErrorMessage, isConflict } from '@/utils/client-errors'
 
 interface ExpenseNote {
   id: string
@@ -16,22 +18,29 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
   currency: 'EUR',
 })
 
-const dateFormatter = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' })
-
 export function PendingApprovalsPanel() {
   const [notes, setNotes] = useState<ExpenseNote[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [decidingId, setDecidingId] = useState<string | null>(null)
+  const headingRef = useRef<HTMLHeadingElement>(null)
 
   const loadPending = useCallback(async () => {
-    const response = await fetch('/api/manager/expense-notes')
-    if (response.ok) {
-      setNotes(await response.json())
-    } else {
-      setError('Impossible de charger les notes en attente.')
+    try {
+      const response = await fetch('/api/manager/expense-notes')
+      if (!response.ok) {
+        setError(await getClientErrorMessage(response, 'Impossible de charger les notes en attente.'))
+        return
+      }
+      const result: unknown = await response.json()
+      if (!Array.isArray(result)) throw new Error('Invalid pending list')
+      setNotes(result as ExpenseNote[])
+      setError(null)
+    } catch {
+      setError('Impossible de charger les notes en attente. Vérifie ta connexion puis réessaie.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -41,32 +50,37 @@ export function PendingApprovalsPanel() {
 
   async function handleViewReceipt(id: string) {
     setError(null)
-    const response = await fetch(`/api/manager/expense-notes/${id}/receipt-url`)
-    if (!response.ok) {
-      setError('Impossible de récupérer le reçu.')
-      return
+    try {
+      const response = await fetch(`/api/manager/expense-notes/${id}/receipt-url`)
+      if (!response.ok) {
+        setError(await getClientErrorMessage(response, 'Impossible de récupérer le reçu.'))
+        return
+      }
+      const result: unknown = await response.json()
+      if (!result || typeof result !== 'object' || typeof (result as { url?: unknown }).url !== 'string') throw new Error()
+      window.open((result as { url: string }).url, '_blank', 'noopener,noreferrer')
+    } catch {
+      setError('Impossible de récupérer le reçu. Vérifie ta connexion puis réessaie.')
     }
-    const { url } = await response.json()
-    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   async function handleDecide(id: string, decision: 'approve' | 'reject') {
     setDecidingId(id)
     setError(null)
-    const response = await fetch(`/api/manager/expense-notes/${id}/${decision}`, {
-      method: 'POST',
-    })
-    setDecidingId(null)
-
-    if (response.ok) {
-      await loadPending()
-    } else {
-      const body = await response.json().catch(() => null)
-      setError(
-        typeof body?.error === 'string'
-          ? body.error
-          : "Échec de la décision sur cette note de frais."
-      )
+    try {
+      const response = await fetch(`/api/manager/expense-notes/${id}/${decision}`, { method: 'POST' })
+      if (response.ok) {
+        await loadPending()
+        headingRef.current?.focus()
+      } else if (isConflict(response)) {
+        setError('Cette note a été modifiée depuis son affichage. Actualise la liste avant de décider.')
+      } else {
+        setError(await getClientErrorMessage(response, "Échec de la décision sur cette note de frais."))
+      }
+    } catch {
+      setError('Résultat non confirmé à cause du réseau. Actualise la liste avant de réessayer.')
+    } finally {
+      setDecidingId(null)
     }
   }
 
@@ -87,19 +101,26 @@ export function PendingApprovalsPanel() {
       )}
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <h2 className="border-b border-gray-200 px-6 py-4 text-base font-semibold dark:border-gray-800">
+        <h2 ref={headingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
           En attente ({notes.length})
         </h2>
         {loading ? (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
           </p>
+        ) : error && notes.length === 0 ? (
+          <div className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <p>Liste indisponible.</p>
+            <button type="button" onClick={loadPending} className="mt-2 font-medium text-brand-600 hover:underline">
+              Réessayer
+            </button>
+          </div>
         ) : notes.length === 0 ? (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Aucune note en attente.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} aria-label="Notes en attente, tableau défilant">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -117,7 +138,7 @@ export function PendingApprovalsPanel() {
                       {note.userId.slice(0, 8)}…
                     </td>
                     <td className="px-6 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">
-                      {dateFormatter.format(new Date(note.expenseDate))}
+                      {formatCivilDate(note.expenseDate)}
                     </td>
                     <td className="px-6 py-3">{note.description}</td>
                     <td className="px-6 py-3 text-right font-medium whitespace-nowrap">
@@ -126,6 +147,7 @@ export function PendingApprovalsPanel() {
                     <td className="px-6 py-3 text-right whitespace-nowrap">
                       <button
                         type="button"
+                        aria-label={`Voir le reçu pour ${note.description}`}
                         onClick={() => handleViewReceipt(note.id)}
                         className="mr-3 text-sm font-medium text-brand-600 hover:underline"
                       >
@@ -133,7 +155,8 @@ export function PendingApprovalsPanel() {
                       </button>
                       <button
                         type="button"
-                        disabled={decidingId === note.id}
+                        disabled={decidingId !== null}
+                        aria-label={`Approuver la note de ${note.userId.slice(0, 8)}, ${note.description}`}
                         onClick={() => handleDecide(note.id, 'approve')}
                         className="mr-3 text-sm font-medium text-green-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -141,7 +164,8 @@ export function PendingApprovalsPanel() {
                       </button>
                       <button
                         type="button"
-                        disabled={decidingId === note.id}
+                        disabled={decidingId !== null}
+                        aria-label={`Rejeter la note de ${note.userId.slice(0, 8)}, ${note.description}`}
                         onClick={() => handleDecide(note.id, 'reject')}
                         className="text-sm font-medium text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
                       >

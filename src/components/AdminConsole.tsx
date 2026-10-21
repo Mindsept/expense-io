@@ -1,6 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { formatCivilDate } from '@/utils/civil-date'
+import { getClientErrorMessage, isConflict } from '@/utils/client-errors'
 
 interface CompanyUser {
   id: string
@@ -27,37 +29,53 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
   currency: 'EUR',
 })
 
-const dateFormatter = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' })
-
 export function AdminConsole() {
   const [users, setUsers] = useState<CompanyUser[]>([])
   const [usersLoading, setUsersLoading] = useState(true)
   const [usersError, setUsersError] = useState<string | null>(null)
+  const [usersNotice, setUsersNotice] = useState<string | null>(null)
   const [savingId, setSavingId] = useState<string | null>(null)
 
   const [notes, setNotes] = useState<ExpenseNote[]>([])
   const [notesLoading, setNotesLoading] = useState(true)
   const [notesError, setNotesError] = useState<string | null>(null)
   const [decidingId, setDecidingId] = useState<string | null>(null)
+  const notesHeadingRef = useRef<HTMLHeadingElement>(null)
 
   const loadUsers = useCallback(async () => {
-    const response = await fetch('/api/hr/users')
-    if (response.ok) {
-      setUsers(await response.json())
-    } else {
-      setUsersError("Impossible de charger l'annuaire.")
+    try {
+      const response = await fetch('/api/hr/users')
+      if (!response.ok) {
+        setUsersError(await getClientErrorMessage(response, "Impossible de charger l'annuaire."))
+        return
+      }
+      const result: unknown = await response.json()
+      if (!Array.isArray(result)) throw new Error('Invalid users list')
+      setUsers(result as CompanyUser[])
+      setUsersError(null)
+    } catch {
+      setUsersError("Impossible de charger l'annuaire. Vérifie la connexion puis réessaie.")
+    } finally {
+      setUsersLoading(false)
     }
-    setUsersLoading(false)
   }, [])
 
   const loadNotes = useCallback(async () => {
-    const response = await fetch('/api/hr/expense-notes')
-    if (response.ok) {
-      setNotes(await response.json())
-    } else {
-      setNotesError('Impossible de charger les notes en attente.')
+    try {
+      const response = await fetch('/api/hr/expense-notes')
+      if (!response.ok) {
+        setNotesError(await getClientErrorMessage(response, 'Impossible de charger les notes en attente.'))
+        return
+      }
+      const result: unknown = await response.json()
+      if (!Array.isArray(result)) throw new Error('Invalid notes list')
+      setNotes(result as ExpenseNote[])
+      setNotesError(null)
+    } catch {
+      setNotesError('Impossible de charger les notes en attente. Vérifie la connexion puis réessaie.')
+    } finally {
+      setNotesLoading(false)
     }
-    setNotesLoading(false)
   }, [])
 
   useEffect(() => {
@@ -71,51 +89,59 @@ export function AdminConsole() {
   async function handleManagerChange(userId: string, managerId: string) {
     setSavingId(userId)
     setUsersError(null)
-    const response = await fetch(`/api/hr/users/${userId}/manager`, {
-      method: 'PUT',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ managerId: managerId === '' ? null : managerId }),
-    })
-    setSavingId(null)
-
-    if (response.ok) {
-      await loadUsers()
-    } else {
-      const body = await response.json().catch(() => null)
-      setUsersError(
-        typeof body?.error === 'string' ? body.error : "Échec de l'assignation."
-      )
+    setUsersNotice(null)
+    try {
+      const response = await fetch(`/api/hr/users/${userId}/manager`, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ managerId: managerId === '' ? null : managerId }),
+      })
+      if (response.ok) {
+        setUsersNotice('Affectation enregistrée.')
+        await Promise.all([loadUsers(), loadNotes()])
+      } else {
+        setUsersError(await getClientErrorMessage(response, "Échec de l'assignation."))
+      }
+    } catch {
+      setUsersError("Résultat non confirmé pour l'affectation : vérifie l'organigramme avant de réessayer.")
+    } finally {
+      setSavingId(null)
     }
   }
 
   async function handleViewReceipt(id: string) {
     setNotesError(null)
-    const response = await fetch(`/api/hr/expense-notes/${id}/receipt-url`)
-    if (!response.ok) {
-      setNotesError('Impossible de récupérer le reçu.')
-      return
+    try {
+      const response = await fetch(`/api/hr/expense-notes/${id}/receipt-url`)
+      if (!response.ok) {
+        setNotesError(await getClientErrorMessage(response, 'Impossible de récupérer le reçu.'))
+        return
+      }
+      const result: unknown = await response.json()
+      if (!result || typeof result !== 'object' || typeof (result as { url?: unknown }).url !== 'string') throw new Error()
+      window.open((result as { url: string }).url, '_blank', 'noopener,noreferrer')
+    } catch {
+      setNotesError('Impossible de récupérer le reçu. Vérifie la connexion puis réessaie.')
     }
-    const { url } = await response.json()
-    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   async function handleDecide(id: string, decision: 'approve' | 'reject') {
     setDecidingId(id)
     setNotesError(null)
-    const response = await fetch(`/api/hr/expense-notes/${id}/${decision}`, {
-      method: 'POST',
-    })
-    setDecidingId(null)
-
-    if (response.ok) {
-      await loadNotes()
-    } else {
-      const body = await response.json().catch(() => null)
-      setNotesError(
-        typeof body?.error === 'string'
-          ? body.error
-          : 'Échec de la décision sur cette note de frais.'
-      )
+    try {
+      const response = await fetch(`/api/hr/expense-notes/${id}/${decision}`, { method: 'POST' })
+      if (response.ok) {
+        await loadNotes()
+        notesHeadingRef.current?.focus()
+      } else if (isConflict(response)) {
+        setNotesError('Cette note a été modifiée depuis son affichage. Actualise la liste avant de décider.')
+      } else {
+        setNotesError(await getClientErrorMessage(response, 'Échec de la décision sur cette note de frais.'))
+      }
+    } catch {
+      setNotesError('Résultat non confirmé à cause du réseau. Actualise la liste avant de réessayer.')
+    } finally {
+      setDecidingId(null)
     }
   }
 
@@ -138,16 +164,26 @@ export function AdminConsole() {
             {usersError}
           </p>
         )}
+        {usersNotice && <p role="status" className="mx-6 mt-4 text-sm text-green-700 dark:text-green-300">{usersNotice}</p>}
         {usersLoading ? (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
           </p>
         ) : users.length === 0 ? (
+          usersError ? (
+            <div className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+              <p>Annuaire indisponible.</p>
+              <button type="button" onClick={loadUsers} className="mt-2 font-medium text-brand-600 hover:underline">
+                Réessayer
+              </button>
+            </div>
+          ) : (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Aucun employé ou manager dans cette entreprise.
           </p>
+          )
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} aria-label="Annuaire de l’entreprise, tableau défilant">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -165,7 +201,11 @@ export function AdminConsole() {
                     </td>
                     <td className="px-6 py-3 capitalize">{user.role}</td>
                     <td className="px-6 py-3">
+                      <label className="sr-only" htmlFor={`manager-${user.id}`}>
+                        Manager de {user.name}
+                      </label>
                       <select
+                        id={`manager-${user.id}`}
                         value={user.managerId ?? ''}
                         disabled={savingId === user.id}
                         onChange={(event) => handleManagerChange(user.id, event.target.value)}
@@ -190,7 +230,7 @@ export function AdminConsole() {
       </section>
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <h2 className="border-b border-gray-200 px-6 py-4 text-base font-semibold dark:border-gray-800">
+        <h2 ref={notesHeadingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
           Notes des managers racine en attente ({notes.length})
         </h2>
         {notesError && (
@@ -202,12 +242,19 @@ export function AdminConsole() {
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
           </p>
+        ) : notes.length === 0 && notesError ? (
+          <div className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <p>Liste indisponible.</p>
+            <button type="button" onClick={loadNotes} className="mt-2 font-medium text-brand-600 hover:underline">
+              Réessayer
+            </button>
+          </div>
         ) : notes.length === 0 ? (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Aucune note en attente.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} aria-label="Notes des managers en attente, tableau défilant">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -225,7 +272,7 @@ export function AdminConsole() {
                     <tr key={note.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                       <td className="px-6 py-3">{author?.name ?? note.userId.slice(0, 8)}</td>
                       <td className="px-6 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">
-                        {dateFormatter.format(new Date(note.expenseDate))}
+                        {formatCivilDate(note.expenseDate)}
                       </td>
                       <td className="px-6 py-3">{note.description}</td>
                       <td className="px-6 py-3 text-right font-medium whitespace-nowrap">
@@ -234,6 +281,7 @@ export function AdminConsole() {
                       <td className="px-6 py-3 text-right whitespace-nowrap">
                         <button
                           type="button"
+                          aria-label={`Voir le reçu de ${author?.name ?? note.userId.slice(0, 8)}, ${note.description}`}
                           onClick={() => handleViewReceipt(note.id)}
                           className="mr-3 text-sm font-medium text-brand-600 hover:underline"
                         >
@@ -241,7 +289,8 @@ export function AdminConsole() {
                         </button>
                         <button
                           type="button"
-                          disabled={decidingId === note.id}
+                          disabled={decidingId !== null}
+                          aria-label={`Approuver la note de ${author?.name ?? note.userId.slice(0, 8)}, ${note.description}`}
                           onClick={() => handleDecide(note.id, 'approve')}
                           className="mr-3 text-sm font-medium text-green-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
                         >
@@ -249,7 +298,8 @@ export function AdminConsole() {
                         </button>
                         <button
                           type="button"
-                          disabled={decidingId === note.id}
+                          disabled={decidingId !== null}
+                          aria-label={`Rejeter la note de ${author?.name ?? note.userId.slice(0, 8)}, ${note.description}`}
                           onClick={() => handleDecide(note.id, 'reject')}
                           className="text-sm font-medium text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
                         >
