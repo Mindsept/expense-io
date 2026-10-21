@@ -1,0 +1,3 @@
+Command: rg -n 'next/image|next/og|ImageResponse|draftMode|use cache|remotePatterns|dangerouslyAllowSVG|generateStaticParams|dynamicParams|revalidate|source-map-js|sharp' src next.config.ts eslint.config.mjs
+Exit: 0
+src/proxy.ts:17:    '/((?!api|_next/static|_next/image|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)',

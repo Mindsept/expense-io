@@ -1,0 +1,69 @@
+{
+  "recorded_at_utc": "2026-10-21T13:50:39.308620+00:00",
+  "review_date": "2026-10-21",
+  "source_commit": "265924bc7274047989e708ab635c2854d376230f",
+  "node": "v26.8.1",
+  "npm": "12.0.2",
+  "package_lock_sha256": "66354f1c764e3a8bb81ab169f36fa22b66a24d15090e70b04372359da3cb2453",
+  "commands": [
+    {
+      "command": "npm audit --json",
+      "exit_code": 1,
+      "stdout": "npm-audit-all.json",
+      "stderr": ""
+    },
+    {
+      "command": "npm audit --omit=dev --json",
+      "exit_code": 1,
+      "stdout": "npm-audit-production.json",
+      "stderr": ""
+    },
+    {
+      "command": "npm ci",
+      "exit_code": 0,
+      "output": "npm-ci.txt",
+      "recorded_at_utc": "2026-10-21T13:50:56.020048+00:00"
+    },
+    {
+      "command": "npm ls next eslint-config-next @next/eslint-plugin-next fast-glob micromatch braces sharp postcss source-map-js --all",
+      "exit_code": 0,
+      "output": "dependency-paths.txt",
+      "recorded_at_utc": "2026-10-21T13:51:40.280655+00:00"
+    },
+    {
+      "command": "npm run lint",
+      "exit_code": 0,
+      "output": "lint.txt",
+      "recorded_at_utc": "2026-10-21T13:51:41.793275+00:00"
+    },
+    {
+      "command": "npm run typecheck",
+      "exit_code": 0,
+      "output": "typecheck.txt",
+      "recorded_at_utc": "2026-10-21T13:51:42.881517+00:00"
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 0,
+      "output": "build.txt",
+      "recorded_at_utc": "2026-10-21T13:51:49.100202+00:00"
+    },
+    {
+      "command": "rg -n 'next/image|next/og|ImageResponse|draftMode|use cache|remotePatterns|dangerouslyAllowSVG|generateStaticParams|dynamicParams|revalidate|source-map-js|sharp' src next.config.ts eslint.config.mjs",
+      "exit_code": 0,
+      "output": "feature-search.txt",
+      "argv": [
+        "rg",
+        "-n",
+        "next/image|next/og|ImageResponse|draftMode|use cache|remotePatterns|dangerouslyAllowSVG|generateStaticParams|dynamicParams|revalidate|source-map-js|sharp",
+        "src",
+        "next.config.ts",
+        "eslint.config.mjs"
+      ]
+    }
+  ],
+  "platform": "darwin/arm64",
+  "package_lock_sha256_after_checks": "66354f1c764e3a8bb81ab169f36fa22b66a24d15090e70b04372359da3cb2453",
+  "package_json_sha256": "75428e13dd5a1bc746550533a8219fda9bc903465a3e748a137b0af18e96836c",
+  "output_normalization": "Absolute checkout path replaced with <checkout> in dependency-paths.txt; other command outputs retained."
+}

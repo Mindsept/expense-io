@@ -1,0 +1,40 @@
+{
+  "all": {
+    "package_rows": 8,
+    "unique_advisories": 10,
+    "advisory_ids": [
+      "GHSA-39w2-rjm5-chcv",
+      "GHSA-3w37-wq28-93x7",
+      "GHSA-4jqv-mc3x-m676",
+      "GHSA-68fv-2mgg-jv7q",
+      "GHSA-cjq9-62q9-8jv4",
+      "GHSA-f87g-xv8r-7p7x",
+      "GHSA-mcj8-r9mp-w47p",
+      "GHSA-vcvr-r3jv-pc5j",
+      "GHSA-vfj7-8cjw-p6xm",
+      "GHSA-wq5f-xc86-pv6w"
+    ],
+    "direct_package_rows": [
+      "eslint-config-next",
+      "next"
+    ]
+  },
+  "production": {
+    "package_rows": 3,
+    "unique_advisories": 9,
+    "advisory_ids": [
+      "GHSA-39w2-rjm5-chcv",
+      "GHSA-3w37-wq28-93x7",
+      "GHSA-4jqv-mc3x-m676",
+      "GHSA-68fv-2mgg-jv7q",
+      "GHSA-cjq9-62q9-8jv4",
+      "GHSA-f87g-xv8r-7p7x",
+      "GHSA-mcj8-r9mp-w47p",
+      "GHSA-vcvr-r3jv-pc5j",
+      "GHSA-wq5f-xc86-pv6w"
+    ],
+    "direct_package_rows": [
+      "next"
+    ]
+  }
+}
