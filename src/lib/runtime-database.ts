@@ -1,6 +1,6 @@
 import type { Pool, PoolClient } from 'pg'
 
-const protectedTables = ['companies','users','expense_notes','expense_decision_history','management_changes','expense_submission_operations','expense_submission_attempts','enrollment_invitations']
+const protectedTables = ['companies','users','expense_notes','expense_decision_history','management_changes','expense_submission_operations','expense_submission_attempts','enrollment_invitations','decision_notification_outbox','decision_inbox','expense_notification_routes','assignment_notification_outbox','assignment_inbox']
 const diagnostic = 'Database isolation check failed. Apply the HA-04 migration with a separate administrator, provision expense_web, and configure only its private DATABASE_URL for the web process.'
 
 /** Runs at Node startup before accepting work; verifies the actual login, not its URL label. */
