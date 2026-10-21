@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({ getPool: vi.fn(), hash: vi.fn(), signIn: vi.fn(), signOut: vi.fn(), redeem: vi.fn() }))
 vi.mock('next-auth', () => ({ AuthError: class AuthError extends Error {} }))
-vi.mock('@/lib/enrollment/invitations', async (original) => ({ ...await original<typeof import('@/lib/enrollment/invitations')>(), redeemInvitation: mocks.redeem }))
+vi.mock('@/lib/enrollment/runtime', async (original) => ({ ...await original<typeof import('@/lib/enrollment/runtime')>(), redeemInvitation: mocks.redeem }))
 vi.mock('@/lib/db', () => ({ getPool: mocks.getPool }))
 vi.mock('bcryptjs', () => ({ default: { hash: mocks.hash } }))
 vi.mock('@/lib/auth', () => ({ signIn: mocks.signIn, signOut: mocks.signOut }))

@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import { getPool } from '@/lib/db'
-import { issueEmployeeInvitation, revokeEmployeeInvitation } from '@/lib/enrollment/invitations'
+import { issueEmployeeInvitation, revokeEmployeeInvitation } from '@/lib/enrollment/runtime'
 import { deliverInvitation, readInvitationDelivery } from '@/lib/enrollment/delivery'
 
 export type InvitationFormState = { error?: string; success?: string }

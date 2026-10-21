@@ -1,0 +1,47 @@
+{
+  "outcome": "passed",
+  "node": "v26.8.1",
+  "baseline": "Privileged bootstrap role; this run does not prove RLS isolation.",
+  "suites": [
+    {
+      "name": "verify",
+      "exitCode": 0,
+      "durationMs": 7691
+    },
+    {
+      "name": "collect",
+      "exitCode": 0,
+      "durationMs": 1070
+    },
+    {
+      "name": "services",
+      "exitCode": 0,
+      "durationMs": 8836
+    },
+    {
+      "name": "prepare",
+      "exitCode": 0,
+      "durationMs": 957
+    },
+    {
+      "name": "build",
+      "exitCode": 0,
+      "durationMs": 3654
+    },
+    {
+      "name": "api",
+      "exitCode": 0,
+      "durationMs": 16922
+    },
+    {
+      "name": "e2e",
+      "exitCode": 0,
+      "durationMs": 9516
+    },
+    {
+      "name": "cleanup",
+      "exitCode": 0,
+      "durationMs": 2669
+    }
+  ]
+}
