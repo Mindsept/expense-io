@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { getPool, withUserScope } from '@/lib/db'
 import { respondError } from '@/lib/errors'
 import { receiptKeyFor, uploadReceipt } from '@/lib/storage'
+import { toExpenseNote } from '@/adapters/expense-note-mapper'
 
 const ALLOWED_RECEIPT_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf']
 const MAX_RECEIPT_BYTES = 10 * 1024 * 1024
@@ -13,19 +14,6 @@ const EXTENSION_BY_MIME: Record<string, string> = {
   'image/jpeg': '.jpg',
   'image/webp': '.webp',
   'application/pdf': '.pdf',
-}
-
-function toExpenseNote(row: Record<string, unknown>) {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    amount: Number.parseFloat(row.amount as string),
-    expenseDate: row.expense_date,
-    description: row.description,
-    receiptKey: row.receipt_key,
-    status: row.status,
-    createdAt: new Date(row.created_at as string).toISOString(),
-  }
 }
 
 export async function GET(request: NextRequest) {
@@ -41,12 +29,12 @@ export async function GET(request: NextRequest) {
     // en SQL standard, donc ce fragment est concaténé directement.
     const sort = url.searchParams.get('sort') || 'created_at DESC'
 
-    return withUserScope(session.user.id, async (client) => {
+    return await withUserScope(session.user.id, async (client) => {
       const result = await client.query(
         `SELECT * FROM expense_notes WHERE user_id = $1 ORDER BY ${sort}`,
         [session.user.id]
       )
-      return Response.json(result.rows.map(toExpenseNote))
+      return Response.json(result.rows.map((row) => toExpenseNote(row)))
     })
   } catch (error) {
     return respondError(error)
