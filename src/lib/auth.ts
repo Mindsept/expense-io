@@ -2,13 +2,12 @@ import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { getPool } from '@/lib/db'
+import { readAuthConfig } from '@/lib/auth-config.mjs'
 
-// Généré une fois pour ce projet — pas besoin de le régénérer à chaque
-// déploiement.
-const AUTH_SECRET = 'e29f9c3b6a1d4e7f8021c5b6d4a9f0e3c7b8a2d1f6e5c4b3a2918273645fabcd'
+const { secret } = readAuthConfig()
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  secret: AUTH_SECRET,
+  secret,
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/login',
