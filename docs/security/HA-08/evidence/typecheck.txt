@@ -1,0 +1,2 @@
+npm notice run expense-io-version-b@0.1.0 typecheck
+npm notice run tsc --noEmit
