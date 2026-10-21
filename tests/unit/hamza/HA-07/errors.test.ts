@@ -20,7 +20,7 @@ describe('HTTP problem contract', () => {
   it.each<[ProblemCode, number]>([
     ['validation', 400], ['invalid_json', 400], ['invalid_manager_assignment', 400],
     ['unauthenticated', 401], ['forbidden', 403], ['not_found', 404],
-    ['conflict', 409], ['invalid_manager', 409], ['manager_assignment_busy', 409], ['technical_failure', 500],
+    ['conflict', 409], ['invalid_manager', 409], ['last_active_hr', 409], ['manager_cycle', 409], ['manager_assignment_busy', 409], ['technical_failure', 500],
   ])('maps %s to %i with compatible details', async (code, status) => {
     const response = await withApiHandler(request(), 'expense.test', async () => { throw new ApiError(code) })
     const body = await response.json()

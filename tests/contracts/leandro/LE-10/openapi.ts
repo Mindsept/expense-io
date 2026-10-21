@@ -21,13 +21,13 @@ const ajv = new Ajv({ allErrors: true, jsonPointers: true, nullable: true, forma
 ajv.addFormat('binary', /^[\s\S]*$/)
 ajv.addFormat('password', /^[\s\S]*$/)
 
-export const contract = JSON.parse(readFileSync(resolve('docs/openapi/expense-io.v3.json'), 'utf8')) as {
+export const contract = JSON.parse(readFileSync(resolve('docs/openapi/expense-io.v4.json'), 'utf8')) as {
   openapi: string
   info: { version: string }
   paths: Record<string, Record<string, unknown>>
   components: { schemas: Record<string, Schema>; responses: Record<string, ResponseSpec> }
 }
-const root = 'urn:expense-io:openapi:v3'
+const root = 'urn:expense-io:openapi:v4'
 // Only Schema Objects are sent to Ajv. Rewrite local component references into
 // draft-07 definitions; OpenAPI metadata/response objects are not JSON Schemas.
 function jsonSchema(value: unknown): unknown {

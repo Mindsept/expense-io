@@ -7,6 +7,8 @@ const problems = {
   not_found: { status: 404, title: 'Not found', detail: 'The requested resource was not found.' },
   conflict: { status: 409, title: 'Conflict', detail: 'This expense has already been decided.' },
   invalid_manager: { status: 409, title: 'Invalid manager', detail: 'The selected manager cannot be assigned.' },
+  manager_cycle: { status: 409, title: 'Management cycle', detail: 'This assignment would create or join a management cycle.' },
+  last_active_hr: { status: 409, title: 'Last active HR', detail: 'Assign another active HR before removing this HR access.' },
   manager_assignment_busy: { status: 409, title: 'Assignment busy', detail: 'This assignment is being used by another operation. Try again.' },
   idempotency_conflict: { status: 409, title: 'Request key conflict', detail: 'This request key was already used with different expense content.' },
   idempotency_in_progress: { status: 409, title: 'Submission in progress', detail: 'This submission is already being processed. Retry later with the same request key.' },

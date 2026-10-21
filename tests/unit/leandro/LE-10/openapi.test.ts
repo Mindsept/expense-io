@@ -20,7 +20,7 @@ const operations = Object.entries(contract.paths).flatMap(([url, item]) => metho
 describe('LE-10 executable delivered contract', () => {
   it('inventories exactly the real route files and exported methods, with no target-only endpoints', () => {
     const files = routeFiles('src/app/api').sort()
-    expect(files).toHaveLength(15)
+    expect(files).toHaveLength(17)
     expect([...new Set(operations.map(({ op }) => op['x-source']))].sort()).toEqual(files)
     for (const file of files) {
       const source = readFileSync(file, 'utf8')
