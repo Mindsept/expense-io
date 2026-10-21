@@ -37,3 +37,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test output and authentication state
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/tests/.auth/

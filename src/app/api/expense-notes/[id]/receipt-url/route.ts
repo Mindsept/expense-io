@@ -1,14 +1,12 @@
 import { auth } from '@/lib/auth'
 import { withUserScope } from '@/lib/db'
-import { respondError } from '@/lib/errors'
+import { ApiError, withApiHandler } from '@/lib/errors'
 import { getReceiptUrl } from '@/lib/storage'
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  return withApiHandler(request, 'expense-notes.receipt-url', async () => {
     const session = await auth()
-    if (!session?.user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!session?.user) throw new ApiError('unauthenticated')
     const { id } = await params
 
     const note = await withUserScope(session.user.id, async (client) => {
@@ -19,12 +17,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       return result.rows[0]
     })
     if (!note) {
-      return Response.json({ error: 'Not found' }, { status: 404 })
+      throw new ApiError('not_found')
     }
 
     const url = await getReceiptUrl(note.receipt_key)
     return Response.json({ url })
-  } catch (error) {
-    return respondError(error)
-  }
+  })
 }

@@ -1,23 +1,29 @@
 import { auth } from '@/lib/auth'
 import { getPool } from '@/lib/db'
-import { respondError } from '@/lib/errors'
+import { ApiError, readJsonObject, withApiHandler } from '@/lib/errors'
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
+  return withApiHandler(request, 'hr.users.manager', async () => {
     const session = await auth()
-    if (!session?.user || session.user.role !== 'hr_admin') {
-      return Response.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+    if (!session?.user) throw new ApiError('unauthenticated')
+    if (session.user.role !== 'hr_admin') throw new ApiError('forbidden')
     const { id } = await params
-    const body = (await request.json().catch(() => null)) as { managerId?: string | null } | null
-    const managerId = body?.managerId ?? null
+    const body = await readJsonObject(request)
+    const managerId = body.managerId
+    if (
+      managerId !== null &&
+      (typeof managerId !== 'string' ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(managerId))
+    ) {
+      throw new ApiError('invalid_manager_assignment')
+    }
 
     const hrAdminResult = await getPool().query('SELECT company_id FROM users WHERE id = $1', [
       session.user.id,
     ])
     const companyId = hrAdminResult.rows[0]?.company_id
     if (!companyId) {
-      return Response.json({ error: 'Not found' }, { status: 404 })
+      throw new ApiError('not_found')
     }
 
     const targetResult = await getPool().query(
@@ -25,23 +31,20 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       [id, companyId]
     )
     if (!targetResult.rows[0]) {
-      return Response.json({ error: 'Not found' }, { status: 404 })
+      throw new ApiError('not_found')
     }
 
     if (managerId !== null) {
       if (managerId === id) {
-        return Response.json({ error: 'Invalid manager' }, { status: 409 })
+        throw new ApiError('invalid_manager')
       }
-      // Le manager choisi doit avoir le rôle manager — l'appartenance à la
-      // même entreprise que la cible est déjà garantie par l'annuaire
-      // (GET /api/hr/users), qui ne liste que des managers de l'entreprise
-      // de l'appelant.
+      // HA-02 adds the same-company check; filtering the UI is not authorization.
       const managerResult = await getPool().query(
         `SELECT id FROM users WHERE id = $1 AND role = 'manager'`,
         [managerId]
       )
       if (!managerResult.rows[0]) {
-        return Response.json({ error: 'Invalid manager' }, { status: 409 })
+        throw new ApiError('invalid_manager')
       }
     }
 
@@ -58,7 +61,5 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       role: user.role,
       managerId: user.manager_id,
     })
-  } catch (error) {
-    return respondError(error)
-  }
+  })
 }
