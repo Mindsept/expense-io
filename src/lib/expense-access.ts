@@ -11,7 +11,7 @@ export function expenseValidatorSql(role: UserRole, actorParameter = 2, companyP
   if (role === 'manager') return `${common} AND u.role <> 'hr_admin' AND u.manager_id = ${actor}`
   if (role === 'hr_admin') return `${common} AND (u.role = 'hr_admin' OR NOT EXISTS (
     SELECT 1 FROM users direct_manager
-    WHERE direct_manager.id = u.manager_id AND direct_manager.company_id = u.company_id
+    WHERE direct_manager.id = u.manager_id AND direct_manager.id <> u.id AND direct_manager.company_id = u.company_id
       AND direct_manager.role = 'manager' AND direct_manager.is_active
   ))`
   return 'FALSE'
