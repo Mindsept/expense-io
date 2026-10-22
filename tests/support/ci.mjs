@@ -26,7 +26,7 @@ for (const owner of ['HA01', 'HA02', 'HA03', 'HA06', 'HA07', 'LE01', 'LE04', 'LE
   env[`${owner}_TEST_PASSWORD`] = secret()
 }
 // Readiness tests in HA-04 deliberately inspect the bootstrap connection.
-env.HA04_TEST_ADMIN_DATABASE_URL = env.DATABASE_URL
+env.HA04_TEST_ADMIN_DATABASE_URL = env.DATABASE_URL.replace('/expense_io_test', '/expense_rls_test')
 for (const role of ['EMPLOYEE', 'MANAGER', 'HR']) {
   env[`ARLA_TEST_${role}_EMAIL`] = env[`SEED_${role}_EMAIL`] = `${role.toLowerCase()}@expense.test`
   env[`ARLA_TEST_${role}_PASSWORD`] = env[`SEED_${role}_PASSWORD`] = secret()

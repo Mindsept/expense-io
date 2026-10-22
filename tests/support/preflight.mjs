@@ -63,6 +63,18 @@ export function preflight(env = process.env) {
     reject('POSTGRES_PASSWORD', 'must be generated for this test run and match the database URL password (at least 16 characters)')
   }
 
+  if (env.HA04_TEST_ADMIN_DATABASE_URL !== undefined) {
+    const rls = parseUrl(env.HA04_TEST_ADMIN_DATABASE_URL, 'HA04_TEST_ADMIN_DATABASE_URL')
+    let rlsPassword
+    try { rlsPassword = decodeURIComponent(rls.password) }
+    catch { reject('HA04_TEST_ADMIN_DATABASE_URL', 'must use the same generated database credentials') }
+    if (!['postgres:', 'postgresql:'].includes(rls.protocol) || rls.hostname !== database.hostname ||
+        rls.port !== database.port || rls.username !== database.username || rlsPassword !== databasePassword ||
+        rls.pathname !== '/expense_rls_test' || rls.search || rls.hash) {
+      reject('HA04_TEST_ADMIN_DATABASE_URL', 'must select expense_rls_test on the same isolated cluster with the same credentials')
+    }
+  }
+
   const storage = loopbackHttp(env.S3_ENDPOINT, 'S3_ENDPOINT')
   if (storage.port !== storagePort) reject('S3_ENDPOINT', 'must use ARLA_TEST_S3_PORT')
   if (env.S3_BUCKET !== 'receipts-ci-test') reject('S3_BUCKET', 'must equal receipts-ci-test')
@@ -90,6 +102,7 @@ export function preflight(env = process.env) {
     databasePort,
     databaseName: 'expense_io_test',
     databaseUser: 'expense_test',
+    rlsDatabaseName: env.HA04_TEST_ADMIN_DATABASE_URL === undefined ? undefined : 'expense_rls_test',
     storageEndpoint: storage.url,
     storagePort,
     bucket: 'receipts-ci-test',

@@ -35,7 +35,9 @@ navigateur sont déjà présentes. Le lanceur fonctionne sans shell Bash.
    Un échec de nettoyage fait échouer la commande. Une VM GitHub annulée est jetée.
 
 Les variables des suites déjà livrées et des drafts HA-02/03/04/06 et LE-01
-sont mappées vers cette même cible isolée. Les comptes des trois rôles utilisent
+sont mappées vers cette cible isolée. HA-04 reçoit une seconde base vide
+`expense_rls_test` dans le même cluster jetable : il prépare lui-même son schéma.
+Les comptes des trois rôles utilisent
 le domaine fictif `expense.test`. Aucun état de connexion n'est réutilisé entre
 les tests navigateur.
 

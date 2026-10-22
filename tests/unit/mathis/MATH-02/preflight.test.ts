@@ -3,6 +3,17 @@ import { preflight } from '../../../support/preflight.mjs'
 
 const effects = vi.hoisted(() => ({
   loadMigration: vi.fn(), migrate: vi.fn(), storage: vi.fn(), send: vi.fn(), destroy: vi.fn(), seed: vi.fn(),
+  pool: vi.fn(), adminQuery: vi.fn(), rlsQuery: vi.fn(), closePool: vi.fn(),
+}))
+vi.mock('pg', () => ({
+  Pool: class {
+    query: typeof effects.adminQuery
+    constructor(options: { connectionString: string }) {
+      effects.pool(options)
+      this.query = new URL(options.connectionString).pathname === '/expense_rls_test' ? effects.rlsQuery : effects.adminQuery
+    }
+    end = effects.closePool
+  },
 }))
 vi.mock('node-pg-migrate', () => {
   effects.loadMigration()
@@ -44,6 +55,8 @@ beforeEach(() => {
   effects.migrate.mockReset()
   effects.send.mockReset()
   effects.seed.mockReset()
+  effects.adminQuery.mockReset()
+  effects.rlsQuery.mockReset()
 })
 
 test('accepts the declared disposable stack and returns only safe metadata', () => {
@@ -102,6 +115,62 @@ test('compares the decoded password instead of the encoded URL representation', 
   env.POSTGRES_PASSWORD = 'synthetic-password:@/123'
   env.DATABASE_URL = `postgres://expense_test:${encodeURIComponent(env.POSTGRES_PASSWORD)}@127.0.0.1:55440/expense_io_test`
   expect(preflight(env).databaseName).toBe('expense_io_test')
+})
+
+test.each([
+  '', 'postgres://expense_test:synthetic-db-password-123@127.0.0.1:55440/expense_io_test',
+  'postgres://expense_test:synthetic-db-password-123@127.0.0.1:55440/other_test',
+  'postgres://expense_test:synthetic-db-password-123@remote.example:55440/expense_rls_test',
+  'postgres://expense_test:synthetic-db-password-123@127.0.0.1:55441/expense_rls_test',
+  'postgres://other:synthetic-db-password-123@127.0.0.1:55440/expense_rls_test',
+  'postgres://expense_test:private-password-mismatch@127.0.0.1:55440/expense_rls_test',
+  'postgres://expense_test:synthetic-db-password-123@127.0.0.1:55440/expense_rls_test?host=remote.example',
+  'postgres://expense_test:synthetic-db-password-123@127.0.0.1:55440/expense_rls_test#private',
+])('rejects a mismatched HA-04 database before opening either database', async url => {
+  const env = { ...settings(), HA04_TEST_ADMIN_DATABASE_URL: url }
+  await expect(prepare(env)).rejects.toThrow('HA04_TEST_ADMIN_DATABASE_URL')
+  expect(effects.pool).not.toHaveBeenCalled()
+  expect(effects.migrate).not.toHaveBeenCalled()
+  expect(effects.storage).not.toHaveBeenCalled()
+  expect(effects.seed).not.toHaveBeenCalled()
+})
+
+test.each([false, true])('keeps HA-04 empty and separate from the migrated baseline (already exists: %s)', async existing => {
+  effects.adminQuery.mockResolvedValue({ rows: existing ? [{ datname: 'expense_rls_test' }] : [] })
+  effects.rlsQuery.mockResolvedValue({ rows: [{ occupied: false }] })
+  effects.migrate.mockResolvedValue([])
+  effects.send.mockResolvedValue({})
+  effects.seed.mockImplementation((_file: string, _args: string[], _options: unknown, callback: (error: Error | null) => void) => callback(null))
+  const output = vi.spyOn(console, 'info').mockImplementation(() => {})
+  try {
+    const env: Record<string, string | undefined> = {
+      ...settings(), HA04_TEST_ADMIN_DATABASE_URL: 'postgres://expense_test:synthetic-db-password-123@127.0.0.1:55440/expense_rls_test',
+    }
+    expect((await prepare(env)).rlsDatabaseName).toBe('expense_rls_test')
+    expect(effects.pool.mock.calls.map(([options]) => new URL(options.connectionString).pathname)).toEqual(['/expense_io_test', '/expense_rls_test'])
+    expect(effects.adminQuery).toHaveBeenCalledWith('SELECT datname FROM pg_database WHERE datname = $1', ['expense_rls_test'])
+    expect(effects.adminQuery).toHaveBeenCalledTimes(existing ? 1 : 2)
+    if (!existing) expect(effects.adminQuery).toHaveBeenCalledWith('CREATE DATABASE expense_rls_test')
+    for (const [sql] of [...effects.adminQuery.mock.calls, ...effects.rlsQuery.mock.calls]) {
+      expect(sql).not.toMatch(/\b(BEGIN|DROP|TRUNCATE|ALTER|INSERT|CREATE TABLE)\b/i)
+    }
+    expect(effects.rlsQuery).toHaveBeenCalledTimes(1)
+    expect(effects.migrate.mock.calls[0][0].databaseUrl.connectionString).toBe(env.DATABASE_URL)
+    expect(effects.seed.mock.calls[0][2].env.DATABASE_URL).toBe(env.DATABASE_URL)
+    expect(effects.closePool).toHaveBeenCalledTimes(2)
+  } finally { output.mockRestore() }
+})
+
+test('refuses an existing nonempty HA-04 database without dropping data or migrating either database', async () => {
+  effects.adminQuery.mockResolvedValue({ rows: [{ datname: 'expense_rls_test' }] })
+  effects.rlsQuery.mockResolvedValue({ rows: [{ occupied: true }] })
+  const env = { ...settings(), HA04_TEST_ADMIN_DATABASE_URL: 'postgres://expense_test:synthetic-db-password-123@127.0.0.1:55440/expense_rls_test' }
+  await expect(prepare(env)).rejects.toThrow('empty RLS test database preparation')
+  expect(effects.adminQuery).toHaveBeenCalledTimes(1)
+  expect(effects.rlsQuery).toHaveBeenCalledTimes(1)
+  expect(effects.migrate).not.toHaveBeenCalled()
+  expect(effects.seed).not.toHaveBeenCalled()
+  expect(effects.closePool).toHaveBeenCalledTimes(2)
 })
 
 test('rejects the target before loading migration code or performing any mutation', async () => {
