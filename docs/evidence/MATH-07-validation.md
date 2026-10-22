@@ -32,3 +32,5 @@ Reproduction : `npm ci`, `npm run test:ci`, `npm ls next eslint-config-next shar
 ## Réalignement après intégration parallèle
 
 Hugo a intégré une autre orchestration ARLA-40 dans main via #14 (`a0a0ab0`). La PR ARLA-40 #15 est remplacée, sans fusion. Cette branche conserve intégralement le runner, les protections, les tests et les corrections applicatives déjà intégrés dans main. Elle réapplique uniquement les patchs de dépendances et épingle la paire runtime qualifiée. Les preuves ci-dessus décrivent le premier passage avant ce réalignement ; une nouvelle campagne sur l’arbre intégré sera conservée séparément.
+
+Sur l’arbre intégré `0c434db`, installation propre réussie. La nouvelle campagne locale s’arrête sur le test Hamza `HA-01/owned-node-process.test.ts` avec `kill EPERM` : **278 succès, 1 échec**. API et E2E intégrés non exécutés localement dans ce passage. Aucun test ignoré, aucune assertion affaiblie ; [résumé](MATH-07/aligned/local-summary.json), [sortie](MATH-07/aligned/local-verify.log). Vérification Linux distante attendue.
