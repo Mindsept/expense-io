@@ -40,8 +40,11 @@ including on repeated invocations. An unrecognized invalid value, duplicate
 assignment or multiline assignment requires an explicit operator edit; it is
 never silently rotated. Symlinks are refused.
 
-Writes are atomic and use mode `0600`; a provisioning lock prevents concurrent
-writers. After an interrupted command, remove a stale `<env-file>.auth-secret.lock`
+Writes are atomic and use mode `0600` on POSIX systems; a provisioning lock prevents concurrent
+writers. Windows uses inherited NTFS access-control lists instead of POSIX mode
+bits: keep the environment file in a directory restricted to the intended user
+or service account. The generator does not configure or certify Windows ACLs.
+After an interrupted command, remove a stale `<env-file>.auth-secret.lock`
 only after confirming that no provisioning command is still running. Do not
 print the file, commit it or include it in support logs. `.gitignore` already
 ignores `.env*` except `.env.example`. Arbitrary custom file names are not
@@ -92,7 +95,10 @@ for `HA01_SERVER_MODE=production` (default, port 3102). Run separately with
 `HA01_SERVER_MODE=development` (port 3101); `HA01_TEST_PORT` can override the port.
 It refuses an existing listener, writes only its own random test company/user,
 uses real credential login against PostgreSQL, removes its fixtures, and stops
-only its own process groups. It neither creates nor resets the database.
+only its own process group on Unix or process tree on Windows. The shared
+`tests/support/process-tree.mjs` helper accepts only processes it created;
+Windows termination targets the specific PID and descendants, never every Node
+process or the process occupying a port. It neither creates nor resets the database.
 
 ## Validation and remaining work
 
@@ -109,3 +115,10 @@ passwords are generated privately at execution time.
 
 These tests do not establish tenant isolation, storage behavior, complete
 browser E2E coverage, or production deployment hardening.
+
+The provisioning unit suite checks exact `0600` permissions and a real file
+symlink on Linux/macOS. On Windows it checks a real NTFS junction (which does
+not require developer mode or administrator permissions) to exercise link
+rejection, and does not mistake `stat.mode` for an ACL audit. A process-lifecycle
+test stops a spawned parent and child while verifying that another Node process
+remains running. No platform-specific failure is hidden with `test.skip`.

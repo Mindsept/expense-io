@@ -1,5 +1,8 @@
 # Tests communs — MATH-01 / ARLA-39
 
+La préparation manuelle décrite historiquement plus bas est désormais automatisée
+par **`npm run test:ci`** : voir [CI et environnement jetable MATH-02](ci.md).
+
 Le socle conserve Vitest 5.0.5 et Playwright 1.64.1 déjà verrouillés. Il ajoute
 les trois parcours de connexion et complète la configuration commune sans
 modifier l'application, les migrations ou les versions des dépendances.

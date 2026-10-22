@@ -47,34 +47,34 @@ function StatusBadge({ status }: { status: string }) {
 export default function ExpensesPage() {
   const [notes, setNotes] = useState<ExpenseNote[]>([])
   const [loading, setLoading] = useState(true)
-  const [historyError, setHistoryError] = useState(false)
+  const [historyError, setHistoryError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [extracting, setExtracting] = useState(false)
   const [suggestionNotice, setSuggestionNotice] = useState<string | null>(null)
   const [amount, setAmount] = useState('')
   const [expenseDate, setExpenseDate] = useState('')
+  const [submissionNotice, setSubmissionNotice] = useState<string | null>(null)
   const receiptInputRef = useRef<HTMLInputElement>(null)
+  const historyHeadingRef = useRef<HTMLHeadingElement>(null)
   const suggestionGeneration = useRef(0)
   const suggestionFieldsEdited = useRef({ amount: 0, expenseDate: 0 })
   const mounted = useRef(true)
 
   const loadNotes = useCallback(async () => {
+    setLoading(true)
     try {
       const response = await fetch('/api/expense-notes')
       if (!response.ok) {
-        setHistoryError(true)
-        setError(await getClientErrorMessage(response, 'Impossible de charger les notes de frais.'))
+        setHistoryError(await getClientErrorMessage(response, 'Impossible de charger les notes de frais.'))
         return
       }
       const result: unknown = await response.json()
       if (!Array.isArray(result)) throw new Error('Invalid note list')
       setNotes(result as ExpenseNote[])
-      setHistoryError(false)
-      setError(null)
+      setHistoryError(null)
     } catch {
-      setHistoryError(true)
-      setError('Impossible de charger les notes de frais. Vérifie ta connexion puis réessaie.')
+      setHistoryError('Impossible de charger les notes de frais. Vérifie ta connexion puis réessaie.')
     } finally {
       setLoading(false)
     }
@@ -82,8 +82,7 @@ export default function ExpensesPage() {
 
   useEffect(() => {
     mounted.current = true
-    // Le setState effectif n'intervient qu'après l'await dans loadNotes,
-    // la règle react-hooks est ici trop conservatrice.
+    // Initialiser le chargement des données au montage de cet écran client.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadNotes()
     return () => {
@@ -102,10 +101,16 @@ export default function ExpensesPage() {
     setExpenseDate(value)
   }
 
+  async function retryHistory() {
+    await loadNotes()
+    historyHeadingRef.current?.focus()
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSubmitting(true)
     setError(null)
+    setSubmissionNotice(null)
     const form = event.currentTarget
     const formData = new FormData(form)
 
@@ -123,6 +128,8 @@ export default function ExpensesPage() {
       setExpenseDate('')
       setSuggestionNotice(null)
       suggestionGeneration.current += 1
+      setExtracting(false)
+      setSubmissionNotice('Note de frais enregistrée.')
       await loadNotes()
     } catch (failure) {
       setError(formatRequestFailure(failure, 'Échec de la soumission de la note de frais.'))
@@ -153,8 +160,9 @@ export default function ExpensesPage() {
         body: formData,
       })
       if (!response.ok) {
-        if (generation !== suggestionGeneration.current) return
-        setError(await getClientErrorMessage(response, 'Impossible d’analyser ce reçu.'))
+        const message = await getClientErrorMessage(response, 'Impossible d’analyser ce reçu.')
+        if (!mounted.current || generation !== suggestionGeneration.current) return
+        setError(message)
         return
       }
       const suggestion: unknown = await response.json()
@@ -177,17 +185,24 @@ export default function ExpensesPage() {
       if (selected.expenseDate !== null) setExpenseDate(selected.expenseDate)
       const foundAmount = typeof fields.amount === 'number' && Number.isFinite(fields.amount) && fields.amount > 0
       const foundDate = typeof fields.expenseDate === 'string' && formatCivilDate(fields.expenseDate) !== 'Date indisponible'
+      const preservedFields = [
+        foundAmount && selected.amount === null ? 'montant' : null,
+        foundDate && selected.expenseDate === null ? 'date' : null,
+      ].filter(Boolean)
       if (!foundAmount && !foundDate) {
         setSuggestionNotice('Aucune information reconnue sur ce reçu — saisis les champs manuellement.')
-      } else if (!foundAmount || !foundDate) {
-        setSuggestionNotice(`${foundAmount ? 'Date' : 'Montant'} non reconnu(e) sur ce reçu — vérifie ce champ.`)
+      } else {
+        const messages = ['Analyse terminée — vérifie les informations du reçu.']
+        if (!foundAmount || !foundDate) messages.push(`${foundAmount ? 'Date' : 'Montant'} non reconnu(e) — vérifie ce champ.`)
+        if (preservedFields.length > 0) messages.push(`Saisie conservée : ${preservedFields.join(' et ')}.`)
+        setSuggestionNotice(messages.join(' '))
       }
     } catch {
-      if (generation === suggestionGeneration.current) {
+      if (mounted.current && generation === suggestionGeneration.current) {
         setError('Impossible d’analyser ce reçu. Vérifie ta connexion puis réessaie.')
       }
     } finally {
-      if (generation === suggestionGeneration.current) setExtracting(false)
+      if (mounted.current && generation === suggestionGeneration.current) setExtracting(false)
     }
   }
 
@@ -215,7 +230,9 @@ export default function ExpensesPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Mes notes de frais</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          {historyError
+          {loading && notes.length === 0
+            ? 'Chargement de l’historique…'
+            : historyError
             ? 'Historique indisponible — utilise le bouton Réessayer dans la section Historique.'
             : notes.length > 0
             ? `${notes.length} note${notes.length > 1 ? 's' : ''} · ${currencyFormatter.format(total)} au total`
@@ -317,21 +334,29 @@ export default function ExpensesPage() {
           {error}
         </p>
       )}
+      {submissionNotice && (
+        <p role="status" className="text-sm text-green-700 dark:text-green-300">{submissionNotice}</p>
+      )}
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <h2 className="border-b border-gray-200 px-6 py-4 text-base font-semibold dark:border-gray-800">
+        <h2 ref={historyHeadingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
           Historique
         </h2>
-        {loading ? (
-          <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        {historyError && (
+          <div className="px-6 py-4">
+            <p role="alert" className="text-sm text-red-700 dark:text-red-300">{historyError}</p>
+            <button type="button" onClick={retryHistory} disabled={loading} className="mt-2 text-sm font-medium text-brand-600 hover:underline disabled:opacity-60">
+              {loading ? 'Actualisation…' : 'Réessayer'}
+            </button>
+          </div>
+        )}
+        {loading && notes.length === 0 ? (
+          <p role="status" className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
           </p>
         ) : historyError && notes.length === 0 ? (
           <div className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             <p>Historique indisponible.</p>
-            <button type="button" onClick={loadNotes} className="mt-2 font-medium text-brand-600 hover:underline">
-              Réessayer
-            </button>
           </div>
         ) : notes.length === 0 ? (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
@@ -365,6 +390,7 @@ export default function ExpensesPage() {
                     <td className="px-6 py-3 text-right">
                       <button
                         type="button"
+                        aria-label={`Voir le reçu pour ${note.description}, ${formatCivilDate(note.expenseDate)}`}
                         onClick={() => handleViewReceipt(note.id)}
                         className="text-sm font-medium text-brand-600 hover:underline"
                       >

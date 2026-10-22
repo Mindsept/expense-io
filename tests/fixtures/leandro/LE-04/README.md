@@ -8,12 +8,19 @@ Le générateur utilise Arial installée sur la machine et sharp déjà install�
 Next. Des plateformes avec une autre police de substitution peuvent produire
 des pixels différents ; les PNG versionnés sont la référence de la mesure.
 
-`text-corpus.json` définit indépendamment 44 textes avec leur résultat attendu.
-`images.json` décrit les lignes visibles et les valeurs attendues des six PNG.
-Quatre images ont un montant et une date ; les deux autres attendent une
-abstention (totaux contradictoires, image blanche). Les textes et images doivent
+`text-corpus.json` définit indépendamment 54 textes avec leur résultat attendu.
+`images.json` décrit les lignes visibles et les valeurs attendues des huit PNG.
+Quatre images ont un montant et une date ; les quatre autres attendent une
+abstention (totaux contradictoires, image blanche, HT et sous-total séparés de
+leur valeur par un retour à la ligne). Les textes et images doivent
 être examinés quand la vérité terrain change ; les sorties de Tesseract ne sont
 jamais utilisées pour définir rétroactivement le résultat attendu.
+
+Les cas multilignes vérifient qu'une somme isolée avec devise ne contourne pas
+un libellé HT, sous-total ou TVA placé ailleurs dans le texte. Un total final
+explicitement libellé reste utilisable ; une date fiable reste proposée même
+si le montant est ambigu. Sans association fiable entre lignes, le parseur
+s'abstient plutôt que de rattacher arbitrairement la somme à un libellé.
 
 Reproduction sous Node 24 :
 

@@ -8,6 +8,7 @@ export default defineConfig({
   workers: 1,
   fullyParallel: false,
   retries: 0,
+  forbidOnly: !!process.env.CI,
   reporter: 'list',
   use: { trace: 'off', screenshot: 'off', video: 'off', storageState: { cookies: [], origins: [] } },
   projects: [

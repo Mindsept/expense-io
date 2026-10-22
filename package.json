@@ -17,7 +17,9 @@
     "test:e2e": "playwright test --config playwright.config.ts --project=e2e",
     "test:smoke": "npm run test:e2e -- tests/e2e/mathis/MATH-01/roles.smoke.spec.ts",
     "test:collect": "node tests/support/check-collection.mjs",
-    "verify": "npm run lint && npm run typecheck && npm run test:unit"
+    "verify": "npm run lint && npm run typecheck && npm run test:unit",
+    "test:prepare": "node tests/support/prepare.mjs",
+    "test:ci": "node tests/support/ci.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",

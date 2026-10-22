@@ -1,0 +1,111 @@
+name: CI
+run-name: ${{ inputs.pr_number && format('CI — PR #{0} integrated with main', inputs.pr_number) || format('CI — {0}', github.ref_name) }}
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Existing PR to test together with current main (empty = main)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || inputs.pr_number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  target:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    outputs:
+      head: ${{ steps.resolve.outputs.head }}
+      main: ${{ steps.resolve.outputs.main }}
+    steps:
+      # This job runs no repository code, and never checks out a PR.
+      - uses: actions/github-script@v7
+        id: resolve
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+        with:
+          script: |
+            if (context.eventName !== 'workflow_dispatch' || !process.env.PR_NUMBER) return;
+            if (context.ref !== 'refs/heads/main') throw new Error('Dispatch existing PRs from main only.');
+            if (!/^[1-9][0-9]*$/.test(process.env.PR_NUMBER)) throw new Error('Invalid PR number.');
+            const {data: pr} = await github.rest.pulls.get({...context.repo, pull_number: Number(process.env.PR_NUMBER)});
+            if (pr.state !== 'open' || pr.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`)
+              throw new Error('Only open PRs in this repository are supported by manual integration runs.');
+            const {data: main} = await github.rest.repos.getBranch({...context.repo, branch: 'main'});
+            core.setOutput('head', pr.head.sha);
+            core.setOutput('main', main.commit.sha);
+            await core.summary.addHeading(`PR #${pr.number}: integration with main`)
+              .addRaw(`PR head: ${pr.head.sha}\n\nMain: ${main.commit.sha}\n\nIncludes stacked parent commits; neither branch is changed.`).write();
+            await github.rest.repos.createCommitStatus({...context.repo, sha: pr.head.sha, state: 'pending',
+              context: 'CI / integration with main', description: 'Testing immutable PR head together with main',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`});
+
+  validation:
+    needs: target
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.target.outputs.main || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Integrate requested PR in this disposable checkout
+        if: needs.target.outputs.head != ''
+        env:
+          PR_HEAD: ${{ needs.target.outputs.head }}
+        run: |
+          git fetch origin "$PR_HEAD"
+          git -c user.name='CI integration' -c user.email='ci@invalid.test' merge --no-edit --no-ff "$PR_HEAD"
+          printf 'Integrated tree: %s\n' "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Lint, types, unit, isolated services, production build, API and E2E
+        run: npm run test:ci
+      - name: Preserve sanitized text evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .ci-output/
+          if-no-files-found: warn
+          retention-days: 5
+      # ci.mjs performs guarded cleanup in finally. A terminated job's VM is also discarded.
+
+  report-existing-pr:
+    needs: [target, validation]
+    if: always() && github.event_name == 'workflow_dispatch' && needs.target.outputs.head != ''
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      # Separate runner: no untrusted code/artifact is executed with a write token.
+      - uses: actions/github-script@v7
+        env:
+          PR_HEAD: ${{ needs.target.outputs.head }}
+          RESULT: ${{ needs.validation.result }}
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({...context.repo, sha: process.env.PR_HEAD,
+              state: process.env.RESULT === 'success' ? 'success' : 'failure',
+              context: 'CI / integration with main', description: `Integration with main: ${process.env.RESULT}`,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`});

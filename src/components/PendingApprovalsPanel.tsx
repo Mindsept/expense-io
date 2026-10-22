@@ -22,10 +22,12 @@ export function PendingApprovalsPanel() {
   const [notes, setNotes] = useState<ExpenseNote[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [decidingId, setDecidingId] = useState<string | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   const loadPending = useCallback(async () => {
+    setLoading(true)
     try {
       const response = await fetch('/api/manager/expense-notes')
       if (!response.ok) {
@@ -64,12 +66,19 @@ export function PendingApprovalsPanel() {
     }
   }
 
+  async function retryPending() {
+    await loadPending()
+    headingRef.current?.focus()
+  }
+
   async function handleDecide(id: string, decision: 'approve' | 'reject') {
     setDecidingId(id)
     setError(null)
+    setNotice(null)
     try {
       const response = await fetch(`/api/manager/expense-notes/${id}/${decision}`, { method: 'POST' })
       if (response.ok) {
+        setNotice(decision === 'approve' ? 'Note de frais approuvée.' : 'Note de frais rejetée.')
         await loadPending()
         headingRef.current?.focus()
       } else if (isConflict(response)) {
@@ -95,25 +104,28 @@ export function PendingApprovalsPanel() {
       </div>
 
       {error && (
-        <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-          {error}
-        </p>
+        <div>
+          <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+            {error}
+          </p>
+          <button type="button" onClick={retryPending} disabled={loading || decidingId !== null} className="mt-2 text-sm font-medium text-brand-600 hover:underline disabled:opacity-60">
+            {loading ? 'Actualisation…' : 'Réessayer'}
+          </button>
+        </div>
       )}
+      {notice && <p role="status" className="text-sm text-green-700 dark:text-green-300">{notice}</p>}
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <h2 ref={headingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
           En attente ({notes.length})
         </h2>
-        {loading ? (
-          <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        {loading && notes.length === 0 ? (
+          <p role="status" className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
           </p>
         ) : error && notes.length === 0 ? (
           <div className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             <p>Liste indisponible.</p>
-            <button type="button" onClick={loadPending} className="mt-2 font-medium text-brand-600 hover:underline">
-              Réessayer
-            </button>
           </div>
         ) : notes.length === 0 ? (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
