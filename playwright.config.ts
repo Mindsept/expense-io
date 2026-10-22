@@ -1,13 +1,18 @@
 import { defineConfig } from '@playwright/test'
 
-// Suites own their isolated environment: HA-07 uses an external test server; HA-01 starts its own.
-// No shared webServer or URL fallback that could target a personal development database.
+// Each API suite keeps its existing environment contract (HA-01 owns its servers).
+// No shared webServer, URL fallback, saved session, trace or credentials in reports.
 export default defineConfig({
-  testDir: './tests/api',
   testMatch: '**/*.spec.ts',
   outputDir: './test-results',
   workers: 1,
   fullyParallel: false,
+  retries: 0,
+  forbidOnly: !!process.env.CI,
   reporter: 'list',
-  use: { trace: 'off' },
+  use: { trace: 'off', screenshot: 'off', video: 'off', storageState: { cookies: [], origins: [] } },
+  projects: [
+    { name: 'api', testDir: './tests/api' },
+    { name: 'e2e', testDir: './tests/e2e', use: { browserName: 'chromium' } },
+  ],
 })

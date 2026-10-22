@@ -33,6 +33,7 @@ function decimalAmount(text: string): number | undefined {
 
 function parseAmount(text: string): number | undefined {
   const candidates: { priority: number; amount: number | undefined }[] = []
+  let hasLabels = false
   for (const line of text.split(/\r?\n/)) {
     const matches = [...line.matchAll(labels)]
     if (matches.length === 0) {
@@ -42,6 +43,7 @@ function parseAmount(text: string): number | undefined {
       }
       continue
     }
+    hasLabels = true
     for (let i = 0; i < matches.length; i++) {
       const label = matches[i]
       const rank = priority(label[0])
@@ -51,6 +53,9 @@ function parseAmount(text: string): number | undefined {
     }
   }
   const highest = candidates.reduce((highest, candidate) => Math.max(highest, candidate.priority), -1)
+  // OCR can separate a label from its amount. A currency-only line is not a
+  // safe fallback when another line labels it as HT, a subtotal or a discount.
+  if (highest === 0 && hasLabels) return undefined
   const finalists = candidates.filter(candidate => candidate.priority === highest)
   if (finalists.length === 0 || finalists.some(candidate => candidate.amount === undefined)) return undefined
   const values = new Set(finalists.map(candidate => candidate.amount))
