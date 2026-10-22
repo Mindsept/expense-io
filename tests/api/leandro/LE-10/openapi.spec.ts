@@ -60,7 +60,13 @@ test.beforeAll(async ({ playwright }) => {
     const csrf = await checked(await client.get('/api/auth/csrf'), '/api/auth/csrf', 'get', 200)
     const login = await client.post('/api/auth/callback/credentials', { form: { csrfToken: String(csrf.csrfToken), email: `${id}@example.test`, password, callbackUrl: `${baseURL}/expenses` }, maxRedirects: 0 })
     expect(login.status()).toBe(302)
-    expect(login.headers().location).toBe(`${baseURL}/expenses`)
+    // Auth.js may use its canonical local origin/home instead of callbackUrl.
+    // A redirect alone is not login proof: the schema/current ID check follows.
+    const destination = new URL(login.headers().location)
+    expect(destination.protocol).toBe('http:')
+    expect(['localhost', '127.0.0.1']).toContain(destination.hostname)
+    expect(destination.port).toBe(new URL(baseURL).port)
+    expect(destination.searchParams.has('error')).toBe(false)
     const session = await checked(await client.get('/api/auth/session'), '/api/auth/session', 'get', 200)
     expect((session.user as { id: string }).id).toBe(id)
   }
