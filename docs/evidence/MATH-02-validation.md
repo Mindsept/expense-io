@@ -45,12 +45,10 @@ Leandro doit relire l'orchestration avant fusion.
 
 ## Vérification distante
 
-La CI GitHub et son contrôle volontairement rouge sont encore à exécuter au
-moment de ce premier relevé local. Aucun résultat local n'est présenté comme
-un run GitHub. Les liens et SHA distants seront ajoutés après observation.
+La CI GitHub corrigée est **verte** : [run PR 39781367995](https://github.com/Mindsept/expense-io/actions/runs/39781367995), job `119833274687`, commit de branche `4b42382a2ea76292cfb8e8a1dc6c2bebd865b137`. Installation propre, runtime épinglé, Chromium Linux, chaîne production/API/navigateur, nettoyage et conservation des preuves : tous réussis. Le run PR teste le commit de fusion temporaire GitHub ; la branche source est indiquée séparément. [Artefact](https://github.com/Mindsept/expense-io/actions/runs/39781367995/artifacts/12426952931), conservation trois jours.
 
 Voir [le guide de relance](../ci.md) et [la restitution](../restitution-mathis.html).
 
 ## Contrôle négatif distant
 
-Le [run 39751865154](https://github.com/Mindsept/expense-io/actions/runs/39751865154) sur `926d14839061fe6718615eb940ff7575ef077155` a échoué sur le contrat des identifiants fictifs : 1 échec réel, 233 succès. Nettoyage réussi et artefact conservé. Le défaut volontaire a ensuite été retiré. L’assertion compare maintenant un booléen pour ne pas afficher de mot de passe synthétique généré par le test. La campagne positive distante est à vérifier.
+Le [run 39751865154](https://github.com/Mindsept/expense-io/actions/runs/39751865154) sur `926d14839061fe6718615eb940ff7575ef077155` a échoué sur le contrat des identifiants fictifs : 1 échec réel, 233 succès. Nettoyage réussi et artefact conservé. Le défaut volontaire a ensuite été retiré. L’assertion compare maintenant un booléen pour ne pas afficher de mot de passe synthétique généré par le test. La campagne positive distante ci-dessus est ensuite passée.

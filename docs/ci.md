@@ -140,3 +140,7 @@ Sources primaires : [checkout](https://github.com/actions/checkout),
 [setup-node](https://github.com/actions/setup-node),
 [upload-artifact](https://github.com/actions/upload-artifact),
 [distribution Node 24.22.1](https://nodejs.org/dist/v24.22.1/SHASUMS256.txt).
+
+## Preuve distante initiale
+
+[Échec volontaire](https://github.com/Mindsept/expense-io/actions/runs/39751865154), puis [campagne corrigée réussie](https://github.com/Mindsept/expense-io/actions/runs/39781367995). Voir [la validation](evidence/MATH-02-validation.md) pour les SHA et limites.
