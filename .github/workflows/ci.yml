@@ -1,5 +1,6 @@
 name: CI
-run-name: ${{ inputs.pr_number && format('CI — PR #{0} integrated with main', inputs.pr_number) || format('CI — {0}', github.ref_name) }}
+run-name: >-
+  ${{ inputs.pr_number && format('CI — PR #{0} integrated with main', inputs.pr_number) || format('CI — {0}', github.ref_name) }}
 
 on:
   pull_request:
