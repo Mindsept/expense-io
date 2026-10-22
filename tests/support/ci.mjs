@@ -20,7 +20,7 @@ const env = { ...process.env, NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '
 // Never inherit a TLS verification bypass into the application or dependency downloads.
 delete env.NODE_TLS_REJECT_UNAUTHORIZED
 env.DATABASE_URL = `postgres://expense_test:${env.POSTGRES_PASSWORD}@127.0.0.1:55440/expense_io_test`
-for (const owner of ['HA01', 'HA02', 'HA03', 'HA06', 'HA07', 'LE01', 'LE04', 'LE12']) {
+for (const owner of ['HA01', 'HA02', 'HA03', 'HA05', 'HA06', 'HA07', 'LE01', 'LE04', 'LE12']) {
   env[`${owner}_TEST_DATABASE_URL`] = env.DATABASE_URL
   env[`${owner}_TEST_BASE_URL`] = env.ARLA_TEST_BASE_URL
   env[`${owner}_TEST_PASSWORD`] = secret()
