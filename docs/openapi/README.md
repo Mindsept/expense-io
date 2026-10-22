@@ -1,7 +1,7 @@
 # LE-10 — Contrat HTTP livré
 
 Le fichier [expense-io.v1.json](expense-io.v1.json) décrit les réponses réellement
-livrées sur `main` **61d2404**, après HA-02 (22 octobre 2026). Version du contrat :
+livrées sur `main` **b6bf206**, après HA-02 et HA-03 (22 octobre 2026). Version du contrat :
 **1.0.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
 Ce contrat initial est publiable indépendamment des autres refontes.
 
@@ -17,7 +17,7 @@ Aucun cookie, mot de passe ou reçu réel ne figure dans les exemples.
 ## Inventaire courant
 
 Chaque opération porte `x-source`. Le test d'inventaire confronte ces chemins et
-les méthodes exportées aux **14 fichiers** `src/app/api/**/route.ts`.
+les méthodes exportées aux **15 fichiers** `src/app/api/**/route.ts`.
 
 | Fichier sous `src/app/api/` | Méthodes | Comportement livré |
 | --- | --- | --- |
@@ -25,6 +25,7 @@ les méthodes exportées aux **14 fichiers** `src/app/api/**/route.ts`.
 | `expense-notes/route.ts` | GET, POST | Notes propres, tableau sans pagination ; création multipart 201 |
 | `expense-notes/receipt-suggestion/route.ts` | POST | OCR français synchrone, suggestions facultatives, `{}` possible |
 | `expense-notes/[id]/receipt-url/route.ts` | GET | Reçu du propriétaire actif, même après décision |
+| `expense-notes/[id]/history/route.ts` | GET | Historique pour propriétaire/valideur courant, événements ordonnés, `{items: []}` possible |
 | `manager/expense-notes/route.ts` | GET | Notes en attente des subordonnés directs éligibles, ordre croissant |
 | `manager/expense-notes/[id]/approve/route.ts` | POST | Approbation d'une note en attente |
 | `manager/expense-notes/[id]/reject/route.ts` | POST | Rejet d'une note en attente, sans motif dans le corps |
@@ -54,7 +55,7 @@ parmi plusieurs RH pour les notifications.
 seront documentées avec leur intégration. Les schémas de réponses métier ferment
 les propriétés pour détecter une fuite accidentelle de colonnes privées.
 
-Les onze handlers migrés HA-07 émettent un `X-Request-Id` sur succès et erreur.
+Les douze handlers migrés HA-07 émettent un `X-Request-Id` sur succès et erreur.
 Les erreurs ont le type média `application/problem+json`, `Cache-Control: no-store`,
 un statut cohérent et le schéma partagé `type/title/status/detail/error/requestId`.
 L'extension temporaire `error` égale `detail`. Les textes/codes statiques sont
@@ -95,9 +96,9 @@ le 22 octobre. Le statut global « En cours » n'annule pas ces décisions.
 
 | Décision approuvée | Livré / travail restant |
 | --- | --- |
-| Validation simple par manager direct ; RH en secours sans manager actif | Éligibilité HA-02 livrée ; décision concurrente atomique/historique HA-03 restent à intégrer |
+| Validation simple par manager direct ; RH en secours sans manager actif | Éligibilité HA-02, décision concurrente atomique et historique HA-03 livrés |
 | Note d'un RH traitée par un autre RH, jamais par lui-même | Éligibilité livrée ; explication visible lorsqu'aucun RH n'est éligible encore à intégrer |
-| Nouveau manager reçoit les notes en attente, ancien perd ses droits | Prédicat courant livré ; historique durable HA-03 et gestion complète du graphe HA-06 à intégrer |
+| Nouveau manager reçoit les notes en attente, ancien perd ses droits | Prédicat courant livré ; historique durable HA-03 livré ; gestion complète du graphe HA-06 à intégrer |
 | Rôles/désactivation prennent effet immédiatement, historique conservé | Révocation et colonne d'activation livrées ; endpoints de cycle de vie/gestion HA-06 à intégrer |
 | Invitation entreprise + email vérifié, expirante et à usage unique | Cible HA-05 ; pas d'endpoint d'invitation livré dans ce contrat |
 | Création entreprise/premier RH par administrateur ; dernier RH protégé | Cible HA-05/06 ; aucun endpoint d'administration initiale ou garde du dernier RH revendiqué |
@@ -113,7 +114,7 @@ actuels décrivent du code ; ils ne constituent pas un nouvel arbitrage produit.
 | Pagination LE-07 | Tableau complet, aucun curseur/compte total | Enveloppe et paramètres à publier avec le code, sans inventer leur nom |
 | Idempotence LE-03 | Aucun en-tête ni résultat de rejeu promis | Ajouter clé, portée, expiration et conflits avec l'implémentation livrée |
 | OCR LE-05/06 | Réponse synchrone 200 avec champs facultatifs ; PDF et échec peuvent produire `{}` ; pas de limite de taille dans cette route | Bornes/erreurs LE-05 d'abord ; 202/job/polling seulement si variante asynchrone décidée et intégrée |
-| Décision HA-03 | Succès et conflit séquentiels, sans historique exposé | Concurrence, DTO et historique à rapprocher après intégration |
+| Décision HA-03 | Transition conditionnelle et événement atomiques ; GET historique `{items}` avec auteur figé à la décision | Intégration écran EL-06 ; aucune notification revendiquée |
 
 ## Validation et maintenance
 
@@ -127,6 +128,11 @@ les références et les bornes exclusives booléennes ; `nullable` est activé.
 Les mots-clés inconnus font échouer la compilation. Un changement de version
 majeure d'Ajv exige une revue de cette intégration ; Mathis reste propriétaire de
 tout ajout éventuel d'un validateur direct.
+
+L’audit initial recensait 14 fichiers. HA-03 a ajouté la quinzième route pendant LE-10 :
+l’inventaire, le contrat et les tests ont été rapprochés de cette intégration avant fusion.
+L’historique expose uniquement ID événement, états, instant et auteur (`id/displayName`),
+jamais email ou reçu ; les notes anciennes décidées ne reçoivent aucun événement inventé.
 
 Les tests unitaires vérifient l'inventaire, les références/exemples, les formats et
 un témoin négatif (`amount: "12.50"`). Les tests API consomment la cible isolée

@@ -3,7 +3,7 @@
   "info": {
     "title": "expense.io — delivered HTTP contract",
     "version": "1.0.0",
-    "description": "LE-10 / ARLA-28. Baseline main 61d2404 (HA-02 merged), 22 October 2026. Current behavior only; approved product target and pending transitions are in README.md. Auth.js actions are delegated. This document does not claim RLS, atomic decisions, idempotency, pagination or async OCR."
+    "description": "LE-10 / ARLA-28. Baseline main b6bf206 (HA-02 and HA-03 merged), 22 October 2026. Current behavior only; approved product target and pending transitions are in README.md. Auth.js actions are delegated. This document does not claim RLS, idempotency, pagination or async OCR."
   },
   "servers": [
     {
@@ -351,7 +351,7 @@
     "/api/manager/expense-notes/{id}/approve": {
       "post": {
         "operationId": "managerApprove",
-        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Requires pending, otherwise 409. No request body. Sequential decision contract only; atomic concurrent decisions/history are HA-03, not delivered.",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
         "x-source": "src/app/api/manager/expense-notes/[id]/approve/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -417,7 +417,7 @@
     "/api/manager/expense-notes/{id}/reject": {
       "post": {
         "operationId": "managerReject",
-        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Requires pending, otherwise 409. No request body. Sequential decision contract only; atomic concurrent decisions/history are HA-03, not delivered.",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
         "x-source": "src/app/api/manager/expense-notes/[id]/reject/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -596,7 +596,7 @@
     "/api/hr/expense-notes/{id}/approve": {
       "post": {
         "operationId": "hrApprove",
-        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Requires pending, otherwise 409. No request body. Sequential decision contract only; atomic concurrent decisions/history are HA-03, not delivered.",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
         "x-source": "src/app/api/hr/expense-notes/[id]/approve/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -662,7 +662,7 @@
     "/api/hr/expense-notes/{id}/reject": {
       "post": {
         "operationId": "hrReject",
-        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Requires pending, otherwise 409. No request body. Sequential decision contract only; atomic concurrent decisions/history are HA-03, not delivered.",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
         "x-source": "src/app/api/hr/expense-notes/[id]/reject/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -1035,6 +1035,66 @@
             "description": "Auth.js-owned failure or redirect. No business error envelope."
           }
         }
+      }
+    },
+    "/api/expense-notes/{id}/history": {
+      "get": {
+        "operationId": "getExpenseHistory",
+        "summary": "Current active owner or currently eligible same-company manager/HR, including after decision. items ordered by server timestamp then event UUID; empty when no recorded event. Actor display name is snapshotted. Previous-company events are excluded.",
+        "x-source": "src/app/api/expense-notes/[id]/history/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionHistory"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     }
   },
@@ -1602,6 +1662,83 @@
           "detail": "The requested resource was not found.",
           "error": "The requested resource was not found.",
           "requestId": "33333333-3333-4333-8333-333333333333"
+        }
+      },
+      "DecisionHistory": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "fromStatus",
+                "toStatus",
+                "decidedAt",
+                "actor"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "fromStatus": {
+                  "type": "string",
+                  "enum": [
+                    "pending"
+                  ]
+                },
+                "toStatus": {
+                  "type": "string",
+                  "enum": [
+                    "approved",
+                    "rejected"
+                  ]
+                },
+                "decidedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "actor": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "displayName"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "items": [
+            {
+              "id": "44444444-4444-4444-8444-444444444444",
+              "fromStatus": "pending",
+              "toStatus": "approved",
+              "decidedAt": "2026-10-22T10:00:00.000Z",
+              "actor": {
+                "id": "55555555-5555-4555-8555-555555555555",
+                "displayName": "Synthetic manager"
+              }
+            }
+          ]
         }
       }
     },

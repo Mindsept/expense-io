@@ -179,3 +179,19 @@ test('manager assignment validates 200/400/404/409 without modifying foreign mem
     expect((await pool.query('SELECT manager_id FROM users WHERE id=$1', [ids.employee])).rows[0].manager_id).toBe(ids.manager)
   } finally { await pool.query('UPDATE users SET manager_id=$1 WHERE id=$2', [ids.manager, ids.employee]) }
 })
+
+test('HA-03 history validates recorded events for current owner/validator and hides foreign notes', async () => {
+  const path = '/api/expense-notes/{id}/history'
+  // Independent fixture: do not depend on another test's successful decision.
+  await pool.query('UPDATE expense_notes SET status=$1 WHERE id=$2', ['pending', notes.employee])
+  await checked(await clients.manager.post(`/api/manager/expense-notes/${notes.employee}/approve`), '/api/manager/expense-notes/{id}/approve', 'post', 200)
+  for (const name of ['employee', 'manager']) {
+    const response = await clients[name].get(path.replace('{id}', notes.employee))
+    await checked(response, path, 'get', 200)
+    const { items } = await response.json() as { items: Array<{ fromStatus: string; toStatus: string; actor: { id: string; displayName: string } }> }
+    expect(items).toHaveLength(1)
+    expect(items[0]).toMatchObject({ fromStatus: 'pending', toStatus: 'approved', actor: { id: ids.manager, displayName: 'LE-10 manager' } })
+  }
+  expect(await checked(await clients.hr.get(path.replace('{id}', notes.peer)), path, 'get', 200)).toEqual({ items: [] })
+  for (const name of ['employee', 'manager', 'hr']) await problem(await clients[name].get(path.replace('{id}', notes.foreign)), path, 'get', 404)
+})
