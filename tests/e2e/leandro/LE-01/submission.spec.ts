@@ -49,6 +49,7 @@ test('real form preserves fields after a spoofed receipt rejection and accepts a
   const details = page.getByLabel('Description', { exact: true })
   const receipt = page.getByLabel('Reçu (image ou PDF)', { exact: true })
   const submit = page.getByRole('button', { name: 'Soumettre', exact: true })
+  const alert = page.getByRole('main').getByRole('alert')
   await amount.fill('12.34')
   await date.fill('2024-02-29')
   await details.fill(description)
@@ -60,10 +61,13 @@ test('real form preserves fields after a spoofed receipt rejection and accepts a
   const rejection = await rejected
   expect(rejection.status()).toBe(400)
   const problem = await rejection.json()
-  expect(problem.error).toBe(problem.detail)
+  expect(problem).toEqual({
+    type: 'urn:expense-io:problem:validation', title: 'Invalid request', status: 400,
+    detail: 'Check the required fields and their format.', error: 'Check the required fields and their format.',
+    requestId: expect.stringMatching(/^[0-9a-f-]{36}$/),
+  })
   expect(problem.requestId).toBe(rejection.headers()['x-request-id'])
-  await expect(page.getByRole('alert')).toContainText(problem.detail)
-  await expect(page.getByRole('alert')).toContainText(problem.requestId)
+  await expect(alert).toHaveText(problem.detail)
   await expect(amount).toHaveValue('12.34')
   await expect(date).toHaveValue('2024-02-29')
   await expect(details).toHaveValue(description)
@@ -78,7 +82,7 @@ test('real form preserves fields after a spoofed receipt rejection and accepts a
   expect(response.status()).toBe(201)
   const note = await response.json()
   await expect(page.getByRole('status').filter({ hasText: 'Note de frais enregistrée.' })).toBeVisible()
-  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(alert).toHaveCount(0)
   const row = page.getByRole('row').filter({ hasText: description })
   await expect(row).toHaveCount(1)
   await expect(row).toContainText('12,34')

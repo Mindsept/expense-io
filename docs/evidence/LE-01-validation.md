@@ -86,10 +86,13 @@ workflow n'est assoupli pour faire passer ces tests.
 
 Le nouveau test `tests/e2e/leandro/LE-01/submission.spec.ts` utilise Chromium,
 le formulaire et l'API réels, sans interception réseau : reçu mensonger refusé,
-alerte avec identifiant de corrélation, champs conservés, absence de note, puis
+erreur HTTP corrélée et message de validation visible, champs conservés, absence de note, puis
 correction du fichier, réussite unique et égalité des octets S3. Il consomme
 les comptes fictifs et les variables isolées du socle, et ne nettoie que sa
 description synthétique UUID dans la base/le bucket de test.
 
 Ce complément retire la limite d'absence d'outillage E2E. Il ne retire pas le
 blocage d'intégration HA-02 ni ne prouve la révocation des anciennes sessions.
+Le `requestId` est vérifié dans le corps et l'en-tête HTTP ; l'interface actuelle
+ne l'affiche pas. Le test ne suppose pas cet affichage absent et cible les alertes
+du `<main>`, sans confondre l'annonceur de navigation Next avec une erreur métier.
