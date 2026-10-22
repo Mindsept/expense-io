@@ -20,3 +20,10 @@ Sources : descriptions Jira ARLA-39 à 45, fichiers cités sur la référence,
 [PR #8](https://github.com/Mindsept/expense-io/pull/8),
 [PR #12](https://github.com/Mindsept/expense-io/pull/12).
 
+
+## Suivi complémentaire Mathis — 22 octobre 2026
+
+- MATH-02 : la version intégrée via #14 reste la référence. La PR parallèle #15 est fermée comme remplacée ; ARLA-45 et ARLA-43 conservent les corrections de main.
+- Portabilité macOS du test Hamza `tests/unit/hamza/HA-01/owned-node-process.test.ts` : `kill EPERM` dans le helper commun intégré. Reproduction locale sur Node 24.22.1 : 278 succès/1 échec ; Linux intégré : 279/279. Aucun changement du test tiers, pas de contournement. Voir [preuves ARLA-45](evidence/MATH-07-validation.md).
+- Dépendances : correctifs intégrés dans la branche ARLA-45 ; audit production zéro alerte. Avis braces `GHSA-vfj7-8cjw-p6xm` toujours ouvert (développement), exception non acceptée, revue proposée 28 octobre 2026 ; ESLint 9 hors support reste une dette séparée. Requalification/OS de livraison à Hamza et acceptation à Hugo.
+- MATH-03/06 : contrats HA-04 et validation de l’approche encore nécessaires. MATH-04 : campagne finale non exécutée sur le SHA de remise ; les campagnes de branches ne la remplacent pas.
