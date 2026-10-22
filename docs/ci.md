@@ -48,9 +48,10 @@ un résultat vert. La mise à jour des dépendances signalées par HA-08 reste M
 
 ## PR et relance des branches existantes
 
-`pull_request` couvre toutes les branches cibles et les brouillons. Les pushes
-sur `main` sont aussi vérifiés. Aucun filtre de chemins, `skip`, retry automatique
-ou tolérance d'échec n'est utilisé. `forbidOnly` interdit un test exclusif en CI.
+`pull_request` n'a aucun filtre de branche cible et inclut les brouillons, lorsque
+le workflow est présent dans l'arbre de fusion de la PR. Les pushes sur `main`
+sont aussi vérifiés. Aucun filtre de chemins, `skip`, retry automatique ou tolérance
+d'échec n'est utilisé. `forbidOnly` interdit un test exclusif en CI.
 
 Ajouter un workflow ne déclenche pas rétroactivement les PR existantes. Après
 fusion de la CI, Actions → CI → Run workflow, branche **main**, permet de saisir
@@ -61,6 +62,12 @@ et la PR ne sont pas modifiées. Le statut **CI / integration with main** est
 publié sur le SHA de la PR, avec le lien vers les résultats et les SHA testés.
 Ce résultat certifie cette combinaison avec `main`, pas la branche historique
 isolée ni un futur SHA non exécuté.
+
+Pour une PR empilée dont la base et la branche ne contiennent pas encore ce
+workflow (actuellement #7 et #11, basées sur HA-02), refaire ce lancement manuel
+après chaque nouveau push. L'exécution automatique de ces PR commencera lorsque
+leur arbre de fusion contiendra la CI, par exemple après mise à jour de leur base
+avec `main`. Les branches des auteurs ne sont pas modifiées par cette livraison.
 
 Le job qui exécute le code possède uniquement `contents: read`, ne reçoit aucun
 secret du dépôt et ne conserve pas les identifiants Git du checkout. La publication
