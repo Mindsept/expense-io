@@ -1,0 +1,13 @@
+{
+  "run": "https://github.com/Mindsept/expense-io/actions/runs/39783275980",
+  "job": 119839767393,
+  "sourceSha": "4019eea827654fab582b5c819d06eff2a4b91a0d",
+  "platform": "ubuntu-24.04",
+  "node": "24.22.1",
+  "conclusion": "success",
+  "unit": 279,
+  "api": 21,
+  "e2e": 12,
+  "cleanup": "success",
+  "rlsProven": false
+}
