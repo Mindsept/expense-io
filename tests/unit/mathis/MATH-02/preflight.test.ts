@@ -12,7 +12,7 @@ test('creates a coherent isolated target without reusing development names or po
   expect(env.HA07_TEST_DATABASE_URL).toBe(env.DATABASE_URL)
   expect(env.LE12_TEST_BASE_URL).toBe(env.ARLA_TEST_BASE_URL)
   expect(env.SEED_EMPLOYEE_EMAIL).toBe(config.accounts.EMPLOYEE.email)
-  expect(env.ARLA_TEST_EMPLOYEE_PASSWORD).toBe(env.SEED_EMPLOYEE_PASSWORD)
+  expect(env.ARLA_TEST_EMPLOYEE_PASSWORD === env.SEED_EMPLOYEE_PASSWORD).toBe(true)
 })
 
 test.each([

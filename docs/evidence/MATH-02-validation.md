@@ -50,3 +50,7 @@ moment de ce premier relevé local. Aucun résultat local n'est présenté comme
 un run GitHub. Les liens et SHA distants seront ajoutés après observation.
 
 Voir [le guide de relance](../ci.md) et [la restitution](../restitution-mathis.html).
+
+## Contrôle négatif distant
+
+Le [run 39751865154](https://github.com/Mindsept/expense-io/actions/runs/39751865154) sur `926d14839061fe6718615eb940ff7575ef077155` a échoué sur le contrat des identifiants fictifs : 1 échec réel, 233 succès. Nettoyage réussi et artefact conservé. Le défaut volontaire a ensuite été retiré. L’assertion compare maintenant un booléen pour ne pas afficher de mot de passe synthétique généré par le test. La campagne positive distante est à vérifier.
