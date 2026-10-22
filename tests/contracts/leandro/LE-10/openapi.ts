@@ -1,28 +1,27 @@
 import { createRequire } from 'node:module'
 import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 // Test-only reuse of ESLint's declared, lockfile-pinned Ajv 6 dependency. Resolve
 // from ESLint itself, so npm hoisting is not required. No application dependency
 // or shared Mathis runner/config change. Fail clearly if ESLint changes validator.
-const localRequire = createRequire(import.meta.url)
+const localRequire = createRequire(resolve('package.json'))
 const eslintRequire = createRequire(localRequire.resolve('eslint/package.json'))
 const version = eslintRequire('ajv/package.json').version as string
 if (!version.startsWith('6.')) throw new Error('LE-10 needs review of the locked ESLint/Ajv integration before changing validator major.')
 type Schema = Record<string, unknown>
 type Validate = ((body: unknown) => boolean) & { errors?: unknown }
 const Ajv = eslintRequire('ajv') as new (options: Schema) => {
-  addKeyword(name: string): void
   addFormat(name: string, format: RegExp): void
   addSchema(schema: Schema, key: string): void
   compile(schema: Schema): Validate
   errorsText(errors: unknown): string
 }
 const ajv = new Ajv({ allErrors: true, jsonPointers: true, nullable: true, format: 'full', strictKeywords: true })
-ajv.addKeyword('example')
 ajv.addFormat('binary', /^[\s\S]*$/)
 ajv.addFormat('password', /^[\s\S]*$/)
 
-export const contract = JSON.parse(readFileSync(new URL('../../../../docs/openapi/expense-io.v1.json', import.meta.url), 'utf8')) as {
+export const contract = JSON.parse(readFileSync(resolve('docs/openapi/expense-io.v1.json'), 'utf8')) as {
   openapi: string
   info: { version: string }
   paths: Record<string, Record<string, unknown>>
@@ -34,7 +33,8 @@ const root = 'urn:expense-io:openapi:v1'
 function jsonSchema(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(jsonSchema)
   if (value !== null && typeof value === 'object') {
-    const schema = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, key === '$ref' && typeof child === 'string'
+    // Example data is an annotation, not a schema (an example's id is not $id).
+    const schema = Object.fromEntries(Object.entries(value).filter(([key]) => key !== 'example').map(([key, child]) => [key, key === '$ref' && typeof child === 'string'
       ? child.replace('#/components/schemas/', `${root}#/definitions/`)
       : jsonSchema(child)]))
     // OAS 3.0 uses draft-04 boolean bounds; Ajv's draft-07 uses numeric bounds.

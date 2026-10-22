@@ -25,7 +25,7 @@ const owners: Record<string, string> = { employee: ids.employee, manager: ids.ma
 const notes = Object.fromEntries(Object.keys(owners).map(key => [key, randomUUID()]))
 const clients: Record<string, APIRequestContext> = {}
 let anonymous: APIRequestContext
-const png = readFileSync(new URL('../../../fixtures/leandro/LE-04/images/leap-day.png', import.meta.url))
+const png = readFileSync('tests/fixtures/leandro/LE-04/images/leap-day.png')
 
 async function checked(response: APIResponse, path: string, method: string, status: number) {
   expect(response.status()).toBe(status)
@@ -183,7 +183,7 @@ test('manager assignment validates 200/400/404/409 without modifying foreign mem
 test('HA-03 history validates recorded events for current owner/validator and hides foreign notes', async () => {
   const path = '/api/expense-notes/{id}/history'
   // Independent fixture: do not depend on another test's successful decision.
-  await pool.query('UPDATE expense_notes SET status=$1 WHERE id=$2', ['pending', notes.employee])
+  expect((await pool.query('SELECT status FROM expense_notes WHERE id=$1', [notes.employee])).rows[0].status).toBe('pending')
   await checked(await clients.manager.post(`/api/manager/expense-notes/${notes.employee}/approve`), '/api/manager/expense-notes/{id}/approve', 'post', 200)
   for (const name of ['employee', 'manager']) {
     const response = await clients[name].get(path.replace('{id}', notes.employee))
