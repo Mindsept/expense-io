@@ -18,7 +18,7 @@ Notamment, un montant suffixé pouvait être accepté et un tri arbitraire attei
 SQL ; les doubles ne constituent pas une preuve d'exploitation réelle de la DB.
 Les mêmes assertions passent après le changement, sans être diminuées.
 
-## Validation finale
+## Validation initiale avant le socle commun
 
 | Contrôle | Résultat |
 | --- | --- |
@@ -67,4 +67,29 @@ DB/S3, le contexte de l'UPDATE final et l'idempotence restent LE-02/LE-03.
 Le plafond de description est technique et documenté, pas une décision métier
 PO-01 revendiquée. Aucune nouvelle garantie de tenant/rôle tirée d'un ancien JWT.
 Turbopack demeure limité par son IPC dans cet environnement ; Webpack réussit.
-Aucun script E2E navigateur ou CI absent n'est annoncé comme exécuté.
+Aucun script E2E navigateur ou CI absent de cette ancienne base n'était annoncé
+comme exécuté lors de ce premier passage.
+
+## Intégration du socle MATH-01/02 après main `a0a0ab0`
+
+La branche reprend le socle commun et la CI maintenant fusionnés : `verify`,
+`test:collect`, `test:api`, `test:e2e` et `test:ci`. Le contrôle local `verify`
+réussit avec 357 tests unitaires, lint et typage. Les résultats du pipeline complet
+sont attachés au SHA testé dans les checks de la [PR #12](https://github.com/Mindsept/expense-io/pull/12).
+
+Deux tests de non-authentification ajoutés par Mathis figeaient encore
+`{error:'Unauthorized'}`. Leur migration est nécessaire à l'adoption HA-07 :
+ils exigent maintenant le corps Problem Details exact, le statut 401, le type
+de contenu et la corrélation en-tête/corps. Les deux sessions invalides et les
+assertions d'absence de DB restent intactes. Aucun support partagé, runner ou
+workflow n'est assoupli pour faire passer ces tests.
+
+Le nouveau test `tests/e2e/leandro/LE-01/submission.spec.ts` utilise Chromium,
+le formulaire et l'API réels, sans interception réseau : reçu mensonger refusé,
+alerte avec identifiant de corrélation, champs conservés, absence de note, puis
+correction du fichier, réussite unique et égalité des octets S3. Il consomme
+les comptes fictifs et les variables isolées du socle, et ne nettoie que sa
+description synthétique UUID dans la base/le bucket de test.
+
+Ce complément retire la limite d'absence d'outillage E2E. Il ne retire pas le
+blocage d'intégration HA-02 ni ne prouve la révocation des anciennes sessions.
