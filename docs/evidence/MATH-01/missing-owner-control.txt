@@ -1,0 +1,5 @@
+
+> expense-io-version-b@0.1.0 test:collect
+> node tests/support/check-collection.mjs
+
+Expected test file missing from collection: tests/unit/elyes/EL-01/client-errors.test.ts

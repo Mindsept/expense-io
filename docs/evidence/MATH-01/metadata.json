@@ -1,0 +1,307 @@
+{
+  "at": "2026-10-22T10:05:45.331307+02:00",
+  "branch": "codex/arla-39-test-foundation",
+  "base_sha": "9adbd6e7e9c1f76351b0dee5e1abc441a06fa696",
+  "worktree": "Uncommitted ticket changes during the run; exact code/settings hashes below. This is not a clean-base-only claim.",
+  "os": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "node": "v24.21.0",
+  "npm": "11.19.0",
+  "project": "arla-math01-fb84659a",
+  "targets": {
+    "database": "expense_io_test",
+    "bucket": "receipts-math01-test",
+    "app_port": 3199,
+    "postgres_port": 55439,
+    "s3_port": 45739
+  },
+  "sha256": {
+    "package.json": "5f9fc5cf563884b43fe17410e7cf69b0240ee4a4eeb24b192aed59ba749d8347",
+    "package-lock.json": "061ec9be0a5c0a86a724a67790a04f4a6dad83a20e214170f99c4e6535a4c4f2",
+    "playwright.config.ts": "0e011eb87fe018863493c483a8ce20a5ecfda76e57d261c56492f82f13f6534a",
+    "vitest.config.mts": "fdcd5e9beaf6121b58288dc4a67da3f2a27d817519d2c78b38636b46077e73e7",
+    "tests/support/test-target.ts": "36fbe9778c990849be884e875d6bdcc1cbd568076626c4f0bc59a7d4c703601e",
+    "tests/support/check-collection.mjs": "decdcc52ca7dd1e4c7ef572c0f394eac4c906cd9a01644024a59e014482ec46b",
+    "tests/unit/mathis/MATH-01/test-target.test.ts": "2544ce8a788f72ce8f0e4f37608d3600eb186e1b248104bd451e3617b1f2c2d1",
+    "tests/unit/mathis/MATH-01/unauthenticated-expenses.test.ts": "297d87d999d03bf757634901071941bdf646de197274415f9d4d6438bdb50c56",
+    "tests/api/mathis/MATH-01/unauthenticated-expenses.spec.ts": "6212db220980b4a3240bb83197f0a921d2f5facfa4b18cff043c908228f66278",
+    "tests/e2e/mathis/MATH-01/roles.smoke.spec.ts": "bbf6c7c7d5a524c48be07ce097be46e3242af8ff4db3cd06797406f899c3db63"
+  },
+  "results": {
+    "unit": 210,
+    "api": 19,
+    "browser": 3,
+    "browser_expected": 3
+  },
+  "final_commands": [
+    {
+      "label": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 2.157,
+      "at": "2026-10-22T09:51:40.971703+02:00"
+    },
+    {
+      "label": "compose-up",
+      "command": [
+        "docker",
+        "compose",
+        "-p",
+        "arla-math01-fb84659a",
+        "-f",
+        "/private/tmp/arla39-validation/compose.yml",
+        "up",
+        "-d",
+        "--wait",
+        "--wait-timeout",
+        "180"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 24.131,
+      "at": "2026-10-22T09:51:21.427593+02:00"
+    },
+    {
+      "label": "verify",
+      "command": [
+        "npm",
+        "run",
+        "verify"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 3.939,
+      "at": "2026-10-22T09:51:39.054819+02:00"
+    },
+    {
+      "label": "migrate",
+      "command": [
+        "npm",
+        "run",
+        "migrate:up",
+        "--",
+        "--envPath",
+        "/private/tmp/arla39-validation/test.env"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 0.505,
+      "at": "2026-10-22T09:52:04.361950+02:00"
+    },
+    {
+      "label": "bucket",
+      "command": [
+        "npm",
+        "run",
+        "ensure-bucket"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 0.609,
+      "at": "2026-10-22T09:52:04.971439+02:00"
+    },
+    {
+      "label": "seed",
+      "command": [
+        "npm",
+        "run",
+        "seed"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 0.808,
+      "at": "2026-10-22T09:52:05.779825+02:00"
+    },
+    {
+      "label": "database-role",
+      "command": [
+        "docker",
+        "compose",
+        "-p",
+        "arla-math01-fb84659a",
+        "-f",
+        "/private/tmp/arla39-validation/compose.yml",
+        "exec",
+        "-T",
+        "postgres",
+        "psql",
+        "-U",
+        "expense_test",
+        "-d",
+        "expense_io_test",
+        "-c",
+        "SELECT current_user, rolsuper, rolbypassrls FROM pg_roles WHERE rolname=current_user;"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 0.215,
+      "at": "2026-10-22T09:52:05.994990+02:00"
+    },
+    {
+      "label": "collect",
+      "command": [
+        "npm",
+        "run",
+        "test:collect"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 0.872,
+      "at": "2026-10-22T10:00:05.577971+02:00"
+    },
+    {
+      "label": "mathis-api",
+      "command": [
+        "npm",
+        "run",
+        "test:api",
+        "--",
+        "tests/api/mathis/MATH-01"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 0.667,
+      "at": "2026-10-22T09:52:49.905546+02:00"
+    },
+    {
+      "label": "smoke",
+      "command": [
+        "npm",
+        "run",
+        "test:smoke"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 2.218,
+      "at": "2026-10-22T10:00:02.516586+02:00"
+    },
+    {
+      "label": "missing-url-control",
+      "command": [
+        "npm",
+        "run",
+        "test:smoke"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "seconds": 0.408,
+      "at": "2026-10-22T09:53:26.907632+02:00"
+    },
+    {
+      "label": "api-all",
+      "command": [
+        "npm",
+        "run",
+        "test:api"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "seconds": 4.465,
+      "at": "2026-10-22T09:53:28.188518+02:00"
+    },
+    {
+      "label": "bad-password-control",
+      "command": [
+        "npm",
+        "run",
+        "test:smoke",
+        "--",
+        "--grep",
+        "employee signs in"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "seconds": 11.026,
+      "at": "2026-10-22T09:54:28.681148+02:00"
+    },
+    {
+      "label": "missing-owner-control",
+      "command": [
+        "npm",
+        "run",
+        "test:collect"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "seconds": 0.946,
+      "at": "2026-10-22T09:54:53.595655+02:00"
+    }
+  ],
+  "development_attempts": [
+    {
+      "label": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit_code": 1,
+      "expected_exit": 0,
+      "seconds": 4.276,
+      "at": "2026-10-22T09:50:57.732776+02:00"
+    },
+    {
+      "label": "missing-url-control",
+      "command": [
+        "npm",
+        "run",
+        "test:smoke"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "seconds": 0.408,
+      "at": "2026-10-22T09:53:26.907632+02:00"
+    },
+    {
+      "label": "bad-password-control",
+      "command": [
+        "npm",
+        "run",
+        "test:smoke",
+        "--",
+        "--grep",
+        "^employee "
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "seconds": 0.437,
+      "at": "2026-10-22T09:54:00.818319+02:00"
+    },
+    {
+      "label": "bad-password-control",
+      "command": [
+        "npm",
+        "run",
+        "test:smoke",
+        "--",
+        "--grep",
+        "employee signs in"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "seconds": 11.026,
+      "at": "2026-10-22T09:54:28.681148+02:00"
+    },
+    {
+      "label": "missing-owner-control",
+      "command": [
+        "npm",
+        "run",
+        "test:collect"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "seconds": 0.946,
+      "at": "2026-10-22T09:54:53.595655+02:00"
+    }
+  ],
+  "limits": [
+    "Bootstrap DB role is superuser/BYPASSRLS; no RLS proof.",
+    "CI/shared preparation deferred to MATH-02.",
+    "Independent human review pending."
+  ]
+}

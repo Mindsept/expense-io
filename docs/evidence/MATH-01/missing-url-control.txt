@@ -1,0 +1,25 @@
+
+> expense-io-version-b@0.1.0 test:smoke
+> npm run test:e2e -- tests/e2e/mathis/MATH-01/roles.smoke.spec.ts
+
+
+> expense-io-version-b@0.1.0 test:e2e
+> playwright test --config playwright.config.ts --project=e2e tests/e2e/mathis/MATH-01/roles.smoke.spec.ts
+
+Error: Set ARLA_TEST_ENV=isolated and ARLA_TEST_BASE_URL to the dedicated local test application.
+
+   at tests/support/test-target.ts:4
+
+  2 | export function readTestTarget(env: Record<string, string | undefined> = process.env): string {
+  3 |   if (env.ARLA_TEST_ENV !== 'isolated' || !env.ARLA_TEST_BASE_URL) {
+> 4 |     throw new Error('Set ARLA_TEST_ENV=isolated and ARLA_TEST_BASE_URL to the dedicated local test application.')
+    |           ^
+  5 |   }
+  6 |   let url: URL
+  7 |   try { url = new URL(env.ARLA_TEST_BASE_URL) }
+    at readTestTarget (/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/support/test-target.ts:4:11)
+    at Object.<anonymous> (/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/e2e/mathis/MATH-01/roles.smoke.spec.ts:4:31)
+Error: No tests found.
+Make sure that arguments are regular expressions matching test files.
+You may need to escape symbols like "$" or "*" and quote the arguments.
+
