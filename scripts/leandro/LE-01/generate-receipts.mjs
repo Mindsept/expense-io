@@ -23,7 +23,7 @@ for (const [index, object] of objects.entries()) {
   pdf += `${index + 1} 0 obj\n${object}\nendobj\n`
 }
 const xref = Buffer.byteLength(pdf)
-pdf += `xref\n0 4\n0000000000 65535 f \n${offsets.map(offset => `${String(offset).padStart(10, '0')} 00000 n \n`).join('')}`
+pdf += `xref\n0 4\n0000000000 65535 f\r\n${offsets.map(offset => `${String(offset).padStart(10, '0')} 00000 n\r\n`).join('')}`
 pdf += `trailer\n<< /Size 4 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`
 await writeFile(new URL('valid.pdf', root), pdf)
 console.log('Generated six original synthetic receipt containers.')

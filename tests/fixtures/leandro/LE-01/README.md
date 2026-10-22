@@ -4,6 +4,8 @@ Créés pour Expense.io par `scripts/leandro/LE-01/generate-receipts.mjs` : carr
 uni 16×16 en PNG, JPEG baseline/progressif, WebP avec/sans perte et document PDF
 original d'une page vide avec xref calculée. Aucun reçu personnel ni source tierce.
 Fixtures et générateur originaux réutilisables sous CC0-1.0.
+Le PDF est déclaré binaire dans les attributs locaux : ses enregistrements xref
+font 20 octets avec CRLF et doivent être conservés sans normalisation de texte.
 
 Reproduction : Node 24, installation `npm ci`, puis
 `node scripts/leandro/LE-01/generate-receipts.mjs`. Sharp est déjà installé
