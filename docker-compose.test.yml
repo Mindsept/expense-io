@@ -1,0 +1,65 @@
+name: ${ARLA_TEST_PROJECT:?Set the isolated test project name}
+
+# Disposable baseline only. expense_test is the bootstrap superuser created by
+# the image; this stack does not demonstrate the future limited-role RLS rules.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: 'no'
+    environment:
+      POSTGRES_USER: expense_test
+      POSTGRES_DB: expense_io_test
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set the generated test database password}
+    ports:
+      - '127.0.0.1:${ARLA_TEST_DB_PORT:?Set the dedicated database port}:5432'
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    labels:
+      arla.test.environment: isolated
+      arla.test.project: ${ARLA_TEST_PROJECT:?Set the isolated test project name}
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'expense_test', '-d', 'expense_io_test']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 5s
+
+  localstack:
+    image: localstack/localstack:3.8.1
+    restart: 'no'
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      PERSISTENCE: '0'
+    ports:
+      - '127.0.0.1:${ARLA_TEST_S3_PORT:?Set the dedicated S3 port}:4566'
+    volumes:
+      - localstack-test-data:/var/lib/localstack
+    labels:
+      arla.test.environment: isolated
+      arla.test.project: ${ARLA_TEST_PROJECT:?Set the isolated test project name}
+    healthcheck:
+      # ListBuckets is an S3 API operation, not an `aws s3` high-level command.
+      test: ['CMD', 'awslocal', 's3api', 'list-buckets', '--cli-connect-timeout', '2', '--cli-read-timeout', '2']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 5s
+
+volumes:
+  postgres-test-data:
+    labels:
+      arla.test.environment: isolated
+      arla.test.project: ${ARLA_TEST_PROJECT:?Set the isolated test project name}
+  localstack-test-data:
+    labels:
+      arla.test.environment: isolated
+      arla.test.project: ${ARLA_TEST_PROJECT:?Set the isolated test project name}
+
+networks:
+  default:
+    labels:
+      arla.test.environment: isolated
+      arla.test.project: ${ARLA_TEST_PROJECT:?Set the isolated test project name}

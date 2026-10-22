@@ -39,10 +39,14 @@ export function AdminConsole() {
   const [notes, setNotes] = useState<ExpenseNote[]>([])
   const [notesLoading, setNotesLoading] = useState(true)
   const [notesError, setNotesError] = useState<string | null>(null)
+  const [notesNotice, setNotesNotice] = useState<string | null>(null)
   const [decidingId, setDecidingId] = useState<string | null>(null)
   const notesHeadingRef = useRef<HTMLHeadingElement>(null)
+  const usersHeadingRef = useRef<HTMLHeadingElement>(null)
+  const assignmentPending = useRef(false)
 
   const loadUsers = useCallback(async () => {
+    setUsersLoading(true)
     try {
       const response = await fetch('/api/hr/users')
       if (!response.ok) {
@@ -61,6 +65,7 @@ export function AdminConsole() {
   }, [])
 
   const loadNotes = useCallback(async () => {
+    setNotesLoading(true)
     try {
       const response = await fetch('/api/hr/expense-notes')
       if (!response.ok) {
@@ -86,7 +91,19 @@ export function AdminConsole() {
 
   const managers = users.filter((user) => user.role === 'manager')
 
+  async function retryUsers() {
+    await loadUsers()
+    usersHeadingRef.current?.focus()
+  }
+
+  async function retryNotes() {
+    await loadNotes()
+    notesHeadingRef.current?.focus()
+  }
+
   async function handleManagerChange(userId: string, managerId: string) {
+    if (assignmentPending.current) return
+    assignmentPending.current = true
     setSavingId(userId)
     setUsersError(null)
     setUsersNotice(null)
@@ -105,6 +122,7 @@ export function AdminConsole() {
     } catch {
       setUsersError("Résultat non confirmé pour l'affectation : vérifie l'organigramme avant de réessayer.")
     } finally {
+      assignmentPending.current = false
       setSavingId(null)
     }
   }
@@ -128,9 +146,11 @@ export function AdminConsole() {
   async function handleDecide(id: string, decision: 'approve' | 'reject') {
     setDecidingId(id)
     setNotesError(null)
+    setNotesNotice(null)
     try {
       const response = await fetch(`/api/hr/expense-notes/${id}/${decision}`, { method: 'POST' })
       if (response.ok) {
+        setNotesNotice(decision === 'approve' ? 'Note de frais approuvée.' : 'Note de frais rejetée.')
         await loadNotes()
         notesHeadingRef.current?.focus()
       } else if (isConflict(response)) {
@@ -156,26 +176,28 @@ export function AdminConsole() {
       </div>
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <h2 className="border-b border-gray-200 px-6 py-4 text-base font-semibold dark:border-gray-800">
+        <h2 ref={usersHeadingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
           Organigramme ({users.length})
         </h2>
         {usersError && (
-          <p role="alert" className="mx-6 mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-            {usersError}
-          </p>
+          <div className="mx-6 mt-4">
+            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+              {usersError}
+            </p>
+            <button type="button" onClick={retryUsers} disabled={usersLoading || savingId !== null} className="mt-2 text-sm font-medium text-brand-600 hover:underline disabled:opacity-60">
+              {usersLoading ? 'Actualisation…' : 'Réessayer l’annuaire'}
+            </button>
+          </div>
         )}
         {usersNotice && <p role="status" className="mx-6 mt-4 text-sm text-green-700 dark:text-green-300">{usersNotice}</p>}
-        {usersLoading ? (
-          <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        {usersLoading && users.length === 0 ? (
+          <p role="status" className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
           </p>
         ) : users.length === 0 ? (
           usersError ? (
             <div className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
               <p>Annuaire indisponible.</p>
-              <button type="button" onClick={loadUsers} className="mt-2 font-medium text-brand-600 hover:underline">
-                Réessayer
-              </button>
             </div>
           ) : (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
@@ -207,7 +229,7 @@ export function AdminConsole() {
                       <select
                         id={`manager-${user.id}`}
                         value={user.managerId ?? ''}
-                        disabled={savingId === user.id}
+                        disabled={savingId !== null || usersLoading}
                         onChange={(event) => handleManagerChange(user.id, event.target.value)}
                         className={selectClass}
                       >
@@ -234,20 +256,23 @@ export function AdminConsole() {
           Notes des managers racine en attente ({notes.length})
         </h2>
         {notesError && (
-          <p role="alert" className="mx-6 mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-            {notesError}
-          </p>
+          <div className="mx-6 mt-4">
+            <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+              {notesError}
+            </p>
+            <button type="button" onClick={retryNotes} disabled={notesLoading || decidingId !== null} className="mt-2 text-sm font-medium text-brand-600 hover:underline disabled:opacity-60">
+              {notesLoading ? 'Actualisation…' : 'Réessayer les notes'}
+            </button>
+          </div>
         )}
-        {notesLoading ? (
-          <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        {notesNotice && <p role="status" className="mx-6 mt-4 text-sm text-green-700 dark:text-green-300">{notesNotice}</p>}
+        {notesLoading && notes.length === 0 ? (
+          <p role="status" className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
           </p>
         ) : notes.length === 0 && notesError ? (
           <div className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             <p>Liste indisponible.</p>
-            <button type="button" onClick={loadNotes} className="mt-2 font-medium text-brand-600 hover:underline">
-              Réessayer
-            </button>
           </div>
         ) : notes.length === 0 ? (
           <p className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">

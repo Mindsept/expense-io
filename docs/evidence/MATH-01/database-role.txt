@@ -1,0 +1,5 @@
+ current_user | rolsuper | rolbypassrls 
+--------------+----------+--------------
+ expense_test | t        | t
+(1 row)
+
