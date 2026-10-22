@@ -82,6 +82,7 @@ async function run(name, command, args, timeout = 300_000) {
     error: runError ? redact(runError.message) : undefined })
   if (runError) throw runError
   if (code !== 0) throw new Error(`${name} failed (exit ${code ?? 'terminated'}). See .ci-output/${name}.log.`)
+  return log
 }
 async function vacant(port) {
   await new Promise((resolve, reject) => {
@@ -129,6 +130,16 @@ try {
   if (composeAttempted) {
     try {
       preflight(env)
+      if (failure) {
+        for (const [name, args] of [
+          ['service-logs', [...compose, 'logs', '--no-color', '--tail', '80']],
+          ['service-state', [...compose, 'ps', '--all', '--format', 'json']],
+          ['storage-health', [...compose, 'exec', '-T', 'localstack', 'awslocal', 's3api', 'list-buckets']],
+        ]) {
+          try { await run(name, 'docker', args, 20_000) }
+          catch { console.error(`[CI] ${name} diagnostic failed; original failure remains blocking.`) }
+        }
+      }
       await run('cleanup', 'docker', [...compose, 'down', '--volumes', '--remove-orphans'], 120_000)
     } catch (error) { failure ??= error; console.error(redact(error.message)) }
   }

@@ -41,7 +41,8 @@ services:
       arla.test.environment: isolated
       arla.test.project: ${ARLA_TEST_PROJECT:?Set the isolated test project name}
     healthcheck:
-      test: ['CMD', 'awslocal', 's3', 'list-buckets']
+      # ListBuckets is an S3 API operation, not an `aws s3` high-level command.
+      test: ['CMD', 'awslocal', 's3api', 'list-buckets', '--cli-connect-timeout', '2', '--cli-read-timeout', '2']
       interval: 2s
       timeout: 5s
       retries: 30
