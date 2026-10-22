@@ -1,8 +1,8 @@
 # LE-10 — Contrat HTTP livré
 
-Le fichier [expense-io.v1.json](expense-io.v1.json) décrit les réponses réellement
-livrées sur `main` **b6bf206**, après HA-02 et HA-03 (22 octobre 2026). Version du contrat :
-**1.0.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
+Le fichier [expense-io.v2.json](expense-io.v2.json) décrit les réponses réellement
+livrées sur `main` **45086ba**, après HA-02/HA-03/LE-10, avec le correctif LE-01 de cette PR (22 octobre 2026). Version du contrat :
+**2.0.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
 Ce contrat initial est publiable indépendamment des autres refontes.
 
 Les requêtes utilisent l'origine de l'application. L'authentification est la
@@ -55,7 +55,7 @@ parmi plusieurs RH pour les notifications.
 seront documentées avec leur intégration. Les schémas de réponses métier ferment
 les propriétés pour détecter une fuite accidentelle de colonnes privées.
 
-Les douze handlers migrés HA-07 émettent un `X-Request-Id` sur succès et erreur.
+Les quatorze handlers migrés HA-07 émettent un `X-Request-Id` sur succès et erreur.
 Les erreurs ont le type média `application/problem+json`, `Cache-Control: no-store`,
 un statut cohérent et le schéma partagé `type/title/status/detail/error/requestId`.
 L'extension temporaire `error` égale `detail`. Les textes/codes statiques sont
@@ -69,25 +69,29 @@ substituer au détail. Voir [HA-07](../api-errors.md).
   300 secondes ; la présignature ne vérifie pas l'existence de l'objet S3.
 - **409** : note déjà décidée, manager invalide ou affectation occupée par une
   autre transaction. Aucun retry automatique n'est promis.
-- **400** : JSON/affectation invalide ; pour les deux fichiers personnels encore
-  anciens, les validations précoces restent `{error: string}` en JSON normal.
+- **400** : JSON/affectation invalide ; seul le POST OCR conserve ses validations précoces
+  `{error: string}` en JSON normal.
 - **500** : échec technique assaini. Un UUID de chemin malformé atteint encore
   PostgreSQL : ne pas promettre un 400 qui n'existe pas.
 
-Les GET/POST personnels et le POST OCR retournent encore des erreurs précoces
-`{error: string}` sans corrélation garantie. Leurs erreurs attrapées passent par
-`respondError` et utilisent Problem Details. Les extensions `x-error-contract`
-matérialisent cette transition ; aucun `oneOf` permissif ne masque la différence
-entre les réponses effectivement attendues pour une opération/statut.
+Les GET/POST personnels utilisent maintenant l'enveloppe HA-07 pour toutes leurs
+erreurs. Seul le POST OCR garde encore ses erreurs précoces `{error: string}`
+sans corrélation garantie ; ses erreurs attrapées utilisent Problem Details.
+Les extensions `x-error-contract` matérialisent cette transition.
 
-Le tri personnel utilise encore un fragment SQL libre. Le seul exemple conseillé
-est `sort=created_at%20DESC` ; l'allowlist et le refus des tris invalides sont LE-01
-(PR #12), encore non intégrés à cette version. Ne pas présenter cette faiblesse
-comme un contrat sûr pour une valeur fournie par un utilisateur. Le multipart de
-création accepte les MIME déclarés PNG/JPEG/WebP/PDF jusqu'à 10 MiB ; l'inspection
-structurelle, les bornes strictes et le refus des fichiers vides relèvent de LE-01.
-La séquence PostgreSQL/S3 actuelle peut laisser une note avec une clé vide après
-un échec : LE-02 ne doit pas être présenté comme livré.
+Le tri personnel accepte les six fragments constants `created_at/amount/expense_date`
+avec `ASC/DESC` exacts. Absence/valeur vide : `created_at DESC`. Valeur inconnue,
+clé de prototype ou paramètre répété : 400 avant toute requête de notes.
+Le multipart impose une occurrence de chaque champ requis, montant décimal entier
+valide, date civile réelle, description trimée non vide et bornée à 4000 unités
+UTF-16, et fichier non vide jusqu'à 10 MiB dont le conteneur correspond au MIME
+PNG/JPEG/WebP/PDF. Il ne garantit pas un décodage complet/antivirus. La borne de
+poids intervient après matérialisation ; LE-05 conserve la limite de lecture HTTP.
+
+Chaque écriture de création recharge l'acteur courant et la finalisation vérifie
+le propriétaire. La séquence PostgreSQL/S3 reste séparée : un échec ou une
+révocation entre étapes peut laisser une note/objet partiel. LE-02 n'est donc
+pas présenté comme livré ; aucun résultat idempotent n'est promis.
 
 ## Cible approuvée et transitions
 
@@ -163,6 +167,10 @@ contrat. Une route ajoutée sans inventaire ou un type modifié sans schéma fai
 avec le code intégré ; mettre à jour la base et ce tableau dans la même PR.
 
 La version `info.version` décrit le contrat, pas la version du format OpenAPI.
+Cette v2 accompagne le refus des tris auparavant libres et le passage des erreurs
+personnelles à `application/problem+json`. L'extension `error` reste compatible
+avec les écrans existants. [v1](expense-io.v1.json) est une archive de main
+b6bf206, pas le comportement courant ; les tests chargent exclusivement v2.
 Correction documentaire sans changement livré : patch ; ajout compatible : mineur ;
 retrait/changement de type, enveloppe paginée ou suppression d'`error` : majeur avec
 plan client et transition explicite. Les schémas fermés imposent de revoir même un

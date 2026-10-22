@@ -96,3 +96,28 @@ blocage d'intégration HA-02 ni ne prouve la révocation des anciennes sessions.
 Le `requestId` est vérifié dans le corps et l'en-tête HTTP ; l'interface actuelle
 ne l'affiche pas. Le test ne suppose pas cet affichage absent et cible les alertes
 du `<main>`, sans confondre l'annonceur de navigation Next avec une erreur métier.
+
+
+## Intégration finale HA-02, après main `45086ba`
+
+Les mentions de blocage HA-02 ci-dessus décrivent les validations antérieures.
+HA-02 et HA-03 sont maintenant intégrés. GET/POST personnels utilisent
+`withCurrentActor` ; les deux écritures de création sont scopées, avec garde
+propriétaire sur l'UPDATE final et nouvelle vérification après upload. Aucun
+verrou/transaction n'est tenu pendant le multipart ou S3. La cohérence atomique
+et la compensation restent LE-02.
+
+Les tests de consommation du vrai helper refusent l'acteur absent/inactif avant
+SQL métier ; une désactivation après upload interdit la finalisation. Les tests
+HTTP supplémentaires utilisent des sessions réelles, puis désactivent/suppriment
+le compte ou changent son rôle/entreprise. Ils vérifient les 401 sans mutation
+DB/S3, le retrait des droits RH et la continuité des opérations personnelles
+encore permises, sans accepter userId/companyId/role soumis par le client.
+Le contrat OpenAPI courant passe à v2, avec v1 conservé comme archive.
+
+La campagne finale complète et son SHA sont enregistrés dans les checks et la
+description de la PR #12 ainsi que dans le commentaire de clôture ARLA-19.
+Aucun résultat de la campagne précédente n'est présenté comme preuve de ces
+nouveaux scénarios. Les preuves sur le rôle privilégié de bootstrap ne prouvent
+pas une RLS effective ; la limite de lecture HTTP et les créations partielles
+restent des limites explicitement affectées à LE-05 et LE-02/03.

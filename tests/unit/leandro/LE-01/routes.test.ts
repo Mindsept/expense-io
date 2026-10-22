@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
+import { ApiError } from '@/lib/errors'
 
-const mocks = vi.hoisted(() => ({ auth: vi.fn(), scoped: vi.fn(), query: vi.fn(), upload: vi.fn() }))
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), actor: vi.fn(), scoped: vi.fn(), query: vi.fn(), upload: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ auth: mocks.auth }))
+vi.mock('@/lib/current-actor', () => ({ withCurrentActor: mocks.actor }))
 vi.mock('@/lib/db', () => ({
   withUserScope: mocks.scoped,
   getPool: () => ({ query: mocks.query }),
@@ -27,6 +29,11 @@ beforeEach(() => {
   vi.resetAllMocks()
   mocks.auth.mockResolvedValue({ user: { id: 'owner', role: 'employee' } })
   mocks.scoped.mockImplementation(async (_id, operation) => operation({ query: mocks.query }))
+  mocks.actor.mockImplementation(async (_role, operation) => {
+    const session = await mocks.auth()
+    if (!session?.user) throw new ApiError('unauthenticated')
+    return mocks.scoped(session.user.id, (client: unknown) => operation(client, { id: session.user.id, companyId: 'company', role: session.user.role }))
+  })
   mocks.query.mockResolvedValue({ rows: [row] })
   vi.spyOn(console, 'info').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})

@@ -34,7 +34,7 @@ export async function readExpenseForm(request: Request) {
   return readExpenseInput(form)
 }
 
-/** All checks complete before acquiring a DB connection or uploading to storage. */
+/** All checks complete before expense SQL or storage writes. Authentication may query the DB. */
 export async function readExpenseInput(form: FormData) {
   for (const name of ['amount', 'expenseDate', 'description', 'receipt']) {
     if (form.getAll(name).length !== 1) throw new ApiError('validation')

@@ -1,9 +1,8 @@
-# LE-01 — Validation et tri, intégration d'acteur encore attendue
+# LE-01 — Validation stricte, tri fermé et acteur courant
 
-État : tranche indépendante implémentée ; ticket incomplet et PR en brouillon
-tant que HA-02 n'est pas disponible dans main. `auth()` identifie encore l'acteur
-selon le comportement existant. Aucune garantie de révocation immédiate d'une
-session, de changement de rôle/entreprise ou de RLS réelle n'est annoncée ici.
+HA-02 et HA-03 sont intégrés sur main. Cette version consomme réellement
+`withCurrentActor`, sans copier son contrat ni faire autorité avec les anciennes
+revendications de rôle/entreprise de la session. La RLS reste une preuve séparée.
 
 ## Contrat réellement appliqué
 
@@ -54,18 +53,35 @@ Références primaires du conteneur : [PNG/W3C](https://www.w3.org/TR/png-3/),
 Une Map fermée et des fonctions réellement appelées par la route remplacent
 la concaténation libre et parseFloat. Écarter un ORM, une nouvelle bibliothèque
 de validation et un décodage complet garde ce correctif proportionné ; aucun
-manifest/lockfile ni fichier d'un autre propriétaire n'est modifié.
+manifest/lockfile ni support partagé de tests n'est modifié. Les deux anciens
+tests de non-authentification de Mathis migrent vers le contrat HA-07 exact,
+sans retirer leurs assertions de refus et d'absence de DB.
 
 Le contrôle de poids intervient **après** `request.formData()` : il ne borne pas
 la lecture HTTP avant matérialisation. LE-05 conserve ce chantier. La séquence
-note vide → S3 → UPDATE hors scope reste celle de départ ; LE-02 doit la remplacer.
-Pas d'idempotence ou de nettoyage automatique ajoutés ici.
+note vide → S3 → finalisation séparée reste à remplacer dans LE-02. Chaque
+écriture est maintenant dans un scope HA-02 distinct, et la finalisation vérifie
+également `user_id`. Aucune transaction ni verrou d'acteur n'est tenu pendant
+la lecture du formulaire ou l'upload S3. Après l'upload, les droits sont rechargés :
+une désactivation empêche la finalisation et ne produit pas de faux succès.
+Cela peut encore laisser une création partielle ; aucune compensation automatique
+ou idempotence n'est inventée ici.
 
-L'intégration finale doit remplacer l'autorité du JWT par le contrat HA-02
-publié et validé par son propriétaire. Le contrat observé dans la PR #4 est
-`withCurrentActor(requiredRole, callback(client, actor))` ; il n'est ni copié ni
-importé depuis un fichier absent de main. Lire le corps avant la transaction,
-consommer ce contrat dans les parcours personnels puis vérifier avec de vraies
-sessions les suppressions/changements de droits et l'absence de lecture/écriture
-refusée. Le brouillon HA-02 signale aussi une correction de verrous attendue de
-HA-06. Aucun de ces critères n'est remplacé par un test ignoré ou un faux succès.
+Le GET résout l'acteur courant puis applique le tri constant et le filtre propre.
+Le POST vérifie d'abord la session rafraîchie avant de lire le multipart, valide
+l'entrée puis recharge/verrouille l'acteur dans chaque transaction d'écriture.
+Les opérations personnelles restent permises aux trois rôles actifs ; retirer
+un rôle RH retire ses droits RH sans lui interdire ses propres notes.
+Les champs supplémentaires `userId/companyId/role` ne font jamais autorité.
+
+Les tests de routes utilisent aussi le vrai contrat HA-02 avec un client DB double
+pour vérifier qu'un acteur supprimé/inactif n'atteint aucune requête de notes.
+Les preuves HTTP utilisent des sessions Auth.js réellement signées : suppression,
+désactivation, changement RH→employé et d'entreprise, refus RH après retrait du
+droit et dépôt personnel encore autorisé sous les droits courants. PostgreSQL et
+la liste des objets S3 sont inchangés après les requêtes refusées.
+
+Le contrat [OpenAPI courant v2](openapi/expense-io.v2.json) accompagne le changement
+de tri et de format/média d'erreur ; v1 reste une archive historique. Aucun nouveau
+contrat concurrent d'erreurs n'est ajouté. Les limites pré-matérialisation et
+l'orchestration/reprise DB-S3 restent respectivement LE-05 et LE-02/03.

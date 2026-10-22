@@ -20,6 +20,9 @@ const companyId = randomUUID()
 const otherCompanyId = randomUUID()
 const userId = randomUUID()
 const otherUserId = randomUUID()
+const actorIds = { disabled: randomUUID(), deleted: randomUUID(), changed: randomUUID() }
+const allUsers = [userId, otherUserId, ...Object.values(actorIds)]
+const actorClients: Record<string, APIRequestContext> = {}
 const seededIds = [randomUUID(), randomUUID(), randomUUID()]
 const email = `le01-${userId}@example.test`
 const password = randomBytes(24).toString('base64url')
@@ -33,6 +36,15 @@ test.beforeAll(async ({ playwright }) => {
   for (const id of [companyId, otherCompanyId]) await pool.query('INSERT INTO companies (id,name,email_domain) VALUES ($1,$2,$3)', [id, 'LE-01 synthetic', `${id}.test`])
   for (const [id, company] of [[userId, companyId], [otherUserId, otherCompanyId]]) {
     await pool.query('INSERT INTO users (id,company_id,name,email,password_hash) VALUES ($1,$2,$3,$4,$5)', [id, company, 'Synthetic employee', `le01-${id}@example.test`, await bcrypt.hash(password, 4)])
+  }
+  for (const [name, id] of Object.entries(actorIds)) {
+    await pool.query('INSERT INTO users (id,company_id,name,email,password_hash,role) VALUES ($1,$2,$3,$4,$5,$6)', [id, companyId, 'LE-01 current actor', `le01-${id}@example.test`, await bcrypt.hash(password, 4), name === 'changed' ? 'hr_admin' : 'employee'])
+    const context = await playwright.request.newContext({ baseURL })
+    actorClients[name] = context
+    const csrf = await (await context.get('/api/auth/csrf')).json()
+    const login = await context.post('/api/auth/callback/credentials', { form: { csrfToken: csrf.csrfToken, email: `le01-${id}@example.test`, password, callbackUrl: `${baseURL}/expenses` }, maxRedirects: 0 })
+    expect(login.status()).toBe(302)
+    expect((await (await context.get('/api/auth/session')).json()).user.id).toBe(id)
   }
   for (let index = 0; index < 3; index++) await pool.query(
     'INSERT INTO expense_notes (id,user_id,amount,expense_date,description,receipt_key,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)',
@@ -48,10 +60,11 @@ test.beforeAll(async ({ playwright }) => {
 
 test.afterAll(async () => {
   await client?.dispose()
-  const uploaded = await pool.query('SELECT receipt_key FROM expense_notes WHERE user_id = $1 AND NOT (id = ANY($2::uuid[]))', [userId, seededIds])
-  for (const row of uploaded.rows) await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: row.receipt_key }))
-  await pool.query('DELETE FROM expense_notes WHERE user_id = ANY($1::uuid[])', [[userId, otherUserId]])
-  await pool.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [[userId, otherUserId]])
+  await Promise.all(Object.values(actorClients).map(context => context.dispose()))
+  const uploaded = await pool.query('SELECT receipt_key FROM expense_notes WHERE user_id = ANY($1::uuid[])', [allUsers])
+  for (const row of uploaded.rows) if (typeof row.receipt_key === 'string' && row.receipt_key.startsWith('receipts/')) await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: row.receipt_key }))
+  await pool.query('DELETE FROM expense_notes WHERE user_id = ANY($1::uuid[])', [allUsers])
+  await pool.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [allUsers])
   await pool.query('DELETE FROM companies WHERE id = ANY($1::uuid[])', [[companyId, otherCompanyId]])
   await pool.end()
   s3.destroy()
@@ -140,3 +153,51 @@ for (const [name, mimeType] of [['valid.png', 'image/png'], ['valid.jpg', 'image
     expect(Buffer.from(await stored.Body!.transformToByteArray())).toEqual(bytes)
   })
 }
+
+for (const reason of ['disabled', 'deleted'] as const) {
+  test(`HA-02: previously valid ${reason} session cannot read or create notes`, async () => {
+    const context = actorClients[reason]
+    expect((await (await context.get('/api/auth/session')).json()).user.id).toBe(actorIds[reason])
+    if (reason === 'disabled') await pool.query('UPDATE users SET is_active=false WHERE id=$1', [actorIds[reason]])
+    else await pool.query('DELETE FROM users WHERE id=$1', [actorIds[reason]])
+    const before = await state()
+    await problem(await context.get('/api/expense-notes?sort=constructor', { headers: { 'X-Request-Id': requestId } }), 401)
+    await problem(await context.post('/api/expense-notes', { headers: { 'X-Request-Id': requestId }, multipart: {
+      amount: '12.34', expenseDate: '2024-02-29', description: 'Must not create', receipt: { name: 'valid.png', mimeType: 'image/png', buffer: png },
+    } }), 401)
+    expect(await state()).toEqual(before)
+    expect(await (await context.get('/api/auth/session')).json()).toBeNull()
+  })
+}
+
+test('HA-02: role/company change refreshes the old signed session while permitted personal operations remain scoped', async ({ playwright }) => {
+  const context = actorClients.changed
+  expect((await (await context.get('/api/auth/session')).json()).user.role).toBe('hr_admin')
+  expect((await context.get('/api/hr/users')).status()).toBe(200)
+  // Independent cookie jars preserve the same genuine pre-change signed session
+  // for the first GET and first POST; no hand-forged token or post-change login.
+  const signedBeforeChange = await context.storageState()
+  const oldReader = await playwright.request.newContext({ baseURL, storageState: signedBeforeChange })
+  const oldWriter = await playwright.request.newContext({ baseURL, storageState: signedBeforeChange })
+  try {
+    await pool.query("UPDATE users SET role='employee', company_id=$1 WHERE id=$2", [otherCompanyId, actorIds.changed])
+    const initialRead = await oldReader.get('/api/expense-notes', { params: { userId: otherUserId, companyId } })
+    expect(initialRead.status()).toBe(200)
+    expect(await initialRead.json()).toEqual([])
+    const refreshed = await (await context.get('/api/auth/session')).json()
+    expect(refreshed.user).toMatchObject({ id: actorIds.changed, role: 'employee' })
+    await problem(await oldReader.get('/api/hr/users', { headers: { 'X-Request-Id': requestId } }), 403)
+    const response = await oldWriter.post('/api/expense-notes', { multipart: {
+      amount: '12.34', expenseDate: '2024-02-29', description: 'Current rights submission',
+      userId: otherUserId, companyId, role: 'hr_admin', receipt: { name: 'valid.png', mimeType: 'image/png', buffer: png },
+    } })
+    expect(response.status()).toBe(201)
+    const note = await response.json()
+    expect(note.userId).toBe(actorIds.changed)
+    const row = await pool.query('SELECT en.user_id,u.company_id,u.role FROM expense_notes en JOIN users u ON u.id=en.user_id WHERE en.id=$1', [note.id])
+    expect(row.rows).toEqual([{ user_id: actorIds.changed, company_id: otherCompanyId, role: 'employee' }])
+    const own = await context.get('/api/expense-notes', { params: { userId: otherUserId, companyId } })
+    expect(own.status()).toBe(200)
+    expect(await own.json()).toEqual([note])
+  } finally { await oldReader.dispose(); await oldWriter.dispose() }
+})
