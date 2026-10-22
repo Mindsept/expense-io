@@ -1,0 +1,5 @@
+
+> expense-io-version-b@0.1.0 test:prepare
+> node tests/support/test-stack.mjs prepare
+
+Unsafe test target: require the isolated marker, owned project/database/bucket and explicit matching loopback ports. No preparation or cleanup was started.

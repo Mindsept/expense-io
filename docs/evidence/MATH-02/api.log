@@ -1,0 +1,31 @@
+
+> expense-io-version-b@0.1.0 test:api
+> playwright test --config playwright.config.ts --project=api --reporter=list,json
+
+
+Running 19 tests using 1 worker
+
+(node:52893) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [api] › tests/api/hamza/HA-01/auth-secret.spec.ts:94:5 › credentials work, sessions survive restart and are rejected after secret rotation (1.8s)
+  ✓   2 [api] › tests/api/hamza/HA-01/auth-secret.spec.ts:141:7 › rejects empty configuration at auth initialization (232ms)
+  ✓   3 [api] › tests/api/hamza/HA-01/auth-secret.spec.ts:141:7 › rejects public placeholder configuration at auth initialization (230ms)
+  ✓   4 [api] › tests/api/hamza/HA-07/errors.spec.ts:83:5 › unauthenticated HTTP request has a correlated 401 (8ms)
+  ✓   5 [api] › tests/api/hamza/HA-07/errors.spec.ts:89:5 › authenticated employee receives 403 from the manager operation (4ms)
+  ✓   6 [api] › tests/api/hamza/HA-07/errors.spec.ts:93:5 › missing resource returns 404 without revealing information (12ms)
+  ✓   7 [api] › tests/api/hamza/HA-07/errors.spec.ts:97:5 › an already decided expense returns 409 and keeps its state (6ms)
+  ✓   8 [api] › tests/api/hamza/HA-07/errors.spec.ts:102:5 › invalid assignment JSON or shape returns 400 and keeps the previous manager (14ms)
+  ✓   9 [api] › tests/api/hamza/HA-07/errors.spec.ts:109:5 › a real PostgreSQL rejection after await becomes a sanitized 500 (4ms)
+  ✓  10 [api] › tests/api/hamza/HA-07/errors.spec.ts:119:5 › the authorized list retains its success representation (5ms)
+{"corpus":"LE-04 synthetic v1","observations":[{"id":"large-total","text":"RECU SYNTHETIQUE\n21/10/2026\nTOTAL 1234,56 EUR\n","result":{"amount":1234.56,"expenseDate":"2026-10-21"},"expected":{"amount":1234.56,"expenseDate":"2026-10-21"},"parserCorrect":true},{"id":"tax","text":"RECU SYNTHETIQUE\n21/10/2026\n\nHT 100,00\n\nTTC 120,00\n","result":{"amount":120,"expenseDate":"2026-10-21"},"expected":{"amount":120,"expenseDate":"2026-10-21"},"parserCorrect":true},{"id":"discount","text":"RECU SYNTHETIQUE\n21/10/2026\nSOUS-TOTAL 40,00\nREMISE 5,00\n\nTOTAL 35,00\n","result":{"amount":35,"expenseDate":"2026-10-21"},"expected":{"amount":35,"expenseDate":"2026-10-21"},"parserCorrect":true},{"id":"leap-day","text":"RECU SYNTHETIQUE\n29/02/2024\nTOTAL 12,50\n","result":{"amount":12.5,"expenseDate":"2024-02-29"},"expected":{"amount":12.5,"expenseDate":"2024-02-29"},"parserCorrect":true},{"id":"ambiguous","text":"RECU SYNTHETIQUE\nTOTAL 12,00\nTOTAL 18,00\n","result":{},"expected":{},"parserCorrect":true},{"id":"blank","text":"","result":{},"expected":{},"parserCorrect":true}]}
+  ✓  11 [api] › tests/api/leandro/LE-04/corpus.spec.ts:7:5 › real French Tesseract output and pure text parsing are measured separately (333ms)
+  ✓  12 [api] › tests/api/leandro/LE-04/http.spec.ts:38:7 › real authenticated OCR route: large-total (156ms)
+  ✓  13 [api] › tests/api/leandro/LE-04/http.spec.ts:38:7 › real authenticated OCR route: tax (152ms)
+  ✓  14 [api] › tests/api/leandro/LE-04/http.spec.ts:38:7 › real authenticated OCR route: discount (162ms)
+  ✓  15 [api] › tests/api/leandro/LE-04/http.spec.ts:38:7 › real authenticated OCR route: leap-day (146ms)
+  ✓  16 [api] › tests/api/leandro/LE-04/http.spec.ts:38:7 › real authenticated OCR route: ambiguous (147ms)
+  ✓  17 [api] › tests/api/leandro/LE-04/http.spec.ts:38:7 › real authenticated OCR route: blank (111ms)
+  ✓  18 [api] › tests/api/leandro/LE-12/expense-note.spec.ts:51:5 › real multipart POST and personal GET share the DTO without exposing another employee (68ms)
+  ✓  19 [api] › tests/api/mathis/MATH-01/unauthenticated-expenses.spec.ts:6:5 › anonymous HTTP GET /api/expense-notes returns 401 from the real application (2ms)
+
+  19 passed (4.1s)

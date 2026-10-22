@@ -1,0 +1,42 @@
+[
+  {
+    "label": "development-target-prepare",
+    "command": [
+      "npm",
+      "run",
+      "test:prepare"
+    ],
+    "exitCode": 1,
+    "seconds": 0.173
+  },
+  {
+    "label": "development-target-down",
+    "command": [
+      "npm",
+      "run",
+      "test:down"
+    ],
+    "exitCode": 1,
+    "seconds": 0.107
+  },
+  {
+    "label": "external-target",
+    "command": [
+      "npm",
+      "run",
+      "test:prepare"
+    ],
+    "exitCode": 1,
+    "seconds": 0.105
+  },
+  {
+    "label": "unhealthy-service",
+    "command": [
+      "npm",
+      "run",
+      "test:ci"
+    ],
+    "exitCode": 1,
+    "seconds": 9.87
+  }
+]

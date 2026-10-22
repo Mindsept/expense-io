@@ -1,0 +1,11 @@
+{
+  "sha": "bf5835a223164324c0587133e0433d1d612d0e3b",
+  "workingTree": "M .gitignore\n M docs/restitution-mathis.html\n M docs/tests.md\n M package-lock.json\n M package.json\n?? .github/\n?? .nvmrc\n?? docker-compose.test.yml\n?? docs/ci.md\n?? tests/support/preflight.mjs\n?? tests/support/test-stack.mjs\n?? tests/unit/mathis/MATH-02/",
+  "node": "v24.22.1",
+  "npm": "npm/11.19.1 node/v24.22.1 darwin arm64 workspaces/false",
+  "platform": "darwin",
+  "arch": "arm64",
+  "at": "2026-10-22T08:55:37.046Z",
+  "timezone": "Europe/Paris",
+  "lockSha256": "72a21f883af592d7cec437e17639bc8cd31db5b5ea75fb32361c442effe6585f"
+}

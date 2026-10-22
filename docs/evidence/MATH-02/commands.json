@@ -1,0 +1,318 @@
+[
+  {
+    "label": "source-sha",
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.015
+  },
+  {
+    "label": "source-status",
+    "command": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.015
+  },
+  {
+    "label": "verify",
+    "command": [
+      "node",
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/lib/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "verify"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 3.927
+  },
+  {
+    "label": "collect",
+    "command": [
+      "node",
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/lib/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "test:collect"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.794
+  },
+  {
+    "label": "docker-context",
+    "command": [
+      "docker",
+      "context",
+      "show"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.046
+  },
+  {
+    "label": "docker-endpoint",
+    "command": [
+      "docker",
+      "context",
+      "inspect",
+      "colima",
+      "--format",
+      "{{(index .Endpoints \"docker\").Host}}"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.01
+  },
+  {
+    "label": "owned-containers",
+    "command": [
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "label=com.docker.compose.project=arla-test-70bb3da7"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.023
+  },
+  {
+    "label": "compose-config",
+    "command": [
+      "docker",
+      "compose",
+      "-p",
+      "arla-test-70bb3da7",
+      "-f",
+      "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/docker-compose.test.yml",
+      "config",
+      "--quiet"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.074
+  },
+  {
+    "label": "services-ready",
+    "command": [
+      "docker",
+      "compose",
+      "-p",
+      "arla-test-70bb3da7",
+      "-f",
+      "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/docker-compose.test.yml",
+      "up",
+      "-d",
+      "--wait",
+      "--wait-timeout",
+      "90"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 7.346
+  },
+  {
+    "label": "owned-containers",
+    "command": [
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "label=com.docker.compose.project=arla-test-70bb3da7"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.025
+  },
+  {
+    "label": "container-labels",
+    "command": [
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .Config.Labels}}",
+      "c290c7d9340d",
+      "22d6f990941f"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.013
+  },
+  {
+    "label": "migrations",
+    "command": [
+      "node",
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/lib/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "migrate:up",
+      "--",
+      "--envPath",
+      "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/.test-runtime/private/70bb3da7.env"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.191
+  },
+  {
+    "label": "bucket",
+    "command": [
+      "node",
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/lib/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "ensure-bucket"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.535
+  },
+  {
+    "label": "seed",
+    "command": [
+      "node",
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/lib/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "seed"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.817
+  },
+  {
+    "label": "build",
+    "command": [
+      "node",
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/lib/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "build"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 2.408
+  },
+  {
+    "label": "api",
+    "command": [
+      "node",
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/lib/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "test:api",
+      "--",
+      "--reporter=list,json"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 4.353
+  },
+  {
+    "label": "e2e",
+    "command": [
+      "node",
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/lib/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "test:e2e",
+      "--",
+      "--reporter=list,json"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 2.046
+  },
+  {
+    "label": "docker-context",
+    "command": [
+      "docker",
+      "context",
+      "show"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.047
+  },
+  {
+    "label": "docker-endpoint",
+    "command": [
+      "docker",
+      "context",
+      "inspect",
+      "colima",
+      "--format",
+      "{{(index .Endpoints \"docker\").Host}}"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.011
+  },
+  {
+    "label": "owned-containers",
+    "command": [
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "label=com.docker.compose.project=arla-test-70bb3da7"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.025
+  },
+  {
+    "label": "container-labels",
+    "command": [
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .Config.Labels}}",
+      "c290c7d9340d",
+      "22d6f990941f"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 0.013
+  },
+  {
+    "label": "cleanup",
+    "command": [
+      "docker",
+      "compose",
+      "-p",
+      "arla-test-70bb3da7",
+      "-f",
+      "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/docker-compose.test.yml",
+      "down",
+      "--volumes",
+      "--remove-orphans"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "overflow": false,
+    "seconds": 4.062
+  }
+]

@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: expense_test
+      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD:?Use npm run test:prepare}
+      POSTGRES_DB: ${TEST_DB_NAME:?Use npm run test:prepare}
+    ports:
+      - '127.0.0.1:${TEST_DB_PORT:?Use npm run test:prepare}:5432'
+    labels:
+      io.expense.test-run: ${TEST_RUN_ID:?Use npm run test:prepare}
+    volumes:
+      - test-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U expense_test -d "$${POSTGRES_DB}"']
+      interval: 2s
+      timeout: 3s
+      retries: 40
+  localstack:
+    image: localstack/localstack:3.8.1
+    environment:
+      SERVICES: s3
+    ports:
+      - '127.0.0.1:${TEST_S3_PORT:?Use npm run test:prepare}:4566'
+    labels:
+      io.expense.test-run: ${TEST_RUN_ID:?Use npm run test:prepare}
+    volumes:
+      - test-localstack:/var/lib/localstack
+    healthcheck:
+      test: ['CMD', 'curl', '-sf', 'http://localhost:4566/_localstack/health']
+      interval: 2s
+      timeout: 3s
+      retries: 40
+volumes:
+  test-postgres:
+  test-localstack:
