@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
+import { lstatSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { resolve, join } from 'node:path'
+import { dirname, resolve, join } from 'node:path'
 import { parseEnv } from 'node:util'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -76,7 +76,10 @@ describe('explicit local secret provisioning', () => {
       expect(Buffer.from(secret, 'base64url')).toHaveLength(32)
       expect(readAuthConfig({ AUTH_SECRET: secret }).secret).toBe(secret)
       expect(output).not.toContain(secret)
-      expect(statSync(file).mode & 0o777).toBe(0o600)
+      expect(lstatSync(file).isFile()).toBe(true)
+      // Windows stat mode bits do not describe its access-control list. POSIX
+      // environments must still prove the exact private mode; no weakened mask.
+      if (process.platform !== 'win32') expect(statSync(file).mode & 0o777).toBe(0o600)
     }
     expect(readSecret(files[0])).not.toBe(readSecret(files[1]))
   })
@@ -122,12 +125,18 @@ describe('explicit local secret provisioning', () => {
     }
   )
 
-  it('does not follow a symlink or overwrite its destination', () => {
+  it('does not follow a filesystem link or overwrite its destination', () => {
     const file = environment('OTHER=keep\n')
-    const linked = join(resolve(file, '..'), '.env.link')
-    symlinkSync(file, linked)
+    const linked = join(dirname(environment()), '.env.link')
+    // File symlinks need Windows developer mode/admin privileges. A real NTFS
+    // junction exercises the same lstat rejection without those prerequisites.
+    // Linux/macOS continue exercising a file symlink, including in CI.
+    symlinkSync(process.platform === 'win32' ? dirname(file) : file, linked,
+      process.platform === 'win32' ? 'junction' : 'file')
+    expect(lstatSync(linked).isSymbolicLink()).toBe(true)
     const result = spawnSync(process.execPath, [generator, linked], { encoding: 'utf8' })
     expect(result.status).toBe(1)
+    expect(result.stderr).toContain('The environment target must be a regular file, not a symlink.')
     expect(readFileSync(file, 'utf8')).toBe('OTHER=keep\n')
   })
 

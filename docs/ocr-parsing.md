@@ -13,7 +13,9 @@ priorité le plus élevé présent :
 1. TTC, total final/TTC/à payer, net ou montant à payer ;
 2. total ou montant total ;
 3. montant ;
-4. ligne contenant uniquement une somme et sa devise EUR/€.
+4. ligne contenant uniquement une somme et sa devise EUR/€, uniquement si aucun
+   libellé de montant n'apparaît ailleurs dans le texte : un retour à la ligne
+   OCR ne doit pas transformer une somme HT ou un sous-total en total final.
 
 HT, total HT, TVA, sous-total, remise et monnaie rendue ne sont pas des totaux
 finaux. Des labels compacts comme `HT100` et `TTC120` sont reconnus. À priorité

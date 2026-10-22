@@ -1,9 +1,0 @@
-{
-  "project": "arla-test-70bb3da7",
-  "database": "expense_70bb3da7_test",
-  "bucket": "receipts-70bb3da7-test",
-  "appPort": 3210,
-  "dbPort": 55440,
-  "s3Port": 45740,
-  "isolation": "bootstrap-reference-only; HA-04 restricted role and business fixtures not integrated"
-}

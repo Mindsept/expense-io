@@ -1,5 +1,0 @@
-
-> expense-io-version-b@0.1.0 test:prepare
-> node tests/support/test-stack.mjs prepare
-
-Conflicting DATABASE_URL: unset the external target before using the isolated test stack.

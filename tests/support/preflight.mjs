@@ -1,94 +1,119 @@
-import { randomBytes } from 'node:crypto'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const roles = { EMPLOYEE: 'employee', MANAGER: 'manager', HR: 'hr' }
-const secret = () => randomBytes(32).toString('base64url')
-
-export function createTestConfig() {
-  const id = randomBytes(4).toString('hex')
-  const dbPassword = secret()
-  return {
-    mode: 'isolated', id, project: `arla-test-${id}`,
-    appPort: 3210, dbPort: 55440, s3Port: 45740, authPort: 3211,
-    database: `expense_${id}_test`, bucket: `receipts-${id}-test`,
-    databaseURL: `postgres://expense_test:${dbPassword}@127.0.0.1:55440/expense_${id}_test`,
-    baseURL: 'http://127.0.0.1:3210', s3URL: 'http://127.0.0.1:45740',
-    authSecret: secret(), fixturePassword: secret(),
-    accounts: Object.fromEntries(Object.entries(roles).map(([key, role]) =>
-      [key, { email: `${role}@mathis-${id}.example.test`, password: secret() }])),
-  }
+function reject(field, requirement) {
+  // Never include supplied values: URLs and even malformed fields may be secrets.
+  throw new Error(`Unsafe test configuration: ${field} ${requirement}.`)
 }
 
-/** Validate the entire target before calling Docker, SQL, S3 or any cleanup. */
-export function validateTestConfig(config) {
-  const fail = () => { throw new Error('Unsafe test target: require the isolated marker, owned project/database/bucket and explicit matching loopback ports. No preparation or cleanup was started.') }
-  if (!config || typeof config !== 'object' || config.mode !== 'isolated' ||
-      !/^[a-f0-9]{8}$/.test(config.id ?? '') || config.project !== `arla-test-${config.id}` ||
-      config.database !== `expense_${config.id}_test` || config.bucket !== `receipts-${config.id}-test`) fail()
-  const ports = [config.appPort, config.dbPort, config.s3Port, config.authPort]
-  if (ports.some(port => !Number.isInteger(port) || port < 1024 || port > 65535 || [3000,5433,4567].includes(port)) || new Set(ports).size !== 4) fail()
-  let database, app, storage
-  try { database = new URL(config.databaseURL); app = new URL(config.baseURL); storage = new URL(config.s3URL) }
-  catch { fail() }
-  if (![database,app,storage].every(url => url.hostname === '127.0.0.1' && !url.search && !url.hash)) fail()
-  if (database.protocol !== 'postgres:' || database.username !== 'expense_test' ||
-      !/^[A-Za-z0-9_-]{43}$/.test(database.password) || database.port !== String(config.dbPort) ||
-      database.pathname !== `/${config.database}`) fail()
-  for (const [url, port] of [[app,config.appPort],[storage,config.s3Port]]) {
-    if (url.protocol !== 'http:' || url.username || url.password || url.port !== String(port) || url.pathname !== '/') fail()
+function port(value, field) {
+  if (typeof value !== 'string' || !/^[1-9]\d{3,4}$/.test(value) ||
+      Number(value) < 1024 || Number(value) > 65535 ||
+      ['3000', '5432', '5433', '4566', '4567'].includes(value)) {
+    reject(field, 'must select a dedicated test port, not a development or service default')
   }
-  if (![config.authSecret,config.fixturePassword].every(value => typeof value === 'string' && /^[A-Za-z0-9_-]{43}$/.test(value))) fail()
-  if (Object.keys(config.accounts ?? {}).sort().join(',') !== 'EMPLOYEE,HR,MANAGER') fail()
-  for (const [key,role] of Object.entries(roles)) {
-    const account = config.accounts?.[key]
-    if (!account || account.email !== `${role}@mathis-${config.id}.example.test` || !/^[A-Za-z0-9_-]{43}$/.test(account.password ?? '')) fail()
-  }
-  return config
+  return Number(value)
 }
 
-export function assertLocalDockerEndpoint(endpoint) {
-  if (typeof endpoint !== 'string' || !/^(unix:\/\/\/|npipe:\/\/)/.test(endpoint.trim())) {
-    throw new Error('Test preparation refuses a remote Docker endpoint. Select a local Unix socket or Windows named pipe.')
-  }
+function parseUrl(value, field) {
+  if (typeof value !== 'string') reject(field, 'must be explicitly set')
+  try { return new URL(value) }
+  catch { reject(field, 'must be a valid URL') }
 }
 
-/** @returns {Record<string, string>} */
-export function testEnvironment(config) {
-  validateTestConfig(config)
-  const env = {
-    ARLA_TEST_ENV: 'isolated', ARLA_TEST_BASE_URL: config.baseURL,
-    DATABASE_URL: config.databaseURL, AUTH_SECRET: config.authSecret, AUTH_TRUST_HOST: 'true',
-    S3_ENDPOINT: config.s3URL, S3_REGION: 'us-east-1', S3_ACCESS_KEY_ID: 'test', S3_SECRET_ACCESS_KEY: 'test',
-    S3_BUCKET: config.bucket, S3_FORCE_PATH_STYLE: 'true', NEXT_TELEMETRY_DISABLED: '1',
-    TEST_RUN_ID: config.id, TEST_DB_NAME: config.database, TEST_DB_PASSWORD: new URL(config.databaseURL).password,
-    TEST_DB_PORT: String(config.dbPort), TEST_S3_PORT: String(config.s3Port),
-    HA01_SERVER_MODE: 'production', HA01_TEST_PORT: String(config.authPort), HA07_TEST_PASSWORD: config.fixturePassword,
+function loopbackHttp(value, field) {
+  const url = parseUrl(value, field)
+  if (url.protocol !== 'http:' || url.hostname !== '127.0.0.1' ||
+      url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
+    reject(field, 'must be plain HTTP on 127.0.0.1 without credentials, path, query or fragment')
   }
-  for (const prefix of ['HA01','HA07','LE04','LE12']) {
-    env[`${prefix}_TEST_DATABASE_URL`] = config.databaseURL
-    env[`${prefix}_TEST_BASE_URL`] = config.baseURL
+  return { url: url.origin, port: port(url.port, field) }
+}
+
+/**
+ * Pure guard used before preparation and cleanup. Does not load dotenv or open services.
+ * @param {Record<string, string | undefined>} env
+ */
+export function preflight(env = process.env) {
+  if (env.ARLA_TEST_ENV !== 'isolated') reject('ARLA_TEST_ENV', 'must equal isolated')
+  const project = env.ARLA_TEST_PROJECT
+  if (typeof project !== 'string' || !/^arla-ci-[a-z0-9][a-z0-9-]{0,39}$/.test(project)) {
+    reject('ARLA_TEST_PROJECT', 'must use the arla-ci- prefix and a lowercase alphanumeric/hyphen suffix')
   }
-  for (const [role,account] of Object.entries(config.accounts)) {
-    for (const prefix of ['ARLA_TEST','SEED']) {
-      env[`${prefix}_${role}_EMAIL`] = account.email
-      env[`${prefix}_${role}_PASSWORD`] = account.password
+
+  const app = loopbackHttp(env.ARLA_TEST_BASE_URL, 'ARLA_TEST_BASE_URL')
+  const databasePort = port(env.ARLA_TEST_DB_PORT, 'ARLA_TEST_DB_PORT')
+  const storagePort = port(env.ARLA_TEST_S3_PORT, 'ARLA_TEST_S3_PORT')
+  const authPort = port(env.HA01_TEST_PORT, 'HA01_TEST_PORT')
+  if (new Set([app.port, databasePort, storagePort, authPort]).size !== 4) {
+    reject('test ports', 'must be distinct for the application, authentication test, database and storage')
+  }
+
+  const database = parseUrl(env.DATABASE_URL, 'DATABASE_URL')
+  if (!['postgres:', 'postgresql:'].includes(database.protocol) || database.hostname !== '127.0.0.1' ||
+      database.port !== String(databasePort) || database.pathname !== '/expense_io_test' ||
+      database.username !== 'expense_test' || database.search || database.hash ||
+      env.POSTGRES_USER !== 'expense_test' || env.POSTGRES_DB !== 'expense_io_test') {
+    reject('DATABASE_URL/POSTGRES_USER/POSTGRES_DB', 'must identify the dedicated loopback expense_test user and expense_io_test database on ARLA_TEST_DB_PORT')
+  }
+  let databasePassword
+  try { databasePassword = decodeURIComponent(database.password) }
+  catch { reject('DATABASE_URL password', 'must be valid URL-encoded text') }
+  if (!databasePassword || databasePassword.length < 16 || databasePassword !== env.POSTGRES_PASSWORD) {
+    reject('POSTGRES_PASSWORD', 'must be generated for this test run and match the database URL password (at least 16 characters)')
+  }
+
+  if (env.HA04_TEST_ADMIN_DATABASE_URL !== undefined) {
+    const rls = parseUrl(env.HA04_TEST_ADMIN_DATABASE_URL, 'HA04_TEST_ADMIN_DATABASE_URL')
+    let rlsPassword
+    try { rlsPassword = decodeURIComponent(rls.password) }
+    catch { reject('HA04_TEST_ADMIN_DATABASE_URL', 'must use the same generated database credentials') }
+    if (!['postgres:', 'postgresql:'].includes(rls.protocol) || rls.hostname !== database.hostname ||
+        rls.port !== database.port || rls.username !== database.username || rlsPassword !== databasePassword ||
+        rls.pathname !== '/expense_rls_test' || rls.search || rls.hash) {
+      reject('HA04_TEST_ADMIN_DATABASE_URL', 'must select expense_rls_test on the same isolated cluster with the same credentials')
     }
   }
-  return env
+
+  const storage = loopbackHttp(env.S3_ENDPOINT, 'S3_ENDPOINT')
+  if (storage.port !== storagePort) reject('S3_ENDPOINT', 'must use ARLA_TEST_S3_PORT')
+  if (env.S3_BUCKET !== 'receipts-ci-test') reject('S3_BUCKET', 'must equal receipts-ci-test')
+  if (env.S3_ACCESS_KEY_ID !== 'test' || env.S3_SECRET_ACCESS_KEY !== 'test' ||
+      env.S3_REGION !== 'us-east-1' || env.S3_FORCE_PATH_STYLE !== 'true') {
+    reject('S3 configuration', 'must use the local test credentials, us-east-1 and path-style addressing')
+  }
+
+  for (const role of ['HR', 'MANAGER', 'EMPLOYEE']) {
+    const email = env[`ARLA_TEST_${role}_EMAIL`]
+    const password = env[`ARLA_TEST_${role}_PASSWORD`]
+    if (email !== `${role.toLowerCase()}@expense.test` || email !== env[`SEED_${role}_EMAIL`] ||
+        typeof password !== 'string' || password.length < 16 || password !== env[`SEED_${role}_PASSWORD`]) {
+      reject(`ARLA_TEST_${role}/SEED_${role}`, 'must match the synthetic role email and generated password')
+    }
+  }
+
+  // This object is safe to print. No connection string, identity or password.
+  return Object.freeze({
+    project,
+    baseUrl: app.url,
+    appPort: app.port,
+    authPort,
+    databaseHost: database.hostname,
+    databasePort,
+    databaseName: 'expense_io_test',
+    databaseUser: 'expense_test',
+    rlsDatabaseName: env.HA04_TEST_ADMIN_DATABASE_URL === undefined ? undefined : 'expense_rls_test',
+    storageEndpoint: storage.url,
+    storagePort,
+    bucket: 'receipts-ci-test',
+    baseline: 'privileged-bootstrap-no-rls-proof',
+  })
 }
 
-export function redactTestOutput(text, config) {
-  const values = [config.databaseURL,new URL(config.databaseURL).password,config.authSecret,
-    config.fixturePassword,...Object.values(config.accounts).map(account => account.password)]
-  let output = String(text)
-  for (const value of values.sort((a,b) => b.length-a.length)) output = output.split(value).join('[REDACTED]')
-  return output.replace(/postgres(?:ql)?:\/\/[^\s"'<>]+/gi,'[DATABASE_URL_REDACTED]')
-    .replace(/https?:\/\/[^\s"'<>]*X-Amz-[^\s"'<>]*/gi,'[SIGNED_URL_REDACTED]')
-    .replace(/(set-cookie:\s*)[^\r\n"']+/gi,'$1[REDACTED]')
-}
-
-export function summarizeTarget(config) {
-  validateTestConfig(config)
-  return { project: config.project, database: config.database, bucket: config.bucket,
-    appPort: config.appPort, dbPort: config.dbPort, s3Port: config.s3Port,
-    isolation: 'bootstrap-reference-only; HA-04 restricted role and business fixtures not integrated' }
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try { console.info(JSON.stringify(preflight())) }
+  catch (error) {
+    console.error(error.message)
+    process.exitCode = 1
+  }
 }

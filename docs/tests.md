@@ -1,8 +1,7 @@
 # Tests communs — MATH-01 / ARLA-39
 
-Depuis MATH-02, la préparation et la campagne complètes se lancent avec
-`npm run test:ci` sous Node 24.22.1 / npm 11.19.1 : voir [le guide CI](ci.md).
-Le premier passage manuel de MATH-01 ci-dessous reste une preuve datée.
+La préparation manuelle décrite historiquement plus bas est désormais automatisée
+par **`npm run test:ci`** : voir [CI et environnement jetable MATH-02](ci.md).
 
 Le socle conserve Vitest 5.0.5 et Playwright 1.64.1 déjà verrouillés. Il ajoute
 les trois parcours de connexion et complète la configuration commune sans

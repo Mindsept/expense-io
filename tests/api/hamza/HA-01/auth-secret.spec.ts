@@ -1,11 +1,10 @@
 import { randomBytes, randomUUID } from 'node:crypto'
-import { spawn, type ChildProcess } from 'node:child_process'
-import { once } from 'node:events'
 import { resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 import bcrypt from 'bcryptjs'
 import { Pool } from 'pg'
 import { expect, request as http, test, type APIRequestContext } from '@playwright/test'
+import { spawnOwnedNodeProcess, stopOwnedNodeProcess as stop } from '../../../support/process-tree.mjs'
 
 // This suite owns its server processes, not the shared Playwright webServer.
 // MATH-01/02 supplies the migrated, explicitly disposable PostgreSQL target.
@@ -25,18 +24,6 @@ function testDatabase() {
   return value
 }
 
-async function stop(server: ChildProcess) {
-  if (server.exitCode !== null || server.signalCode !== null) return
-  const exited = once(server, 'exit')
-  // Next dev may spawn a child; kill only this suite's private process group.
-  process.kill(-server.pid!, 'SIGTERM')
-  await Promise.race([exited, delay(5_000)])
-  if (server.exitCode === null && server.signalCode === null) {
-    process.kill(-server.pid!, 'SIGKILL')
-    await exited
-  }
-}
-
 async function start(secret: string, database: string, invalid = false) {
   if ((mode !== 'development' && mode !== 'production') || !Number.isInteger(port) || port < 1024 || port > 65535) {
     throw new Error('HA01_SERVER_MODE and HA01_TEST_PORT are invalid.')
@@ -48,10 +35,8 @@ async function start(secret: string, database: string, invalid = false) {
   } catch (error) {
     if (error instanceof Error && error.message === 'HA-01 test port is already in use.') throw error
   }
-  const server = spawn(process.execPath, [resolve('node_modules/next/dist/bin/next'), mode === 'production' ? 'start' : 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
-    env: { ...process.env, NODE_ENV: mode, DATABASE_URL: database, AUTH_SECRET: secret, AUTH_TRUST_HOST: 'true', NEXT_TELEMETRY_DISABLED: '1' },
-    detached: true,
-    stdio: ['ignore', 'pipe', 'pipe'],
+  const server = spawnOwnedNodeProcess([resolve('node_modules/next/dist/bin/next'), mode === 'production' ? 'start' : 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
+    env: { ...process.env, NODE_ENV: mode, DATABASE_URL: database, AUTH_SECRET: secret, AUTH_URL: baseURL, AUTH_TRUST_HOST: 'true', NEXT_TELEMETRY_DISABLED: '1' },
   })
   // Do not publish raw server logs, which may contain upstream data. Retain only
   // the presence of our safe configuration diagnostic for rejection tests.

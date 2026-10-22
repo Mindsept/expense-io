@@ -1,54 +1,34 @@
-# MATH-02 / ARLA-40 — validation
+# MATH-02 — preuves de validation
 
-Référence : branche `codex/arla-40-isolated-test-ci`, empilée sur MATH-01,
-commit de base `bf5835a`. Les campagnes locales comportaient les modifications
-de MATH-02 dans le dossier de travail : [SHA et état exacts](MATH-02/run.json),
-[empreintes de l'implémentation](MATH-02/implementation-sha256.json).
+PR unique : [fix general #14](https://github.com/Mindsept/expense-io/pull/14).
+Le socle MATH-01 de Mathis est repris avec son attribution.
 
-## Contrôles locaux réellement exécutés
+## Contrôles locaux du 22 octobre 2026
 
-Node 24.22.1 / npm 11.19.1 sur macOS ARM64. Installation propre par `npm ci`.
-Les versions et chemins de tous les paquets du lockfile restent identiques
-à MATH-01 ; seules les métadonnées engines et quelques marqueurs peer/dev
-normalisés par npm 11 changent. Aucune dépendance applicative n'est mise à jour.
+Sur Windows / Node 22.12.0, la version fonctionnelle `7a897a0` passe `npm run verify`
+(267 tests unitaires, lint et typage) et `npm run build`. Ces résultats ne sont pas
+une preuve API/E2E. Docker Desktop local échoue pendant son propre démarrage ; les
+services et suites HTTP/navigateur sont donc vérifiés sur les runners Linux.
 
-| Contrôle | Code | Résultat |
-| --- | --- | --- |
-| `npm run test:ci`, plusieurs stacks vierges indépendantes | 0 | 234 unitaires, 19 API/intégration et 3 E2E, sans cas ignoré ni flaky ; [répétabilité et commandes](MATH-02/repeatability.json) |
-| `verify`, `collect`, `build`, `api`, `e2e` dans la campagne finale | 0 chacun | Ordre final : lint/types/unitaires et collecte avant services ; tests contre `next start`, pas `next dev` |
-| Préparation avec URL DB de développement proposée | 1 attendu | Refus dans le précontrôle avant toute commande Docker/SQL ; [preuve](MATH-02/development-target-prepare.txt) |
-| Nettoyage avec la même mauvaise cible | 1 attendu | Aucune destruction démarrée ; [preuve](MATH-02/development-target-down.txt) |
-| Variable externe DATABASE_URL contradictoire | 1 attendu | Refus avant toute commande ; [preuve](MATH-02/external-target.txt) |
-| Healthcheck PostgreSQL volontairement faux, attente choisie 5 s | 1 attendu | Échec services à 5,333 s, aucune migration, nettoyage du seul projet à 4,129 s ; [preuve](MATH-02/unhealthy-service.txt) |
-| Nettoyage des campagnes positives et négative | 0 | Serveurs et seules stacks créées arrêtés ; [dernière sortie](MATH-02/cleanup.log) |
+## Contrôle négatif GitHub
 
-La configuration de santé a été restaurée octet pour octet après le contrôle
-négatif et une campagne complète est ensuite repassée. Les fichiers de test
-des autres auteurs, le Compose principal, les migrations et le code applicatif
-sont inchangés. Les 24 tests unitaires MATH-02 couvrent cibles/refus, correspondance
-des identités de préparation et des tests, moteur Docker local et expurgation.
+[Run 39748591249](https://github.com/Mindsept/expense-io/actions/runs/39748591249)
+au SHA `dd5f03970fb3f7a88459764d52863c7a6354255a` : **échec attendu** de l'assertion
+temporaire `MATH-02 negative control deliberately makes the pipeline fail`.
+Résultat : 267 tests réussis, un test volontairement en échec, sortie `verify=1`,
+sortie du job 1. Les services et la suite suivante n'ont pas été lancés.
+Cette assertion a ensuite été supprimée, sans `skip`, `fail` ou tolérance d'erreur.
+Le premier essai antérieur `39748322907` était un rejet de syntaxe YAML, pas une
+preuve du comportement d'un test ; la syntaxe du titre a été corrigée.
 
-## Rapports et sécurité des cibles
+## Campagnes complètes
 
-La dernière campagne réussie est copiée ici : [unitaires](MATH-02/verify.log),
-[collecte](MATH-02/collect.log), [build](MATH-02/build.log),
-[API](MATH-02/api.log), [E2E](MATH-02/e2e.log), [commandes et codes](MATH-02/commands.json).
-Les secrets des fichiers privés générés ont été recherchés dans ces preuves :
-aucune valeur n'y figure. Aucun `.env`, cookie, trace, vidéo, justificatif réel,
-dump ou URL signée utilisable n'est commité. Le workflow n'archive que le sous-dossier
-des rapports expurgés et les conserve trois jours.
+Les résultats définitifs et le SHA validé figurent dans les checks de la PR #14,
+puis dans le run `push` de `main` après fusion. Chaque campagne crée une stack vide
+distincte. Les artefacts `ci-evidence-<run>-<attempt>` contiennent `summary.json` et
+les logs expurgés des étapes réellement exécutées ; ils sont conservés cinq jours.
+Une suite non exécutée ne constitue pas un succès. La description finale de la PR
+doit citer les runs avant fusion.
 
-Le rôle observé reste `expense_test`, superutilisateur et BYPASSRLS :
-[constat](MATH-02/database-role.json). **Aucune preuve RLS ou fixture finale de deux
-entreprises n'est revendiquée.** Hamza doit fournir et confirmer ce contrat.
-Leandro doit relire l'orchestration avant fusion.
-
-## Vérification distante
-
-La CI GitHub corrigée est **verte** : [run PR 39781367995](https://github.com/Mindsept/expense-io/actions/runs/39781367995), job `119833274687`, commit de branche `4b42382a2ea76292cfb8e8a1dc6c2bebd865b137`. Installation propre, runtime épinglé, Chromium Linux, chaîne production/API/navigateur, nettoyage et conservation des preuves : tous réussis. Le run PR teste le commit de fusion temporaire GitHub ; la branche source est indiquée séparément. [Artefact](https://github.com/Mindsept/expense-io/actions/runs/39781367995/artifacts/12426952931), conservation trois jours.
-
-Voir [le guide de relance](../ci.md) et [la restitution](../restitution-mathis.html).
-
-## Contrôle négatif distant
-
-Le [run 39751865154](https://github.com/Mindsept/expense-io/actions/runs/39751865154) sur `926d14839061fe6718615eb940ff7575ef077155` a échoué sur le contrat des identifiants fictifs : 1 échec réel, 233 succès. Nettoyage réussi et artefact conservé. Le défaut volontaire a ensuite été retiré. L’assertion compare maintenant un booléen pour ne pas afficher de mot de passe synthétique généré par le test. La campagne positive distante ci-dessus est ensuite passée.
+Le rôle de référence reste privilégié. HA-04 dispose d'une base vide séparée pour
+ses diagnostics ; cela ne remplace pas sa future matrice d'autorisation applicative.

@@ -43,6 +43,4 @@ next-env.d.ts
 /playwright-report/
 /playwright/.cache/
 /tests/.auth/
-
-# Isolated test stack: credentials, raw reports, sanitized run artifacts
-/.test-runtime/
+/.ci-output/

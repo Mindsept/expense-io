@@ -28,3 +28,7 @@ Les JSON d’audits bruts avant/après sont dans [MATH-07/](MATH-07/). Une sorti
 - Revue humaine Hamza attendue ; les résultats locaux et distants sont distingués. Aucune clôture de sécurité globale.
 
 Reproduction : `npm ci`, `npm run test:ci`, `npm ls next eslint-config-next sharp source-map-js braces --all`, audits complet/production. Utiliser la paire épinglée et Docker local. Les overrides doivent être réexaminés quand les contraintes amont garantissent les corrections pour ne pas bloquer de futurs patchs.
+
+## Réalignement après intégration parallèle
+
+Hugo a intégré une autre orchestration ARLA-40 dans main via #14 (`a0a0ab0`). La PR ARLA-40 #15 est remplacée, sans fusion. Cette branche conserve intégralement le runner, les protections, les tests et les corrections applicatives déjà intégrés dans main. Elle réapplique uniquement les patchs de dépendances et épingle la paire runtime qualifiée. Les preuves ci-dessus décrivent le premier passage avant ce réalignement ; une nouvelle campagne sur l’arbre intégré sera conservée séparément.

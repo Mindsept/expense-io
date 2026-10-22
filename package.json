@@ -18,11 +18,8 @@
     "test:smoke": "npm run test:e2e -- tests/e2e/mathis/MATH-01/roles.smoke.spec.ts",
     "test:collect": "node tests/support/check-collection.mjs",
     "verify": "npm run lint && npm run typecheck && npm run test:unit",
-    "test:prepare": "node tests/support/test-stack.mjs prepare",
-    "test:serve": "node tests/support/test-stack.mjs serve",
-    "test:exec": "node tests/support/test-stack.mjs exec",
-    "test:ci": "node tests/support/test-stack.mjs ci",
-    "test:down": "node tests/support/test-stack.mjs down"
+    "test:prepare": "node tests/support/prepare.mjs",
+    "test:ci": "node tests/support/ci.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",
@@ -51,13 +48,13 @@
     "typescript": "^5",
     "vitest": "5.0.5"
   },
+  "overrides": {
+    "sharp": "0.35.5",
+    "source-map-js": "1.2.2"
+  },
   "engines": {
     "node": ">=24.22.1 <25",
     "npm": ">=11.19.1 <12"
   },
-  "packageManager": "npm@11.19.1",
-  "overrides": {
-    "sharp": "0.35.5",
-    "source-map-js": "1.2.2"
-  }
+  "packageManager": "npm@11.19.1"
 }
