@@ -1,0 +1,2048 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "expense.io — delivered HTTP contract",
+    "version": "1.0.0",
+    "description": "LE-10 / ARLA-28. Baseline main b6bf206 (HA-02 and HA-03 merged), 22 October 2026. Current behavior only; approved product target and pending transitions are in README.md. Auth.js actions are delegated. This document does not claim RLS, idempotency, pagination or async OCR."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Same origin as the application; no production hostname or credentials."
+    }
+  ],
+  "security": [
+    {
+      "sessionCookie": []
+    },
+    {
+      "secureSessionCookie": []
+    }
+  ],
+  "paths": {
+    "/api/expense-notes": {
+      "get": {
+        "operationId": "listOwnExpenses",
+        "summary": "Current active session; own notes, all statuses. No pagination.",
+        "x-source": "src/app/api/expense-notes/route.ts",
+        "x-error-contract": "legacy-early-problem-catch",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNotes"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Legacy401"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "created_at DESC"
+            },
+            "description": "Legacy SQL sort fragment; only send created_at DESC. No allowlist or rejected-invalid-sort guarantee before LE-01. Never forward untrusted sort input."
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createExpense",
+        "summary": "Submit own note, pending; no atomic storage guarantee or idempotency contract yet.",
+        "x-source": "src/app/api/expense-notes/route.ts",
+        "x-error-contract": "legacy-early-problem-catch",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Legacy400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Legacy401"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "expenseDate",
+                  "description",
+                  "receipt"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "description": "Send positive decimal text with at most two fractional digits. Legacy parseFloat accepts more than this convention."
+                  },
+                  "expenseDate": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Send a real YYYY-MM-DD date; strict HTTP validation pending LE-01."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "receipt": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Declared PNG/JPEG/WebP/PDF, at most 10 MiB. Legacy checks MIME and size, not file structure or empty content."
+                  }
+                }
+              },
+              "encoding": {
+                "receipt": {
+                  "contentType": "image/png, image/jpeg, image/webp, application/pdf"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/expense-notes/receipt-suggestion": {
+      "post": {
+        "operationId": "suggestExpenseFields",
+        "summary": "Synchronous French OCR, optional fields only. Unsupported MIME, OCR failure or ambiguity can return 200 {}. PDF is not OCR-supported. No request size limit in this route yet.",
+        "x-source": "src/app/api/expense-notes/receipt-suggestion/route.ts",
+        "x-error-contract": "legacy-early-problem-catch",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Suggestion"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Legacy400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Legacy401"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "receipt"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "receipt": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/expense-notes/{id}/receipt-url": {
+      "get": {
+        "operationId": "getOwnReceiptUrl",
+        "summary": "Current active owner, including after a decision. Empty/blank key and invisible/missing note return 404.",
+        "x-source": "src/app/api/expense-notes/[id]/receipt-url/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptUrl"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/manager/expense-notes": {
+      "get": {
+        "operationId": "managerListPending",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Pending only, oldest first, array without pagination.",
+        "x-source": "src/app/api/manager/expense-notes/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNotes"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/manager/expense-notes/{id}/receipt-url": {
+      "get": {
+        "operationId": "managerReceiptUrl",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Blank receipt key returns 404; signing does not check S3 object existence.",
+        "x-source": "src/app/api/manager/expense-notes/[id]/receipt-url/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptUrl"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/manager/expense-notes/{id}/approve": {
+      "post": {
+        "operationId": "managerApprove",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
+        "x-source": "src/app/api/manager/expense-notes/[id]/approve/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/manager/expense-notes/{id}/reject": {
+      "post": {
+        "operationId": "managerReject",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
+        "x-source": "src/app/api/manager/expense-notes/[id]/reject/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/expense-notes": {
+      "get": {
+        "operationId": "hrListPending",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Pending only, oldest first, array without pagination.",
+        "x-source": "src/app/api/hr/expense-notes/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNotes"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/expense-notes/{id}/receipt-url": {
+      "get": {
+        "operationId": "hrReceiptUrl",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Blank receipt key returns 404; signing does not check S3 object existence.",
+        "x-source": "src/app/api/hr/expense-notes/[id]/receipt-url/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptUrl"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/expense-notes/{id}/approve": {
+      "post": {
+        "operationId": "hrApprove",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
+        "x-source": "src/app/api/hr/expense-notes/[id]/approve/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/expense-notes/{id}/reject": {
+      "post": {
+        "operationId": "hrReject",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
+        "x-source": "src/app/api/hr/expense-notes/[id]/reject/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/users": {
+      "get": {
+        "operationId": "listCompanyUsers",
+        "summary": "Current HR; employee/manager users in own company (includes inactive accounts), sorted by name. No pagination.",
+        "x-source": "src/app/api/hr/users/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryUsers"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/users/{id}/manager": {
+      "put": {
+        "operationId": "assignManager",
+        "summary": "Current HR; same-company employee/manager target. Explicit null unassigns. Manager must be active, same-company, manager role and not self. Busy locks return retryable 409, without automatic retry. Full graph cycle prevention pending HA-06.",
+        "x-source": "src/app/api/hr/users/[id]/manager/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryUser"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "managerId"
+                ],
+                "properties": {
+                  "managerId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "nullable": true
+                  }
+                },
+                "description": "Other properties currently ignored; they cannot change company/role."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/{action}": {
+      "parameters": [
+        {
+          "name": "action",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Delegated catch-all, including multi-segment callback/credentials. See concrete integration endpoints below."
+        }
+      ],
+      "get": {
+        "operationId": "authDelegateGet",
+        "summary": "Auth.js delegated surface; framework-specific redirects, HTML and JSON, outside the business error contract.",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "responses": {
+          "default": {
+            "description": "Auth.js-owned response. No ProblemDetails or request ID guarantee. Concrete tested JSON endpoints are listed separately."
+          }
+        }
+      },
+      "post": {
+        "operationId": "authDelegatePost",
+        "summary": "Auth.js delegated surface; framework-specific redirects, HTML and JSON, outside the business error contract.",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "responses": {
+          "default": {
+            "description": "Auth.js-owned response. No ProblemDetails or request ID guarantee. Concrete tested JSON endpoints are listed separately."
+          }
+        }
+      }
+    },
+    "/api/auth/csrf": {
+      "get": {
+        "operationId": "authCsrfToken",
+        "summary": "Auth.js JSON integration endpoint; session is null when unauthenticated, deleted or inactive.",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Auth.js JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfToken"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Framework-owned failure; no business error envelope."
+          }
+        }
+      }
+    },
+    "/api/auth/session": {
+      "get": {
+        "operationId": "authSession",
+        "summary": "Auth.js JSON integration endpoint; session is null when unauthenticated, deleted or inactive.",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Auth.js JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Framework-owned failure; no business error envelope."
+          }
+        }
+      }
+    },
+    "/api/auth/callback/credentials": {
+      "post": {
+        "operationId": "credentialsCallback",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "summary": "Obtain CSRF token/cookie first, then send credentials with same cookie jar. Redirect mode used by integration tests. Never hardcode or publish session cookies.",
+        "parameters": [
+          {
+            "name": "X-Auth-Return-Redirect",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Auth.js may use JSON redirect mode instead of HTTP redirect."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "csrfToken",
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "csrfToken": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "callbackUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "302": {
+            "description": "Auth.js redirect; inspect destination/session to distinguish successful login and credential failure.",
+            "headers": {
+              "Location": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Auth.js JSON redirect mode",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "url"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Auth.js-owned failure or redirect. No business error envelope."
+          }
+        }
+      }
+    },
+    "/api/expense-notes/{id}/history": {
+      "get": {
+        "operationId": "getExpenseHistory",
+        "summary": "Current active owner or currently eligible same-company manager/HR, including after decision. items ordered by server timestamp then event UUID; empty when no recorded event. Actor display name is snapshotted. Previous-company events are excluded.",
+        "x-source": "src/app/api/expense-notes/[id]/history/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionHistory"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "authjs.session-token",
+        "description": "Opaque JWT session from Auth.js credentials flow on local HTTP. Current rights reloaded on every request."
+      },
+      "secureSessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Secure-authjs.session-token",
+        "description": "HTTPS secure-cookie variant. Chunked cookies are managed by Auth.js. Never send as Bearer authorization."
+      }
+    },
+    "schemas": {
+      "ExpenseNote": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "amount",
+          "expenseDate",
+          "description",
+          "receiptKey",
+          "status",
+          "createdAt"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 99999999.99
+          },
+          "expenseDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "description": {
+            "type": "string"
+          },
+          "receiptKey": {
+            "type": "string",
+            "description": "Opaque storage key, not a URL. May be empty in existing partial submissions (LE-02 pending)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "example": {
+          "id": "11111111-1111-4111-8111-111111111111",
+          "userId": "22222222-2222-4222-8222-222222222222",
+          "amount": 12.5,
+          "expenseDate": "2024-02-29",
+          "description": "Synthetic taxi",
+          "receiptKey": "synthetic/receipt.png",
+          "status": "pending",
+          "createdAt": "2026-10-22T10:00:00.000Z"
+        }
+      },
+      "ExpenseNotes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ExpenseNote"
+        }
+      },
+      "DirectoryUser": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "managerId"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "employee",
+              "manager"
+            ]
+          },
+          "managerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        }
+      },
+      "DirectoryUsers": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/DirectoryUser"
+        }
+      },
+      "ReceiptUrl": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?://",
+            "description": "Presigned GET, default expiry 300 seconds. Signing does not verify object existence; treat as a secret."
+          }
+        },
+        "example": {
+          "url": "https://storage.example.test/synthetic/receipt.png?synthetic=example-only"
+        }
+      },
+      "Suggestion": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 99999999.99
+          },
+          "expenseDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "example": {
+          "amount": 12.5,
+          "expenseDate": "2024-02-29"
+        }
+      },
+      "LegacyError": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "CsrfToken": {
+        "type": "object",
+        "required": [
+          "csrfToken"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "csrfToken": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "Session": {
+        "nullable": true,
+        "type": "object",
+        "required": [
+          "user",
+          "expires"
+        ],
+        "properties": {
+          "user": {
+            "type": "object",
+            "required": [
+              "id",
+              "email",
+              "role"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "employee",
+                  "manager",
+                  "hr_admin"
+                ]
+              }
+            }
+          },
+          "expires": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "error",
+          "requestId"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string",
+            "description": "Compatibility extension, identical to detail."
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:validation"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Invalid request"
+                ]
+              },
+              "status": {
+                "enum": [
+                  400
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "Check the required fields and their format."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "Check the required fields and their format."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:invalid_json"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Invalid JSON"
+                ]
+              },
+              "status": {
+                "enum": [
+                  400
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The request body must be a valid JSON object."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The request body must be a valid JSON object."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:invalid_manager_assignment"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Invalid manager assignment"
+                ]
+              },
+              "status": {
+                "enum": [
+                  400
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "Provide managerId as a UUID or explicit null."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "Provide managerId as a UUID or explicit null."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:unauthenticated"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Authentication required"
+                ]
+              },
+              "status": {
+                "enum": [
+                  401
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "Sign in to continue."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "Sign in to continue."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:forbidden"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Forbidden"
+                ]
+              },
+              "status": {
+                "enum": [
+                  403
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "Your role does not allow this operation."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "Your role does not allow this operation."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:not_found"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Not found"
+                ]
+              },
+              "status": {
+                "enum": [
+                  404
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The requested resource was not found."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The requested resource was not found."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:conflict"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Conflict"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This expense has already been decided."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This expense has already been decided."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:invalid_manager"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Invalid manager"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The selected manager cannot be assigned."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The selected manager cannot be assigned."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:manager_assignment_busy"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Assignment busy"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This assignment is being used by another operation. Try again."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This assignment is being used by another operation. Try again."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:technical_failure"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Internal server error"
+                ]
+              },
+              "status": {
+                "enum": [
+                  500
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The operation could not be completed. Try again later."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The operation could not be completed. Try again later."
+                ]
+              }
+            }
+          }
+        ],
+        "example": {
+          "type": "urn:expense-io:problem:not_found",
+          "title": "Not found",
+          "status": 404,
+          "detail": "The requested resource was not found.",
+          "error": "The requested resource was not found.",
+          "requestId": "33333333-3333-4333-8333-333333333333"
+        }
+      },
+      "DecisionHistory": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "fromStatus",
+                "toStatus",
+                "decidedAt",
+                "actor"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "fromStatus": {
+                  "type": "string",
+                  "enum": [
+                    "pending"
+                  ]
+                },
+                "toStatus": {
+                  "type": "string",
+                  "enum": [
+                    "approved",
+                    "rejected"
+                  ]
+                },
+                "decidedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "actor": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "displayName"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "items": [
+            {
+              "id": "44444444-4444-4444-8444-444444444444",
+              "fromStatus": "pending",
+              "toStatus": "approved",
+              "decidedAt": "2026-10-22T10:00:00.000Z",
+              "actor": {
+                "id": "55555555-5555-4555-8555-555555555555",
+                "displayName": "Synthetic manager"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "responses": {
+      "Problem400": {
+        "description": "Invalid input",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        400
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem401": {
+        "description": "Missing, deleted or inactive identity",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        401
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem403": {
+        "description": "Current role cannot perform this operation",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        403
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem404": {
+        "description": "Missing, invisible, self-validation or blank receipt; indistinguishable public response",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        404
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem409": {
+        "description": "Already decided, invalid manager or busy assignment",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        409
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem500": {
+        "description": "Sanitized technical failure",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        500
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Legacy400": {
+        "description": "Legacy early input failure. No correlation header promised.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/LegacyError"
+                },
+                {
+                  "properties": {
+                    "error": {
+                      "enum": [
+                        "Champs invalides",
+                        "Type de fichier non autorisé pour le reçu",
+                        "Fichier trop volumineux"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Legacy401": {
+        "description": "Legacy missing session: {\"error\":\"Unauthorized\"}. No correlation header promised.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/LegacyError"
+                },
+                {
+                  "properties": {
+                    "error": {
+                      "enum": [
+                        "Unauthorized"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
