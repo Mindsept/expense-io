@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { randomBytes, randomUUID } from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import { Pool } from 'pg'
@@ -21,7 +22,7 @@ const userId = randomUUID()
 const otherUserId = randomUUID()
 const email = `le12-${userId}@example.test`
 const password = randomBytes(24).toString('base64url')
-const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB1sAAAAASUVORK5CYII=', 'base64')
+const png = readFileSync('tests/fixtures/leandro/LE-04/images/large-total.png')
 let client: APIRequestContext
 
 test.beforeAll(async ({ playwright }) => {
