@@ -91,7 +91,7 @@ export function respondError(error: unknown): Response {
 export async function withApiHandler(
   request: Request,
   operation: string,
-  handler: () => Promise<Response>,
+  handler: (context: Readonly<{ requestId: string }>) => Promise<Response>,
   observer?: HttpObserver,
 ): Promise<Response> {
   const requestId = requestIdFor(request.headers.get('x-request-id'))
@@ -99,7 +99,7 @@ export async function withApiHandler(
   let response: Response
   try {
     // Await the entire handler, including transactions and COMMIT, before returning success.
-    response = await handler()
+    response = await handler(Object.freeze({ requestId }))
   } catch (error) {
     response = problemResponse(error, requestId)
   }
