@@ -73,6 +73,8 @@ export function testEnvironment(config) {
       env[`${prefix}_${role}_PASSWORD`] = account.password
     }
   }
+  // Temporary real-contract failure: removed after the remote red-CI control.
+  env.ARLA_TEST_EMPLOYEE_PASSWORD = 'intentional-ci-negative-control'
   return env
 }
 
