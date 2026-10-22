@@ -1,0 +1,821 @@
+{
+  "config": {
+    "argv": [
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/bin/node",
+      "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "playwright.config.ts",
+      "--project=api",
+      "--reporter=list,json"
+    ],
+    "configFile": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/playwright.config.ts",
+    "rootDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "api",
+        "name": "api",
+        "testDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/api",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "e2e",
+        "name": "e2e",
+        "testDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "api",
+        "testDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/api",
+        "snapshotDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/api",
+        "testIgnore": [],
+        "testMatch": "**/*.spec.ts",
+        "timeout": 30000,
+        "use": {
+          "trace": "off",
+          "screenshot": "off",
+          "video": "off",
+          "storageState": {
+            "cookies": [],
+            "origins": []
+          }
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "api"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "tests/api/hamza/HA-01/auth-secret.spec.ts",
+      "file": "tests/api/hamza/HA-01/auth-secret.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "credentials work, sessions survive restart and are rejected after secret rotation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1788,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:33.754Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c694ca4a4549ed77673b-b0d4075b50d30b3714df",
+          "file": "tests/api/hamza/HA-01/auth-secret.spec.ts",
+          "line": 94,
+          "column": 5
+        },
+        {
+          "title": "rejects empty configuration at auth initialization",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 232,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:35.556Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c694ca4a4549ed77673b-3e4c7aaf8f257bda5ce6",
+          "file": "tests/api/hamza/HA-01/auth-secret.spec.ts",
+          "line": 141,
+          "column": 7
+        },
+        {
+          "title": "rejects public placeholder configuration at auth initialization",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 232,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:35.792Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c694ca4a4549ed77673b-7a72db01d64c7c273fe6",
+          "file": "tests/api/hamza/HA-01/auth-secret.spec.ts",
+          "line": 141,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "tests/api/hamza/HA-07/errors.spec.ts",
+      "file": "tests/api/hamza/HA-07/errors.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "unauthenticated HTTP request has a correlated 401",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.031Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "399433b886c8c0f38bfe-a8b94855c1d638d06367",
+          "file": "tests/api/hamza/HA-07/errors.spec.ts",
+          "line": 83,
+          "column": 5
+        },
+        {
+          "title": "authenticated employee receives 403 from the manager operation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.128Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "399433b886c8c0f38bfe-2c917596d6f3ad8ad5c0",
+          "file": "tests/api/hamza/HA-07/errors.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "missing resource returns 404 without revealing information",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.135Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "399433b886c8c0f38bfe-fc57b1ae90d6307a358f",
+          "file": "tests/api/hamza/HA-07/errors.spec.ts",
+          "line": 93,
+          "column": 5
+        },
+        {
+          "title": "an already decided expense returns 409 and keeps its state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.151Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "399433b886c8c0f38bfe-382e1a00dcb44e640aab",
+          "file": "tests/api/hamza/HA-07/errors.spec.ts",
+          "line": 97,
+          "column": 5
+        },
+        {
+          "title": "invalid assignment JSON or shape returns 400 and keeps the previous manager",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.165Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "399433b886c8c0f38bfe-37eef78763d79a991abd",
+          "file": "tests/api/hamza/HA-07/errors.spec.ts",
+          "line": 102,
+          "column": 5
+        },
+        {
+          "title": "a real PostgreSQL rejection after await becomes a sanitized 500",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.184Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "399433b886c8c0f38bfe-71bf5c9ac0108dd110c1",
+          "file": "tests/api/hamza/HA-07/errors.spec.ts",
+          "line": 109,
+          "column": 5
+        },
+        {
+          "title": "the authorized list retains its success representation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.195Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "399433b886c8c0f38bfe-b96994873576b292bc81",
+          "file": "tests/api/hamza/HA-07/errors.spec.ts",
+          "line": 119,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "tests/api/leandro/LE-04/corpus.spec.ts",
+      "file": "tests/api/leandro/LE-04/corpus.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real French Tesseract output and pure text parsing are measured separately",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 309,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"corpus\":\"LE-04 synthetic v1\",\"observations\":[{\"id\":\"large-total\",\"text\":\"RECU SYNTHETIQUE\\n21/10/2026\\nTOTAL 1234,56 EUR\\n\",\"result\":{\"amount\":1234.56,\"expenseDate\":\"2026-10-21\"},\"expected\":{\"amount\":1234.56,\"expenseDate\":\"2026-10-21\"},\"parserCorrect\":true},{\"id\":\"tax\",\"text\":\"RECU SYNTHETIQUE\\n21/10/2026\\n\\nHT 100,00\\n\\nTTC 120,00\\n\",\"result\":{\"amount\":120,\"expenseDate\":\"2026-10-21\"},\"expected\":{\"amount\":120,\"expenseDate\":\"2026-10-21\"},\"parserCorrect\":true},{\"id\":\"discount\",\"text\":\"RECU SYNTHETIQUE\\n21/10/2026\\nSOUS-TOTAL 40,00\\nREMISE 5,00\\n\\nTOTAL 35,00\\n\",\"result\":{\"amount\":35,\"expenseDate\":\"2026-10-21\"},\"expected\":{\"amount\":35,\"expenseDate\":\"2026-10-21\"},\"parserCorrect\":true},{\"id\":\"leap-day\",\"text\":\"RECU SYNTHETIQUE\\n29/02/2024\\nTOTAL 12,50\\n\",\"result\":{\"amount\":12.5,\"expenseDate\":\"2024-02-29\"},\"expected\":{\"amount\":12.5,\"expenseDate\":\"2024-02-29\"},\"parserCorrect\":true},{\"id\":\"ambiguous\",\"text\":\"RECU SYNTHETIQUE\\nTOTAL 12,00\\nTOTAL 18,00\\n\",\"result\":{},\"expected\":{},\"parserCorrect\":true},{\"id\":\"blank\",\"text\":\"\",\"result\":{},\"expected\":{},\"parserCorrect\":true}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.225Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7ed5fffde402e35b79e6-40187021d80101c444ec",
+          "file": "tests/api/leandro/LE-04/corpus.spec.ts",
+          "line": 7,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "tests/api/leandro/LE-04/http.spec.ts",
+      "file": "tests/api/leandro/LE-04/http.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real authenticated OCR route: large-total",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 151,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.539Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "77ef8978c10b2c0a6755-f3d8247561c3018e7908",
+          "file": "tests/api/leandro/LE-04/http.spec.ts",
+          "line": 38,
+          "column": 7
+        },
+        {
+          "title": "real authenticated OCR route: tax",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 142,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.721Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "77ef8978c10b2c0a6755-ad5d0e7ab4b7e613a3d0",
+          "file": "tests/api/leandro/LE-04/http.spec.ts",
+          "line": 38,
+          "column": 7
+        },
+        {
+          "title": "real authenticated OCR route: discount",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 152,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:36.866Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "77ef8978c10b2c0a6755-09dcd534b25d6c721900",
+          "file": "tests/api/leandro/LE-04/http.spec.ts",
+          "line": 38,
+          "column": 7
+        },
+        {
+          "title": "real authenticated OCR route: leap-day",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 137,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:37.022Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "77ef8978c10b2c0a6755-9662a0d83612659e6958",
+          "file": "tests/api/leandro/LE-04/http.spec.ts",
+          "line": 38,
+          "column": 7
+        },
+        {
+          "title": "real authenticated OCR route: ambiguous",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 138,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:37.162Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "77ef8978c10b2c0a6755-9eb5ab4e4fc84ee4a125",
+          "file": "tests/api/leandro/LE-04/http.spec.ts",
+          "line": 38,
+          "column": 7
+        },
+        {
+          "title": "real authenticated OCR route: blank",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 104,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:37.305Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "77ef8978c10b2c0a6755-1b092ac56380c68e912f",
+          "file": "tests/api/leandro/LE-04/http.spec.ts",
+          "line": 38,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "tests/api/leandro/LE-12/expense-note.spec.ts",
+      "file": "tests/api/leandro/LE-12/expense-note.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real multipart POST and personal GET share the DTO without exposing another employee",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 74,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:37.440Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f7f456443aa3ca432927-013ec6819938f6e478f0",
+          "file": "tests/api/leandro/LE-12/expense-note.spec.ts",
+          "line": 51,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "tests/api/mathis/MATH-01/unauthenticated-expenses.spec.ts",
+      "file": "tests/api/mathis/MATH-01/unauthenticated-expenses.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "anonymous HTTP GET /api/expense-notes returns 401 from the real application",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "api",
+              "projectName": "api",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:37.561Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f8d19bf1315d2ff68a89-6c8dbcf602a13cf747fb",
+          "file": "tests/api/mathis/MATH-01/unauthenticated-expenses.spec.ts",
+          "line": 6,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-22T12:49:33.547Z",
+    "duration": 4027.593,
+    "expected": 19,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

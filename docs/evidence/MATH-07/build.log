@@ -1,0 +1,47 @@
+
+> expense-io-version-b@0.1.0 build
+> next build
+
+▲ Next.js 16.3.8 (Turbopack)
+✓ Running next.config.ts took 711ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1876ms
+  Running TypeScript ...
+  Finished TypeScript in 1316ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/13) ...
+  Generating static pages using 9 workers (3/13) 
+  Generating static pages using 9 workers (6/13) 
+  Generating static pages using 9 workers (9/13) 
+✓ Generating static pages using 9 workers (13/13) in 62ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/expense-notes
+├ ƒ /api/expense-notes/[id]/receipt-url
+├ ƒ /api/expense-notes/receipt-suggestion
+├ ƒ /api/hr/expense-notes
+├ ƒ /api/hr/expense-notes/[id]/approve
+├ ƒ /api/hr/expense-notes/[id]/receipt-url
+├ ƒ /api/hr/expense-notes/[id]/reject
+├ ƒ /api/hr/users
+├ ƒ /api/hr/users/[id]/manager
+├ ƒ /api/manager/expense-notes
+├ ƒ /api/manager/expense-notes/[id]/approve
+├ ƒ /api/manager/expense-notes/[id]/receipt-url
+├ ƒ /api/manager/expense-notes/[id]/reject
+├ ƒ /expenses
+├ ƒ /hr
+├ ƒ /login
+├ ƒ /manager
+└ ƒ /signup
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand
+
