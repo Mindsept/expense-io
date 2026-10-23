@@ -1,10 +1,11 @@
 import { ApiError } from '@/lib/errors'
 import { hasReceiptContent } from '@/lib/receipt-validation'
 import { isCivilDate } from '@/utils/validators'
+import type { ReceiptExtension } from '@/ports/ExpenseSubmissionPort'
 
 export const MAX_RECEIPT_BYTES = 10 * 1024 * 1024
 export const MAX_DESCRIPTION_LENGTH = 4000
-const extensions = new Map([
+const extensions = new Map<string, ReceiptExtension>([
   ['image/png', '.png'], ['image/jpeg', '.jpg'], ['image/webp', '.webp'], ['application/pdf', '.pdf'],
 ])
 const sorts = new Map([

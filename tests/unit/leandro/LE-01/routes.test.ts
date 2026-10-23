@@ -3,14 +3,14 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
 import { ApiError } from '@/lib/errors'
 
-const mocks = vi.hoisted(() => ({ auth: vi.fn(), actor: vi.fn(), scoped: vi.fn(), query: vi.fn(), upload: vi.fn() }))
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), actor: vi.fn(), scoped: vi.fn(), query: vi.fn(), upload: vi.fn(), remove: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ auth: mocks.auth }))
 vi.mock('@/lib/current-actor', () => ({ withCurrentActor: mocks.actor }))
 vi.mock('@/lib/db', () => ({
   withUserScope: mocks.scoped,
   getPool: () => ({ query: mocks.query }),
 }))
-vi.mock('@/lib/storage', () => ({ receiptKeyFor: () => 'receipts/1.png', uploadReceipt: mocks.upload }))
+vi.mock('@/lib/storage', () => ({ uploadReceipt: mocks.upload, removeReceipt: mocks.remove, getReceiptUrl: vi.fn() }))
 import { GET, POST } from '@/app/api/expense-notes/route'
 
 const row = { id: 'note', user_id: 'owner', receipt_seq: 1, amount: '12.34', expense_date: '2024-02-29',
@@ -34,7 +34,7 @@ beforeEach(() => {
     if (!session?.user) throw new ApiError('unauthenticated')
     return mocks.scoped(session.user.id, (client: unknown) => operation(client, { id: session.user.id, companyId: 'company', role: session.user.role }))
   })
-  mocks.query.mockResolvedValue({ rows: [row] })
+  mocks.query.mockImplementation(async (sql: string, values: unknown[]) => ({ rows: [sql.includes('INSERT INTO expense_notes') ? { ...row, receipt_key: values[4] } : row] }))
   vi.spyOn(console, 'info').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
   vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -79,8 +79,11 @@ it.each([
 it('preserves a valid multipart POST with a real PNG', async () => {
   const response = await POST(submission())
   expect(response.status).toBe(201)
-  expect((await response.json()).amount).toBe(12.34)
-  expect(mocks.upload).toHaveBeenCalledWith('receipts/1.png', png, 'image/png')
+  const note = await response.json()
+  expect(note.amount).toBe(12.34)
+  expect(note.receiptKey).toMatch(/^receipts\/[0-9a-f-]{36}\.png$/)
+  expect(mocks.upload).toHaveBeenCalledWith(note.receiptKey, png, 'image/png')
+  expect(mocks.remove).not.toHaveBeenCalled()
 })
 
 it.each(['created_at DESC', 'created_at ASC', 'amount DESC', 'amount ASC', 'expense_date DESC', 'expense_date ASC'])('preserves the historical safe sort %s', async sort => {

@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { withCurrentActor } from '@/lib/current-actor'
 import { ApiError, withApiHandler } from '@/lib/errors'
 import { expenseSort, readExpenseForm } from '@/lib/expense-input'
-import { receiptKeyFor, uploadReceipt } from '@/lib/storage'
+import { submitExpenseForCurrentActor } from '@/application/submit-expense-for-current-actor'
 import { toExpenseNote } from '@/adapters/expense-note-mapper'
 
 export async function GET(request: Request) {
@@ -19,35 +19,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  return withApiHandler(request, 'expense-notes.submit', async () => {
+  return withApiHandler(request, 'expense-notes.submit', async ({ requestId }) => {
     const session = await auth()
     if (!session?.user) throw new ApiError('unauthenticated')
 
-    // Gate parsing with the refreshed session, then reload/lock the current actor
-    // for each database operation. Never hold an actor lock while reading a body
-    // or uploading S3 bytes. LE-02 owns reconciliation of partial submissions.
     const input = await readExpenseForm(request)
-
-    const note = await withCurrentActor(undefined, async (client, actor) => {
-      const inserted = await client.query(
-        `INSERT INTO expense_notes (user_id, amount, expense_date, description, receipt_key)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING *`,
-        [actor.id, input.amount, input.expenseDate, input.description, '']
-      )
-      return inserted.rows[0]
-    })
-
-    const receiptKey = receiptKeyFor(note.receipt_seq, input.extension)
-    await uploadReceipt(receiptKey, input.buffer, input.mimeType)
-
-    return withCurrentActor(undefined, async (client, actor) => {
-      const updated = await client.query(
-        `UPDATE expense_notes SET receipt_key = $1 WHERE id = $2 AND user_id = $3 RETURNING *`,
-        [receiptKey, note.id, actor.id],
-      )
-      if (!updated.rows[0]) throw new ApiError('not_found')
-      return Response.json(toExpenseNote(updated.rows[0]), { status: 201 })
-    })
+    const note = await submitExpenseForCurrentActor(input, { requestId })
+    return Response.json(note, { status: 201 })
   })
 }
