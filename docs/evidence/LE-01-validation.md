@@ -132,3 +132,20 @@ occurrence ni assertion supprimée. Le rafraîchissement est maintenu en attente
 par un deferred, ce qui reproduit systématiquement les deux statuts légitimes
 pendant l'assertion, puis il est libéré. Le contrôle du résultat OCR obsolète,
 du bouton et des champs reste intact. Aucun retry ou délai arbitraire ajouté.
+
+### Résultat de reprise du 23 octobre
+
+Sur `0d33bcb51382cd6997dfd9d31a41657c5d0c2a1d`, la campagne locale complète
+réussit : lint/types, 438 unitaires, collecte, préparation PostgreSQL/S3 isolée,
+build Webpack, 120 API, 13 Chromium E2E et nettoyage, toutes étapes code 0.
+Le témoin EL-03 maintient volontairement le rafraîchissement en attente pendant
+la vérification du succès ; aucune assertion métier ni aucun retry n'est retiré.
+
+Le nouveau push n'a déclenché aucun run. Le lancement manuel du workflow existant
+sur main avec `pr_number=12` retourne HTTP 422 : « Actions has been disabled for
+this repository ». Aucun paramètre global Actions n'est modifié pour contourner
+cette désactivation. La CI 39811210493 reste une preuve du build standard Linux,
+des 438 unitaires et des 120 API du même code produit ; son échec navigateur est
+le sélecteur désormais corrigé. Elle n'est pas présentée comme une CI verte du
+dernier commit. Les seuls changements suivants concernent le test et la présente
+preuve documentaire.
