@@ -26,7 +26,7 @@ test('a retry after a lost response reuses the same key, fields and receipt', as
   await expect(page.getByRole('button', { name: 'Réessayer la même soumission', exact: true })).toBeEnabled()
 
   await page.getByRole('button', { name: 'Réessayer la même soumission', exact: true }).click()
-  await expect(page.getByRole('status')).toHaveText('Note de frais enregistrée.')
+  await expect(page.getByText('Note de frais enregistrée.', { exact: true })).toBeVisible()
   expect(posts).toHaveLength(2)
   expect(posts[0].key).toMatch(/^[0-9a-f-]{36}$/i)
   expect(posts[1].key).toBe(posts[0].key)

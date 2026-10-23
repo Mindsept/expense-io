@@ -29,6 +29,9 @@ async function ownNotes() {
 
 test.afterAll(async () => {
   try {
+    await pool.query(`DELETE FROM expense_submission_operations eso
+      USING expense_notes en, users u
+      WHERE eso.note_id = en.id AND en.user_id = u.id AND u.email = $1 AND en.description = $2`, [identity.email, description])
     const notes = await pool.query(`DELETE FROM expense_notes en USING users u
       WHERE en.user_id = u.id AND u.email = $1 AND en.description = $2 RETURNING en.receipt_key`, [identity.email, description])
     for (const note of notes.rows) {
