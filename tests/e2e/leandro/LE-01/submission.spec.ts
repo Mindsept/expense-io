@@ -67,7 +67,7 @@ test('real form preserves fields after a spoofed receipt rejection and accepts a
     requestId: expect.stringMatching(/^[0-9a-f-]{36}$/),
   })
   expect(problem.requestId).toBe(rejection.headers()['x-request-id'])
-  await expect(alert).toHaveText(problem.detail)
+  await expect(alert).toHaveText(`${problem.detail} Référence : ${problem.requestId}.`)
   await expect(amount).toHaveValue('12.34')
   await expect(date).toHaveValue('2024-02-29')
   await expect(details).toHaveValue(description)

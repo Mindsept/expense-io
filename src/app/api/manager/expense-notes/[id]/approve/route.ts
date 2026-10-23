@@ -1,4 +1,4 @@
-import { decideExpenseForCurrentActor } from '@/application/decide-expense'
+import { decideExpenseForCurrentActor } from '@/application/observed-decide-expense'
 import { withApiHandler } from '@/lib/errors'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {

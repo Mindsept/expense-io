@@ -1,3 +1,4 @@
+import { observeHttp } from '@/observability/diagnostics'
 import { closeRejectedUpload } from '@/lib/bounded-form'
 import { auth } from '@/lib/auth'
 import { withCurrentActor } from '@/lib/current-actor'
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
       )
       return Response.json(result.rows.map((row) => toExpenseNote(row)))
     })
-  })
+  }, observeHttp)
 }
 
 export async function POST(request: Request) {
@@ -34,6 +35,6 @@ export async function POST(request: Request) {
     }
     const note = await submitExpenseForCurrentActor(input, { requestId })
     return Response.json(note, { status: 201 })
-  })
+  }, observeHttp)
   return closeRejectedUpload(response)
 }
