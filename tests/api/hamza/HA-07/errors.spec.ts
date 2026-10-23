@@ -123,5 +123,6 @@ test('the authorized list retains its success representation', async () => {
   expect(notes).toContainEqual({
     id: pendingId, userId: employeeId, amount: 42.5, expenseDate: '2026-10-21', description: 'HA-07 fixture',
     receiptKey: 'test/receipt.png', status: 'pending', createdAt: expect.any(String),
+    author: { id: employeeId, displayName: 'HA-07 fixture' },
   })
 })

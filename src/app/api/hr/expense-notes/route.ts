@@ -7,13 +7,13 @@ export async function GET(request: Request) {
   return withApiHandler(request, 'hr.expense-notes.list', async () => {
     return withCurrentActor('hr_admin', async (client, actor) => {
       const result = await client.query(
-        `SELECT en.* FROM expense_notes en
+        `SELECT en.*, u.name AS author_name FROM expense_notes en
          JOIN users u ON u.id = en.user_id
          WHERE ${expenseValidatorSql('hr_admin', 1, 2)} AND en.status = 'pending'
          ORDER BY en.created_at ASC`,
         [actor.id, actor.companyId]
       )
-      return Response.json(result.rows.map((row) => toExpenseNote(row)))
+      return Response.json(result.rows.map((row) => toExpenseNote(row, { id: row.user_id, displayName: row.author_name || 'User' })))
     })
   })
 }

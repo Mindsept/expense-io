@@ -141,13 +141,13 @@ describe('real route and withUserScope asynchronous boundaries', () => {
   it('preserves the successful list representation', async () => {
     queryWithActor(async (sql: string) => ({ rows: sql.startsWith('SELECT en.*') ? [{
       id: resourceId, user_id: 'owner', amount: '42.50', expense_date: '2026-10-21',
-      description: 'Taxi', receipt_key: 'opaque-key', status: 'pending', created_at: '2026-10-21T10:00:00Z',
+      description: 'Taxi', receipt_key: 'opaque-key', status: 'pending', created_at: '2026-10-21T10:00:00Z', author_name: 'Taylor',
     }] : [] }))
     const response = await managerList(request())
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual([{
       id: resourceId, userId: 'owner', amount: 42.5, expenseDate: '2026-10-21', description: 'Taxi',
-      receiptKey: 'opaque-key', status: 'pending', createdAt: '2026-10-21T10:00:00.000Z',
+      receiptKey: 'opaque-key', status: 'pending', createdAt: '2026-10-21T10:00:00.000Z', author: { id: 'owner', displayName: 'Taylor' },
     }])
   })
 
@@ -175,7 +175,7 @@ describe('manager assignment body errors do not mutate data', () => {
   })
   it.each([null, '33333333-3333-4333-8333-333333333333'])('accepts an explicit valid managerId: %s', async (managerId) => {
     queryWithActor(async (sql: string) => {
-      if (sql.startsWith('SELECT id, role')) return { rows: [{ id: resourceId, role: 'employee', is_active: true }, { id: managerId, role: 'manager', is_active: true }] }
+      if (sql.startsWith('SELECT id, role')) return { rows: [{ id: resourceId, role: 'employee', is_active: true, manager_id: null }, { id: managerId, role: 'manager', is_active: true, manager_id: null }] }
       if (sql.startsWith('UPDATE')) return { rows: [{ id: resourceId, name: 'Employee', email: 'employee@example.test', role: 'employee', manager_id: managerId }] }
       return { rows: [{ id: resourceId }] }
     })

@@ -46,6 +46,8 @@ The temporary `error: string` extension equals `detail`, so existing screens kee
 | `unsupported_ocr_media` | 415 | OCR image formats only; PDF unsupported |
 | `request_timeout` / `request_aborted` | 408 / 499 | Body reading deadline or cancellation |
 | `ocr_failure` / `ocr_busy` / `ocr_timeout` | 502 / 503 / 504 | Failed engine, bounded capacity/wait, or active deadline |
+| `manager_cycle` | 409 | Assignment would create or join a management cycle |
+| `manager_assignment_busy` | 409 | A candidate is locked by another operation; retry the assignment |
 | `technical_failure` | 500 | Unexpected application/infrastructure failure |
 
 Only typed codes select reviewed, static details. Never put caught exception messages, SQL, submitted input or credentials in a detail. Add a reviewed code to this shared catalog when a consumer needs a new validation message; do not create a second error schema or treat arbitrary exceptions as 400. `readJsonObject` maps JSON syntax/non-object bodies to 400 and lets I/O failures become 500.

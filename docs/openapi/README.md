@@ -1,8 +1,16 @@
+# Extension HA-06 — contrat 4.0.0, 23 octobre 2026
+
+Le contrat livré passe à `expense-io.v4.json` : deux routes réelles supplémentaires, schémas stricts de rôle/activation et d’état de validation, erreurs `manager_cycle` et `last_active_hr`. Les versions v1/v2/v3 restent des photographies historiques. Le chargeur de validation utilise v4 et l’inventaire strict vérifie les 17 fichiers, leurs méthodes exportées et les identifiants d’opération uniques. Aucune route future n’est ajoutée.
+
+`PUT /api/hr/users/{id}/access` autorise uniquement les RH courants de la même entreprise, refuse les champs forgés et protège le dernier RH actif. `GET /api/expense-notes/{id}/validation-status` est réservé au propriétaire actif, sans choisir un destinataire RH parmi plusieurs. Les détails et limites PO/UI restent décrits dans `docs/management-hierarchy.md`.
+
+---
+
 # LE-10 — Contrat HTTP livré
 
-Le fichier [expense-io.v3.json](expense-io.v3.json) décrit les réponses réellement
-livrées après LE-01/02 et avec les protocoles LE-03 et OCR borné LE-05 (23 octobre 2026). Version du contrat :
-**3.0.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
+Le fichier [expense-io.v4.json](expense-io.v4.json) décrit les réponses réellement
+livrées après LE-01/02 et avec les protocoles LE-03, OCR borné LE-05 et organisation HA-06 (23 octobre 2026). Version du contrat :
+**4.0.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
 Ce contrat initial est publiable indépendamment des autres refontes.
 
 Les requêtes utilisent l'origine de l'application. L'authentification est la
@@ -17,7 +25,7 @@ Aucun cookie, mot de passe ou reçu réel ne figure dans les exemples.
 ## Inventaire courant
 
 Chaque opération porte `x-source`. Le test d'inventaire confronte ces chemins et
-les méthodes exportées aux **15 fichiers** `src/app/api/**/route.ts`.
+les méthodes exportées aux **17 fichiers** `src/app/api/**/route.ts`.
 
 | Fichier sous `src/app/api/` | Méthodes | Comportement livré |
 | --- | --- | --- |
@@ -25,6 +33,8 @@ les méthodes exportées aux **15 fichiers** `src/app/api/**/route.ts`.
 | `expense-notes/route.ts` | GET, POST | Notes propres, tableau sans pagination ; création multipart 201 |
 | `expense-notes/receipt-suggestion/route.ts` | POST | OCR image synchrone borné, erreurs explicites, `{}` après succès vide |
 | `expense-notes/[id]/receipt-url/route.ts` | GET | Reçu du propriétaire actif, même après décision |
+| `expense-notes/[id]/validation-status/route.ts` | GET | Propriétaire actif uniquement ; état réel de validation et raison d’attente |
+| `hr/users/[id]/access/route.ts` | PUT | RH courant de la même entreprise ; rôle/activation, dernier RH protégé, journal transactionnel |
 | `expense-notes/[id]/history/route.ts` | GET | Historique pour propriétaire/valideur courant, événements ordonnés, `{items: []}` possible |
 | `manager/expense-notes/route.ts` | GET | Notes en attente des subordonnés directs éligibles, ordre croissant |
 | `manager/expense-notes/[id]/approve/route.ts` | POST | Approbation d'une note en attente |
