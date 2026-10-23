@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest'
 
-const engine = vi.hoisted(() => ({ recognize: vi.fn(), terminate: vi.fn() }))
-vi.mock('tesseract.js', () => ({ createWorker: vi.fn(async () => engine) }))
+const engine = vi.hoisted(() => ({ recognize: vi.fn() }))
+vi.mock('@/lib/ocr-pool.mjs', () => ({ OcrPool: class { recognize = engine.recognize }, OcrPoolError: class extends Error {} }))
 import { suggestFields } from '@/lib/ocr'
 
 beforeEach(() => vi.clearAllMocks())
@@ -13,9 +13,9 @@ it.each([
   ['SOUS-TOTAL 40\nREMISE 5\nTOTAL 35', { amount: 35 }],
   ['TOTAL 12,00\nTOTAL 18,00', {}],
   ['', {}],
-])('production extraction parses %s and terminates its worker', async (text, expected) => {
-  engine.recognize.mockResolvedValue({ data: { text } })
+])('production extraction parses %s through the bounded extraction bridge', async (text, expected) => {
+  engine.recognize.mockResolvedValue(text)
   const result = await suggestFields({ data: Buffer.from('synthetic'), mimeType: 'image/png' })
   expect(JSON.parse(JSON.stringify(result))).toEqual(expected)
-  expect(engine.terminate).toHaveBeenCalledOnce()
+  expect(engine.recognize).toHaveBeenCalledWith(Buffer.from('synthetic'), undefined)
 })

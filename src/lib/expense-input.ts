@@ -1,3 +1,4 @@
+import { readBoundedForm } from '@/lib/bounded-form'
 import { ApiError } from '@/lib/errors'
 import { hasReceiptContent } from '@/lib/receipt-validation'
 import { isCivilDate } from '@/utils/validators'
@@ -26,12 +27,7 @@ export function isExpenseAmount(value: unknown): value is string {
 }
 
 export async function readExpenseForm(request: Request) {
-  let form: FormData
-  try { form = await request.formData() }
-  catch (error) {
-    if (error instanceof TypeError) throw new ApiError('validation')
-    throw error
-  }
+  const form = await readBoundedForm(request, MAX_RECEIPT_BYTES + 64 * 1024, 10_000)
   return readExpenseInput(form)
 }
 

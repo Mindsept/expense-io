@@ -1,3 +1,4 @@
+import { closeRejectedUpload } from '@/lib/bounded-form'
 import { auth } from '@/lib/auth'
 import { withCurrentActor } from '@/lib/current-actor'
 import { ApiError, withApiHandler } from '@/lib/errors'
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  return withApiHandler(request, 'expense-notes.submit', async ({ requestId }) => {
+  const response = await withApiHandler(request, 'expense-notes.submit', async ({ requestId }) => {
     const session = await auth()
     if (!session?.user) throw new ApiError('unauthenticated')
 
@@ -34,4 +35,5 @@ export async function POST(request: Request) {
     const note = await submitExpenseForCurrentActor(input, { requestId })
     return Response.json(note, { status: 201 })
   })
+  return closeRejectedUpload(response)
 }
