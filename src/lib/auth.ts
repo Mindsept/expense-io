@@ -30,7 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: string
           password_hash: string
           role: 'employee' | 'manager' | 'hr_admin'
-        }>('SELECT id, email, password_hash, role FROM users WHERE email = $1 AND is_active', [email])
+        }>('SELECT id, email, password_hash, role FROM expense_auth.credentials($1::text)', [email])
         const user = result.rows[0]
         if (!user) return null
 

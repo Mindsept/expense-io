@@ -7,7 +7,7 @@ export async function refreshCurrentSession(token: JWT): Promise<JWT | null> {
   if (typeof token.id !== 'string' || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(token.id)) return null
   try {
     const result = await getPool().query<{ role: string; email: string }>(
-      'SELECT role, email FROM users WHERE id = $1 AND is_active', [token.id],
+      'SELECT role, email FROM expense_auth.session_identity($1::uuid)', [token.id],
     )
     const user = result.rows[0]
     if (!user || !['employee', 'manager', 'hr_admin'].includes(user.role)) return null

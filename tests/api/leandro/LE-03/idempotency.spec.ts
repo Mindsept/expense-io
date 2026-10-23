@@ -292,6 +292,10 @@ test('a real limited login enforces registry owner/company/active policies and r
   await pool.query('INSERT INTO expense_submission_operations(user_id,company_id,intent_key,fingerprint) VALUES($1,$2,$3,$4)', [users.a, companies.b, randomUUID(), 'b'.repeat(64)])
   await pool.query(`CREATE ROLE ${role} LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOINHERIT PASSWORD ${escapeLiteral(password)}`)
   roleCreated = true
+  // HA-04 now protects users too. Inherit only the application's limited
+  // capabilities, so registry policies can resolve the actor without a public
+  // users policy or an administrator/BYPASSRLS role. All refusal assertions stay.
+  await pool.query(`GRANT expense_web TO ${role} WITH INHERIT TRUE`)
   await pool.query(`GRANT USAGE ON SCHEMA public TO ${role}`)
   await pool.query(`GRANT SELECT(id,company_id,is_active) ON users TO ${role}`)
   await pool.query(`GRANT SELECT,INSERT,UPDATE ON expense_submission_operations,expense_submission_attempts TO ${role}`)

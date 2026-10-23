@@ -2,7 +2,7 @@
 
 import { AuthError } from 'next-auth'
 import { getPool } from '@/lib/db'
-import { redeemInvitation, EnrollmentError } from '@/lib/enrollment/invitations'
+import { redeemInvitation, EnrollmentError } from '@/lib/enrollment/runtime'
 import { signIn, signOut } from '@/lib/auth'
 
 export interface AuthFormState {

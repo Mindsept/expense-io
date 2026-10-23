@@ -20,10 +20,9 @@ export function getPool(): Pool {
 }
 
 /**
- * Pose le contexte utilisateur pour la durée de la transaction — l'isolation
- * entre utilisateurs et entre entreprises est garantie par PostgreSQL (Row
- * Level Security, voir migrations/), ce helper ne fait qu'exposer l'id
- * courant aux policies.
+ * Pose l'identité serveur pour la durée de la transaction. Ce contexte seul
+ * ne garantit pas l'isolation : le rôle local actuel est superutilisateur et
+ * contourne les policies. HA-04 doit encore intégrer et prouver un rôle limité.
  */
 export async function withUserScope<T>(
   userId: string,
@@ -31,6 +30,7 @@ export async function withUserScope<T>(
 ): Promise<T> {
   const pool = getPool()
   const client = await pool.connect()
+  let discard = false
   try {
     await client.query('BEGIN')
     await client.query("SELECT set_config('app.current_user_id', $1, true)", [userId])
@@ -38,9 +38,9 @@ export async function withUserScope<T>(
     await client.query('COMMIT')
     return result
   } catch (error) {
-    await client.query('ROLLBACK')
+    try { await client.query('ROLLBACK') } catch { discard = true }
     throw error
   } finally {
-    client.release()
+    client.release(discard)
   }
 }

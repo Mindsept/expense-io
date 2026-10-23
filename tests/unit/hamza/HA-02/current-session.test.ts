@@ -10,7 +10,7 @@ describe('current session rights', () => {
     const old = { id, role: 'hr_admin' as const, email: 'old@example.test' }
     expect(await refreshCurrentSession(old)).toEqual({ id, role: 'employee', email: 'current@example.test' })
     expect(old.role).toBe('hr_admin')
-    expect(mocks.query).toHaveBeenCalledWith('SELECT role, email FROM users WHERE id = $1 AND is_active', [id])
+    expect(mocks.query).toHaveBeenCalledWith('SELECT role, email FROM expense_auth.session_identity($1::uuid)', [id])
   })
   it('invalidates a token whose user is deleted or disabled', async () => {
     mocks.query.mockResolvedValue({ rows: [] })
