@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "expense.io — delivered HTTP contract",
-    "version": "4.0.0",
-    "description": "Current contract after LE-05: bounded streamed request reads, image-only OCR, reusable process pool, bounded queue and actual process termination before capacity reuse. All business routes use HA-07 Problem Details. LE-03 optional idempotence remains supported."
+    "version": "4.1.0",
+    "description": "Current contract after LE-05: bounded streamed request reads, image-only OCR, reusable process pool, bounded queue and actual process termination before capacity reuse. All business routes use HA-07 Problem Details. LE-03 optional idempotence remains supported. LE-07 adds opt-in page/pageSize on four existing GET lists, deterministic secondary IDs, filtered full totals and scoped global manager search/selection. Calls without paging retain full legacy arrays until LE-11."
   },
   "servers": [
     {
@@ -23,7 +23,7 @@
     "/api/expense-notes": {
       "get": {
         "operationId": "listOwnExpenses",
-        "summary": "Current active actor, own notes all statuses; safe allowlisted sort, no pagination.",
+        "summary": "Current active actor, own notes all statuses; safe allowlisted sort, no pagination. LE-07: explicit page or pageSize opts into a bounded envelope, default page1/pageSize20 and max100. Otherwise returns the full legacy array without silent truncation. Counts/totals and items share the exact same SQL snapshot and filter; offset ordering is stable only on an unchanged dataset. No frozen multi-page snapshot.",
         "x-source": "src/app/api/expense-notes/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -32,7 +32,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExpenseNotes"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ExpenseNotes"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ExpensePage"
+                    }
+                  ]
                 }
               }
             },
@@ -43,6 +50,16 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid"
+                }
+              },
+              "X-Pagination-Mode": {
+                "description": "Explicit compatibility mode. legacy is a complete array, paged is the opt-in envelope.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "legacy",
+                    "paged"
+                  ]
                 }
               }
             }
@@ -59,30 +76,53 @@
         },
         "parameters": [
           {
-            "name": "sort",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "created_at DESC",
-              "enum": [
-                "",
-                "created_at DESC",
-                "created_at ASC",
-                "amount DESC",
-                "amount ASC",
-                "expense_date DESC",
-                "expense_date ASC"
-              ]
-            },
-            "description": "Exact allowlist; absent/empty means created_at DESC. Repeated, unknown or SQL-like values return 400 before any expense query. Never interpolate caller input as SQL."
-          },
-          {
             "name": "X-Request-Id",
             "in": "header",
             "required": false,
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Strict allowlist, never SQL input; UUID is the secondary key in the same direction. Absent/empty keeps the historical default. Repeated sort rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at ASC",
+                "created_at DESC",
+                "amount ASC",
+                "amount DESC",
+                "expense_date ASC",
+                "expense_date DESC"
+              ],
+              "default": "created_at DESC"
             }
           }
         ]
@@ -362,7 +402,7 @@
     "/api/manager/expense-notes": {
       "get": {
         "operationId": "managerListPending",
-        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Pending only, oldest first, array without pagination.",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Pending only, oldest first, array without pagination. LE-07: explicit page or pageSize opts into a bounded envelope, default page1/pageSize20 and max100. Otherwise returns the full legacy array without silent truncation. Counts/totals and items share the exact same SQL snapshot and filter; offset ordering is stable only on an unchanged dataset. No frozen multi-page snapshot.",
         "x-source": "src/app/api/manager/expense-notes/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -371,7 +411,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExpenseNotes"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ExpenseNotes"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ExpensePage"
+                    }
+                  ]
                 }
               }
             },
@@ -382,6 +429,16 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid"
+                }
+              },
+              "X-Pagination-Mode": {
+                "description": "Explicit compatibility mode. legacy is a complete array, paged is the opt-in envelope.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "legacy",
+                    "paged"
+                  ]
                 }
               }
             }
@@ -394,6 +451,9 @@
           },
           "500": {
             "$ref": "#/components/responses/Problem500"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
           }
         },
         "parameters": [
@@ -404,6 +464,47 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Strict allowlist, never SQL input; UUID is the secondary key in the same direction. Absent/empty keeps the historical default. Repeated sort rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at ASC",
+                "created_at DESC",
+                "amount ASC",
+                "amount DESC",
+                "expense_date ASC",
+                "expense_date DESC"
+              ],
+              "default": "created_at ASC"
             }
           }
         ]
@@ -607,7 +708,7 @@
     "/api/hr/expense-notes": {
       "get": {
         "operationId": "hrListPending",
-        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Pending only, oldest first, array without pagination.",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Pending only, oldest first, array without pagination. LE-07: explicit page or pageSize opts into a bounded envelope, default page1/pageSize20 and max100. Otherwise returns the full legacy array without silent truncation. Counts/totals and items share the exact same SQL snapshot and filter; offset ordering is stable only on an unchanged dataset. No frozen multi-page snapshot.",
         "x-source": "src/app/api/hr/expense-notes/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -616,7 +717,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExpenseNotes"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ExpenseNotes"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ExpensePage"
+                    }
+                  ]
                 }
               }
             },
@@ -627,6 +735,16 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid"
+                }
+              },
+              "X-Pagination-Mode": {
+                "description": "Explicit compatibility mode. legacy is a complete array, paged is the opt-in envelope.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "legacy",
+                    "paged"
+                  ]
                 }
               }
             }
@@ -639,6 +757,9 @@
           },
           "500": {
             "$ref": "#/components/responses/Problem500"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
           }
         },
         "parameters": [
@@ -649,6 +770,47 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Strict allowlist, never SQL input; UUID is the secondary key in the same direction. Absent/empty keeps the historical default. Repeated sort rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at ASC",
+                "created_at DESC",
+                "amount ASC",
+                "amount DESC",
+                "expense_date ASC",
+                "expense_date DESC"
+              ],
+              "default": "created_at ASC"
             }
           }
         ]
@@ -852,7 +1014,7 @@
     "/api/hr/users": {
       "get": {
         "operationId": "listCompanyUsers",
-        "summary": "Current HR; employee/manager users in own company (includes inactive accounts), sorted by name. No pagination.",
+        "summary": "Current HR; employee/manager users in own company (includes inactive accounts), sorted by name. No pagination. LE-07: explicit page or pageSize opts into a bounded envelope, default page1/pageSize20 and max100. Otherwise returns the full legacy array without silent truncation. Counts/totals and items share the exact same SQL snapshot and filter; offset ordering is stable only on an unchanged dataset. No frozen multi-page snapshot. role=manager restricts global candidates to active same-company managers; q is literal case-insensitive name/email search. The legacy directory still includes inactive employees/managers. selectedManagerId requires paging, resolves same-company identity outside q/page, and does not alter filtered totals.",
         "x-source": "src/app/api/hr/users/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -861,7 +1023,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DirectoryUsers"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/DirectoryUsers"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DirectoryPage"
+                    }
+                  ]
                 }
               }
             },
@@ -872,6 +1041,16 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid"
+                }
+              },
+              "X-Pagination-Mode": {
+                "description": "Explicit compatibility mode. legacy is a complete array, paged is the opt-in envelope.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "legacy",
+                    "paged"
+                  ]
                 }
               }
             }
@@ -884,6 +1063,9 @@
           },
           "500": {
             "$ref": "#/components/responses/Problem500"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
           }
         },
         "parameters": [
@@ -891,6 +1073,72 @@
             "name": "X-Request-Id",
             "in": "header",
             "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Strict allowlist, never SQL input; UUID is the secondary key in the same direction. Absent/empty keeps the historical default. Repeated sort rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name ASC",
+                "name DESC"
+              ],
+              "default": "name ASC"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Trimmed global literal name/email substring, max120 UTF-16 units, no controls or repeated parameter. Percent, underscore and backslash are literal. New term should start client page1.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Only manager is accepted. Limits candidates to active same-company managers, independently of the displayed directory page.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "manager"
+              ]
+            }
+          },
+          {
+            "name": "selectedManagerId",
+            "in": "query",
+            "description": "Requires explicit page or pageSize. Current selection identity, independent of q and page; inactive/reclassified identity is returned with isEligible=false. Foreign/missing both null. Never part of the filtered result totals.",
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -2503,6 +2751,177 @@
             "kind": "none",
             "reasonCode": "no_other_active_hr",
             "message": "Aucun autre RH actif ne peut valider cette note. Elle reste en attente."
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "required": [
+          "page",
+          "pageSize",
+          "totalItems"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "totalItems": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "FilteredTotals": {
+        "type": "object",
+        "required": [
+          "amount",
+          "count",
+          "scope"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "SQL sum over the complete authorized/filter-matching set, not just this page. Decimal cents must fit a safe JSON numeric response; an unrepresentable aggregate is a sanitized technical failure."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "filtered"
+            ]
+          }
+        }
+      },
+      "DirectoryTotals": {
+        "type": "object",
+        "required": [
+          "count",
+          "scope"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "filtered"
+            ]
+          }
+        }
+      },
+      "SelectedManager": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "role",
+          "isActive",
+          "isEligible"
+        ],
+        "additionalProperties": false,
+        "description": "Same-company selected identity independently of current page/q. Can be inactive or reclassified; only an active current manager is eligible. Foreign/missing UUIDs both resolve to null. No email or private account fields.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "employee",
+              "manager",
+              "hr_admin"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isEligible": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ExpensePage": {
+        "type": "object",
+        "required": [
+          "items",
+          "pagination",
+          "totals"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/ExpenseNote"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/FilteredTotals"
+          }
+        }
+      },
+      "DirectoryPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "pagination",
+          "totals"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/DirectoryUser"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/DirectoryTotals"
+          },
+          "selectedManager": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SelectedManager"
+              },
+              {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ]
           }
         }
       }

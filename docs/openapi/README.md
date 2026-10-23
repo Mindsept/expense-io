@@ -1,3 +1,21 @@
+# Extension LE-07 — contrat 4.1.0, 23 octobre 2026
+
+Les quatre GET listes ajoutent la pagination opt-in page/pageSize (1/20 par défaut,
+maximum100), les agrégats sur tout le filtre autorisé et un second tri UUID stable.
+Sans ces paramètres, le tableau complet reste disponible temporairement, identifié
+par X-Pagination-Mode: legacy ; aucune troncature silencieuse. Les tableaux et
+enveloppes sont des schémas fermés distincts dans le contrat courant v4.
+
+L'annuaire RH expose q (recherche globale littérale nom/email), role=manager
+(candidats actifs de l'entreprise courante) et selectedManagerId pour résoudre
+une sélection hors page/recherche. Son total ne comporte pas de montant. Voir
+[le contrat et l'intégration EL-05](../pagination.md) et les fixtures exécutables
+`tests/fixtures/leandro/LE-07/responses.json`. Aucun endpoint futur, écran paginé,
+index ou retrait legacy n'est déclaré livré. Les 17 fichiers de routes restent
+exactement inventoriés et les nouveaux schémas sont utilisés par les tests.
+
+---
+
 # Extension HA-06 — contrat 4.0.0, 23 octobre 2026
 
 Le contrat livré passe à `expense-io.v4.json` : deux routes réelles supplémentaires, schémas stricts de rôle/activation et d’état de validation, erreurs `manager_cycle` et `last_active_hr`. Les versions v1/v2/v3 restent des photographies historiques. Le chargeur de validation utilise v4 et l’inventaire strict vérifie les 17 fichiers, leurs méthodes exportées et les identifiants d’opération uniques. Aucune route future n’est ajoutée.

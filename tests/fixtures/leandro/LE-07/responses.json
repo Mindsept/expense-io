@@ -1,0 +1,433 @@
+{
+  "expenseFirst": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 1.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-1.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 2.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-2.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 3.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-3.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 4.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-4.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000005",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 5.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-5.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000006",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 6.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-6.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000007",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 7.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-7.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000008",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 8.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-8.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000009",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 9.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-9.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000000a",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 10.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-10.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000000b",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 11.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-11.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000000c",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 12.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-12.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000000d",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 13.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-13.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000000e",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 14.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-14.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000000f",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 15.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-15.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000010",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 16.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-16.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000011",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 17.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-17.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000012",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 18.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-18.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000013",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 19.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-19.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000014",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 20.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-20.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "pageSize": 20,
+      "totalItems": 45
+    },
+    "totals": {
+      "amount": 1039.5,
+      "count": 45,
+      "scope": "filtered"
+    }
+  },
+  "expenseLast": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000029",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 41.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-41.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000002a",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 42.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-42.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000002b",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 43.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-43.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000002c",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 44.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-44.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      },
+      {
+        "id": "00000000-0000-4000-8000-00000000002d",
+        "userId": "00000000-0000-4000-8000-000000000099",
+        "amount": 45.1,
+        "expenseDate": "2024-02-29",
+        "description": "Synthetic pagination example",
+        "receiptKey": "receipts/synthetic-45.png",
+        "status": "pending",
+        "createdAt": "2026-10-23T12:00:00.000Z",
+        "author": {
+          "id": "00000000-0000-4000-8000-000000000099",
+          "displayName": "Synthetic author"
+        }
+      }
+    ],
+    "pagination": {
+      "page": 3,
+      "pageSize": 20,
+      "totalItems": 45
+    },
+    "totals": {
+      "amount": 1039.5,
+      "count": 45,
+      "scope": "filtered"
+    }
+  },
+  "expenseBeyondEnd": {
+    "items": [],
+    "pagination": {
+      "page": 4,
+      "pageSize": 20,
+      "totalItems": 45
+    },
+    "totals": {
+      "amount": 1039.5,
+      "count": 45,
+      "scope": "filtered"
+    }
+  },
+  "directorySearch": {
+    "items": [
+      {
+        "id": "10000000-0000-4000-8000-000000000001",
+        "name": "Needle manager",
+        "email": "manager@example.test",
+        "role": "manager",
+        "managerId": null
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "pageSize": 20,
+      "totalItems": 1
+    },
+    "totals": {
+      "count": 1,
+      "scope": "filtered"
+    },
+    "selectedManager": {
+      "id": "10000000-0000-4000-8000-000000000099",
+      "name": "Selected outside results",
+      "role": "manager",
+      "isActive": true,
+      "isEligible": true
+    }
+  },
+  "directoryEmpty": {
+    "items": [],
+    "pagination": {
+      "page": 1,
+      "pageSize": 20,
+      "totalItems": 0
+    },
+    "totals": {
+      "count": 0,
+      "scope": "filtered"
+    },
+    "selectedManager": null
+  }
+}
