@@ -39,6 +39,9 @@ The temporary `error: string` extension equals `detail`, so existing screens kee
 | `not_found` | 404 | Missing or non-visible resource; same public message |
 | `conflict` | 409 | Expense already decided |
 | `invalid_manager` | 409 | Selected manager cannot be assigned under the current rules |
+| `idempotency_conflict` | 409 | Same scoped intention key with different validated content |
+| `idempotency_in_progress` | 409 | Another attempt currently owns the submission lease |
+| `idempotency_expired` | 409 | Seven-day replay window expired; inspect history before a new intention |
 | `technical_failure` | 500 | Unexpected application/infrastructure failure |
 
 Only typed codes select reviewed, static details. Never put caught exception messages, SQL, submitted input or credentials in a detail. Add a reviewed code to this shared catalog when a consumer needs a new validation message; do not create a second error schema or treat arbitrary exceptions as 400. `readJsonObject` maps JSON syntax/non-object bodies to 400 and lets I/O failures become 500.

@@ -128,3 +128,13 @@ métier ; maintenir une transaction SQL pendant S3 augmente contention et durée
 des verrous ; une transaction distribuée ou un broker ne se justifie pas pour
 cette première tranche. Ce choix laisse le protocole durable à LE-03 et conserve
 la séparation cas d'usage/ports/adaptateurs attendue au cours C1–2/C3.
+
+## Extension LE-03
+
+Le [protocole idempotent](expense-idempotency.md) réutilise cette orchestration
+et le même INSERT complet lorsque `Idempotency-Key` est fourni. Son registre
+enregistre chaque tentative avant PUT et le résultat dans la transaction de
+la note ; la commande privée peut réconcilier ces références durables. Le code
+de diagnostic borné `operation_state_unconfirmed` signale un échec de mise à
+jour des métadonnées après un échec primaire. Sans clé, les limites LE-02
+décrites ci-dessus restent applicables.

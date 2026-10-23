@@ -4,6 +4,8 @@ import { ApiError, withApiHandler } from '@/lib/errors'
 import { expenseSort, readExpenseForm } from '@/lib/expense-input'
 import { submitExpenseForCurrentActor } from '@/application/submit-expense-for-current-actor'
 import { toExpenseNote } from '@/adapters/expense-note-mapper'
+import { submissionIntentKey } from '@/lib/submission-intent'
+import { submitIdempotentExpense } from '@/application/submit-idempotent-expense'
 
 export async function GET(request: Request) {
   return withApiHandler(request, 'expense-notes.list', async () => {
@@ -23,7 +25,12 @@ export async function POST(request: Request) {
     const session = await auth()
     if (!session?.user) throw new ApiError('unauthenticated')
 
+    const key = submissionIntentKey(request.headers)
     const input = await readExpenseForm(request)
+    if (key) {
+      const result = await submitIdempotentExpense(input, key, { requestId })
+      return Response.json(result.expense, { status: 201, headers: { 'Idempotency-Replayed': String(result.replayed) } })
+    }
     const note = await submitExpenseForCurrentActor(input, { requestId })
     return Response.json(note, { status: 201 })
   })

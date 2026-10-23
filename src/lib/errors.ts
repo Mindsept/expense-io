@@ -8,6 +8,9 @@ const problems = {
   conflict: { status: 409, title: 'Conflict', detail: 'This expense has already been decided.' },
   invalid_manager: { status: 409, title: 'Invalid manager', detail: 'The selected manager cannot be assigned.' },
   manager_assignment_busy: { status: 409, title: 'Assignment busy', detail: 'This assignment is being used by another operation. Try again.' },
+  idempotency_conflict: { status: 409, title: 'Request key conflict', detail: 'This request key was already used with different expense content.' },
+  idempotency_in_progress: { status: 409, title: 'Submission in progress', detail: 'This submission is already being processed. Retry later with the same request key.' },
+  idempotency_expired: { status: 409, title: 'Request key expired', detail: 'This request key has expired. Check your expense history before starting a new submission.' },
   technical_failure: { status: 500, title: 'Internal server error', detail: 'The operation could not be completed. Try again later.' },
 } as const
 
