@@ -28,20 +28,30 @@ async function ownNotes() {
 }
 
 test.afterAll(async () => {
+  const client = await pool.connect()
   try {
-    await pool.query(`DELETE FROM expense_submission_attempts esa
+    await client.query('BEGIN')
+    await client.query(`DELETE FROM expense_submission_attempts esa
       USING expense_submission_operations eso, expense_notes en, users u
       WHERE esa.operation_id = eso.id AND eso.note_id = en.id
         AND en.user_id = u.id AND u.email = $1 AND en.description = $2`, [identity.email, description])
-    await pool.query(`DELETE FROM expense_submission_operations eso
+    await client.query(`DELETE FROM expense_submission_operations eso
       USING expense_notes en, users u
       WHERE eso.note_id = en.id AND en.user_id = u.id AND u.email = $1 AND en.description = $2`, [identity.email, description])
-    const notes = await pool.query(`DELETE FROM expense_notes en USING users u
+    const notes = await client.query(`DELETE FROM expense_notes en USING users u
       WHERE en.user_id = u.id AND u.email = $1 AND en.description = $2 RETURNING en.receipt_key`, [identity.email, description])
+    await client.query('COMMIT')
     for (const note of notes.rows) {
       if (note.receipt_key) await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: note.receipt_key }))
     }
-  } finally { await pool.end(); s3.destroy() }
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+    await pool.end()
+    s3.destroy()
+  }
 })
 
 test('real form preserves fields after a spoofed receipt rejection and accepts a corrected receipt', async ({ page }) => {
