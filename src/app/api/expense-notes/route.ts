@@ -1,100 +1,40 @@
-import path from 'node:path'
-import type { NextRequest } from 'next/server'
+import { observeHttp } from '@/observability/diagnostics'
+import { closeRejectedUpload } from '@/lib/bounded-form'
 import { auth } from '@/lib/auth'
-import { getPool, withUserScope } from '@/lib/db'
-import { respondError } from '@/lib/errors'
-import { receiptKeyFor, uploadReceipt } from '@/lib/storage'
+import { withCurrentActor } from '@/lib/current-actor'
+import { ApiError, withApiHandler } from '@/lib/errors'
+import { expenseSort, readExpenseForm } from '@/lib/expense-input'
+import { submitExpenseForCurrentActor } from '@/application/submit-expense-for-current-actor'
 import { toExpenseNote } from '@/adapters/expense-note-mapper'
+import { submissionIntentKey } from '@/lib/submission-intent'
+import { submitIdempotentExpense } from '@/application/submit-idempotent-expense'
 
-const ALLOWED_RECEIPT_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'application/pdf']
-const MAX_RECEIPT_BYTES = 10 * 1024 * 1024
-
-const EXTENSION_BY_MIME: Record<string, string> = {
-  'image/png': '.png',
-  'image/jpeg': '.jpg',
-  'image/webp': '.webp',
-  'application/pdf': '.pdf',
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const session = await auth()
-    if (!session?.user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const url = new URL(request.url)
-    // Le tri est construit dynamiquement plutôt que via une valeur liée :
-    // ORDER BY n'accepte pas de paramètre positionnel pour un nom de colonne
-    // en SQL standard, donc ce fragment est concaténé directement.
-    const sort = url.searchParams.get('sort') || 'created_at DESC'
-
-    return await withUserScope(session.user.id, async (client) => {
+export async function GET(request: Request) {
+  return withApiHandler(request, 'expense-notes.list', async () => {
+    return withCurrentActor(undefined, async (client, actor) => {
+      const sort = expenseSort(new URL(request.url).searchParams)
       const result = await client.query(
         `SELECT * FROM expense_notes WHERE user_id = $1 ORDER BY ${sort}`,
-        [session.user.id]
+        [actor.id]
       )
       return Response.json(result.rows.map((row) => toExpenseNote(row)))
     })
-  } catch (error) {
-    return respondError(error)
-  }
+  }, observeHttp)
 }
 
-export async function POST(request: NextRequest) {
-  try {
+export async function POST(request: Request) {
+  const response = await withApiHandler(request, 'expense-notes.submit', async ({ requestId }) => {
     const session = await auth()
-    if (!session?.user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!session?.user) throw new ApiError('unauthenticated')
+
+    const key = submissionIntentKey(request.headers)
+    const input = await readExpenseForm(request)
+    if (key) {
+      const result = await submitIdempotentExpense(input, key, { requestId })
+      return Response.json(result.expense, { status: 201, headers: { 'Idempotency-Replayed': String(result.replayed) } })
     }
-
-    const formData = await request.formData()
-    const amountRaw = formData.get('amount')
-    const expenseDate = formData.get('expenseDate')
-    const description = formData.get('description')
-    const receipt = formData.get('receipt')
-
-    const amount = typeof amountRaw === 'string' ? Number.parseFloat(amountRaw) : NaN
-
-    if (
-      !Number.isFinite(amount) ||
-      amount <= 0 ||
-      typeof expenseDate !== 'string' ||
-      typeof description !== 'string' ||
-      description.trim().length === 0 ||
-      !(receipt instanceof File)
-    ) {
-      return Response.json({ error: 'Champs invalides' }, { status: 400 })
-    }
-    if (!ALLOWED_RECEIPT_TYPES.includes(receipt.type)) {
-      return Response.json({ error: 'Type de fichier non autorisé pour le reçu' }, { status: 400 })
-    }
-    if (receipt.size > MAX_RECEIPT_BYTES) {
-      return Response.json({ error: 'Fichier trop volumineux' }, { status: 400 })
-    }
-
-    const note = await withUserScope(session.user.id, async (client) => {
-      const inserted = await client.query(
-        `INSERT INTO expense_notes (user_id, amount, expense_date, description, receipt_key)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING *`,
-        [session.user.id, amount, expenseDate, description, '']
-      )
-      return inserted.rows[0]
-    })
-
-    const extension = EXTENSION_BY_MIME[receipt.type] ?? path.extname(receipt.name) ?? ''
-    const receiptKey = receiptKeyFor(note.receipt_seq, extension)
-    const buffer = Buffer.from(await receipt.arrayBuffer())
-    await uploadReceipt(receiptKey, buffer, receipt.type)
-
-    const updated = await getPool().query(
-      `UPDATE expense_notes SET receipt_key = $1 WHERE id = $2 RETURNING *`,
-      [receiptKey, note.id]
-    )
-
-    return Response.json(toExpenseNote(updated.rows[0]), { status: 201 })
-  } catch (error) {
-    return respondError(error)
-  }
+    const note = await submitExpenseForCurrentActor(input, { requestId })
+    return Response.json(note, { status: 201 })
+  }, observeHttp)
+  return closeRejectedUpload(response)
 }

@@ -1,0 +1,24 @@
+{
+  "baseMain": "e5aef6322b830ae41799cc89c2a9eca663acce1b",
+  "priorSource": "5233134dcc7921ad105ac565db722e1a2aaf5901",
+  "commands": [
+    {
+      "command": "npm audit --json",
+      "exitCode": 0,
+      "output": "audit-all.json"
+    },
+    {
+      "command": "npm audit --omit=dev --json",
+      "exitCode": 0,
+      "output": "audit-production.json"
+    },
+    {
+      "command": "npm ls next eslint-config-next sharp source-map-js braces --all",
+      "exitCode": 0,
+      "output": "dependency-paths.txt"
+    }
+  ],
+  "lockSha256": "cdedc30bc5e33f3d6a958834c04b33498f67db33936043762cad4a7a2ee67d88",
+  "ciActualNode": "v26.8.1",
+  "ciNpm": "11.19.1"
+}

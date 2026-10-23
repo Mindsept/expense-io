@@ -1,3 +1,11 @@
+# Current revision — 23 October 2026
+
+The former 16.3.8 candidate is superseded by aligned Next/config **16.4.3** after current maintainer advisories and fresh requalification. Main now includes HA-05/HA-04; their application/runtime code is preserved. See [the current Hamza requalification and evidence](MATH-07/hamza-refresh-2026-10-23/README.md): both updated-lock audits exit 0, 618 unit / 213 API / 19 E2E pass locally, and final pinned-runtime Linux CI is tracked in PR #16. The actual delivery OS and Hugo's release acceptance are separate from source integration.
+
+The dated sections below retain historical results and limits, including their older versions, disabled/early CI states and previously open HA-04 dependency. They are not current status.
+
+---
+
 # MATH-07 / ARLA-45 — correctifs de dépendances
 
 Branche `codex/arla-45-dependency-updates`, empilée sur ARLA-40. Prescription [HA-08](../security/HA-08/README.md) et périmètre approuvés par Mathis.

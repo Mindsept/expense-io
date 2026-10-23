@@ -1,0 +1,28 @@
+npm warn Unknown env config "global-ignore-file". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> expense-io-version-b@0.1.0 verify
+> npm run lint && npm run typecheck && npm run test:unit
+
+npm warn Unknown env config "global-ignore-file". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> expense-io-version-b@0.1.0 lint
+> eslint
+
+npm warn Unknown env config "global-ignore-file". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> expense-io-version-b@0.1.0 typecheck
+> tsc --noEmit
+
+npm warn Unknown env config "global-ignore-file". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> expense-io-version-b@0.1.0 test:unit
+> vitest run
+
+
+ RUN  v5.0.5 /Users/hamza/.codex/worktrees/arla-45-security-refresh/expense-io
+
+
+ Test Files  39 passed (39)
+      Tests  618 passed (618)
+   Start at  17:32:47
+   Duration  3.99s (tests 68%, transform 23%, import 7%, worker 1%)

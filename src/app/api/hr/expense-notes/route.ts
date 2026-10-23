@@ -1,36 +1,19 @@
-import { auth } from '@/lib/auth'
-import { withUserScope } from '@/lib/db'
-import { ApiError, withApiHandler } from '@/lib/errors'
-
-function toExpenseNote(row: Record<string, unknown>) {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    amount: Number.parseFloat(row.amount as string),
-    expenseDate: row.expense_date,
-    description: row.description,
-    receiptKey: row.receipt_key,
-    status: row.status,
-    createdAt: new Date(row.created_at as string).toISOString(),
-  }
-}
+import { expenseValidatorSql } from '@/lib/expense-access'
+import { toExpenseNote } from '@/adapters/expense-note-mapper'
+import { withCurrentActor } from '@/lib/current-actor'
+import { withApiHandler } from '@/lib/errors'
 
 export async function GET(request: Request) {
   return withApiHandler(request, 'hr.expense-notes.list', async () => {
-    const session = await auth()
-    if (!session?.user) throw new ApiError('unauthenticated')
-    if (session.user.role !== 'hr_admin') throw new ApiError('forbidden')
-
-    return withUserScope(session.user.id, async (client) => {
+    return withCurrentActor('hr_admin', async (client, actor) => {
       const result = await client.query(
-        `SELECT en.* FROM expense_notes en
+        `SELECT en.*, u.name AS author_name FROM expense_notes en
          JOIN users u ON u.id = en.user_id
-         WHERE u.role = 'manager' AND u.manager_id IS NULL AND en.status = 'pending'
-           AND u.company_id = (SELECT company_id FROM users WHERE id = $1)
+         WHERE ${expenseValidatorSql('hr_admin', 1, 2)} AND en.status = 'pending'
          ORDER BY en.created_at ASC`,
-        [session.user.id]
+        [actor.id, actor.companyId]
       )
-      return Response.json(result.rows.map(toExpenseNote))
+      return Response.json(result.rows.map((row) => toExpenseNote(row, { id: row.user_id, displayName: row.author_name || 'User' })))
     })
   })
 }

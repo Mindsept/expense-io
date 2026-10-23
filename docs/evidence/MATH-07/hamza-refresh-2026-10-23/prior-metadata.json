@@ -1,0 +1,28 @@
+{
+  "source": "5233134dcc7921ad105ac565db722e1a2aaf5901",
+  "lockSha256": "f6f138f316d08eb120f77c5d732437d11085ac89162beeb6c419a27331766fd8",
+  "scope": "read-only copied PR16 manifest/lock; no installation or source mutation",
+  "commands": [
+    {
+      "command": "npm audit --json",
+      "exitCode": 1,
+      "output": "audit-all.json"
+    },
+    {
+      "command": "npm audit --omit=dev --json",
+      "exitCode": 1,
+      "output": "audit-production.json"
+    },
+    {
+      "command": "npm view next@16.4.3 version engines --json",
+      "exitCode": 0,
+      "output": "next-candidate.json"
+    },
+    {
+      "command": "npm view eslint-config-next@16.4.3 version peerDependencies --json",
+      "exitCode": 0,
+      "output": "eslint-candidate.json"
+    }
+  ],
+  "lockAfterSha256": "f6f138f316d08eb120f77c5d732437d11085ac89162beeb6c419a27331766fd8"
+}
