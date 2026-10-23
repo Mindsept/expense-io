@@ -183,7 +183,7 @@ export default function ExpensesPage() {
         const message = await getClientErrorMessage(response, 'Échec de la soumission de la note de frais.')
         if (response.status === 409 || response.status >= 500) {
           setSubmissionUncertain(true)
-          setError(`${message} Vérifie l’historique avant toute nouvelle soumission. Tant que cette page reste ouverte, la reprise réutilise la même clé et le même contenu.`)
+          setError(message)
         } else {
           submissionIntent.current = null
           setSubmissionHistoryCheckRequired(false)
@@ -205,7 +205,7 @@ export default function ExpensesPage() {
       await loadNotes()
     } catch (failure) {
       setSubmissionUncertain(true)
-      setError(`${formatRequestFailure(failure, 'Échec de la soumission de la note de frais.')} Vérifie l’historique avant toute nouvelle soumission. Tant que cette page reste ouverte, la reprise réutilise la même clé et le même contenu.`)
+      setError(formatRequestFailure(failure, 'Échec de la soumission de la note de frais.'))
     } finally {
       setSubmitting(false)
       submittingLock.current = false
@@ -417,9 +417,14 @@ export default function ExpensesPage() {
             {submitting ? 'Envoi…' : submissionUncertain ? 'Réessayer la même soumission' : 'Soumettre'}
           </button>
           {submissionUncertain && !submitting && (
-            <button type="button" onClick={abandonSubmissionIntent} className="self-start text-sm font-medium text-red-700 hover:underline dark:text-red-300">
-              J’ai vérifié l’historique, abandonner cette tentative
-            </button>
+            <>
+              <p role="status" className="text-sm text-amber-700 dark:text-amber-400">
+                Vérifie l’historique avant toute nouvelle soumission. Tant que cette page reste ouverte, la reprise réutilise la même clé et le même contenu.
+              </p>
+              <button type="button" onClick={abandonSubmissionIntent} className="self-start text-sm font-medium text-red-700 hover:underline dark:text-red-300">
+                J’ai vérifié l’historique, abandonner cette tentative
+              </button>
+            </>
           )}
           {reloadNeedsHistoryCheck && (
             <button type="button" onClick={acknowledgeReloadHistoryCheck} className="self-start text-sm font-medium text-brand-700 hover:underline dark:text-brand-300">

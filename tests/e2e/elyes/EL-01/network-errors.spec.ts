@@ -21,7 +21,7 @@ test('an uncertain submission preserves every field and does not retry automatic
   await expect(page.getByLabel('Date', { exact: true })).toHaveValue('2026-10-16')
   await expect(page.getByLabel('Description', { exact: true })).toHaveValue('Nouvelle note de recette')
   await expect(page.getByLabel('Reçu (image ou PDF)', { exact: true })).toHaveValue(/receipt\.png$/)
-  await expect(page.getByRole('button', { name: 'Soumettre', exact: true })).toBeEnabled()
+  await expect(page.locator('button[type="submit"]')).toBeEnabled()
   expect(posts).toBe(1)
 })
 
