@@ -12,7 +12,7 @@ import { provisionRuntime } from '../../rls/provision-runtime.mjs'
 
 const directory=path.resolve('.ci-output/demo'),state=path.join(directory,'runtime.json'),seedFile=path.join(directory,'seed.json')
 class DemoEnvironmentError extends Error {}
-let config,child
+let config,child,stopping
 const action=process.argv[2],confirm=process.argv[3]
 const secret=()=>randomBytes(32).toString('hex')
 function safeDirectories(){for(const p of [path.resolve('.ci-output'),directory]){if(existsSync(p)&&lstatSync(p).isSymbolicLink())throw new DemoEnvironmentError('Symlinked demo directory refused.');mkdirSync(p,{recursive:true,mode:0o700})}}
@@ -70,12 +70,19 @@ try{
   if(confirm)throw new DemoEnvironmentError('Unexpected argument.');read();await vacant(3215)
   child=spawnOwnedNodeProcess(['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','3215'],{env:webEnvironment()})
   child.stdout.on('data',()=>{});child.stderr.on('data',()=>{})
-  for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>{void stopOwnedNodeProcess(child).catch(()=>{process.exitCode=1})})
+  const stop=()=>{stopping??=stopOwnedNodeProcess(child).catch(()=>{process.exitCode=1});return stopping}
+  // npm/terminal can forward the same signal twice; keep handlers installed
+  // until the owned child is gone instead of restoring the default on signal 2.
+  for(const signal of ['SIGINT','SIGTERM','SIGHUP'])process.on(signal,()=>{void stop()})
+  process.on('exit',()=>{
+   if(process.platform!=='win32'&&child.pid&&child.exitCode===null&&child.signalCode===null){try{process.kill(-child.pid,'SIGTERM')}catch{ /* Only the group created above. */ }}
+  })
   let ready=false
   for(let i=0;i<150;i++){if(child.exitCode!==null)break;try{if((await fetch(config.env.ARLA_TEST_BASE_URL+'/login',{signal:AbortSignal.timeout(1000)})).ok){ready=true;break}}catch{}await delay(200)}
-  if(!ready)throw new DemoEnvironmentError('Restricted demo server did not become ready.')
+  if(!ready&&!stopping)throw new DemoEnvironmentError('Restricted demo server did not become ready.')
   console.info('Demo ready at http://127.0.0.1:3215. Private synthetic credentials remain in .ci-output/demo/seed.json. Ctrl+C stops only this server and preserves the demo data.')
-  if(child.exitCode===null)await new Promise(resolve=>child.once('exit',resolve))
+  if(child.exitCode===null&&child.signalCode===null)await new Promise(resolve=>child.once('exit',resolve))
+  await stopping
  }else if(['reset','down'].includes(action)){
   if(confirm!=='--confirm-disposable'||process.argv.length!==4)throw new DemoEnvironmentError('Explicit --confirm-disposable required. Stop demo:start first; this removes only its owned test volumes.')
   read(false);await down();if(action==='reset')await up()
