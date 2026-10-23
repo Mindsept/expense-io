@@ -1,0 +1,1903 @@
+{
+  "mode": "aggregate",
+  "schema": "expense.metrics.v1",
+  "scope": "process-or-explicit-log-input",
+  "series": [
+    {
+      "operation": "DecideExpense",
+      "code": "decision_conflict",
+      "result": "conflict",
+      "count": 8,
+      "sumDurationMs": 33.3624170000021,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 7
+        },
+        {
+          "leMs": 50,
+          "count": 8
+        },
+        {
+          "leMs": 100,
+          "count": 8
+        },
+        {
+          "leMs": 500,
+          "count": 8
+        },
+        {
+          "leMs": 1000,
+          "count": 8
+        },
+        {
+          "leMs": 5000,
+          "count": 8
+        },
+        {
+          "leMs": 20000,
+          "count": 8
+        },
+        {
+          "leMs": 60000,
+          "count": 8
+        },
+        {
+          "leMs": 300000,
+          "count": 8
+        }
+      ]
+    },
+    {
+      "operation": "DecideExpense",
+      "code": "decision_denied",
+      "result": "denied",
+      "count": 40,
+      "sumDurationMs": 245.31091800000559,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 39
+        },
+        {
+          "leMs": 50,
+          "count": 39
+        },
+        {
+          "leMs": 100,
+          "count": 39
+        },
+        {
+          "leMs": 500,
+          "count": 40
+        },
+        {
+          "leMs": 1000,
+          "count": 40
+        },
+        {
+          "leMs": 5000,
+          "count": 40
+        },
+        {
+          "leMs": 20000,
+          "count": 40
+        },
+        {
+          "leMs": 60000,
+          "count": 40
+        },
+        {
+          "leMs": 300000,
+          "count": 40
+        }
+      ]
+    },
+    {
+      "operation": "DecideExpense",
+      "code": "decision_error",
+      "result": "error",
+      "count": 2,
+      "sumDurationMs": 8.865749999999025,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 2
+        },
+        {
+          "leMs": 50,
+          "count": 2
+        },
+        {
+          "leMs": 100,
+          "count": 2
+        },
+        {
+          "leMs": 500,
+          "count": 2
+        },
+        {
+          "leMs": 1000,
+          "count": 2
+        },
+        {
+          "leMs": 5000,
+          "count": 2
+        },
+        {
+          "leMs": 20000,
+          "count": 2
+        },
+        {
+          "leMs": 60000,
+          "count": 2
+        },
+        {
+          "leMs": 300000,
+          "count": 2
+        }
+      ]
+    },
+    {
+      "operation": "DecideExpense",
+      "code": "decision_success",
+      "result": "success",
+      "count": 20,
+      "sumDurationMs": 107.19575099999929,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 20
+        },
+        {
+          "leMs": 50,
+          "count": 20
+        },
+        {
+          "leMs": 100,
+          "count": 20
+        },
+        {
+          "leMs": 500,
+          "count": 20
+        },
+        {
+          "leMs": 1000,
+          "count": 20
+        },
+        {
+          "leMs": 5000,
+          "count": 20
+        },
+        {
+          "leMs": 20000,
+          "count": 20
+        },
+        {
+          "leMs": 60000,
+          "count": 20
+        },
+        {
+          "leMs": 300000,
+          "count": 20
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.history",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 12,
+      "sumDurationMs": 52.23658499999874,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 12
+        },
+        {
+          "leMs": 50,
+          "count": 12
+        },
+        {
+          "leMs": 100,
+          "count": 12
+        },
+        {
+          "leMs": 500,
+          "count": 12
+        },
+        {
+          "leMs": 1000,
+          "count": 12
+        },
+        {
+          "leMs": 5000,
+          "count": 12
+        },
+        {
+          "leMs": 20000,
+          "count": 12
+        },
+        {
+          "leMs": 60000,
+          "count": 12
+        },
+        {
+          "leMs": 300000,
+          "count": 12
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.history",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 17,
+      "sumDurationMs": 57.159961000000294,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 17
+        },
+        {
+          "leMs": 50,
+          "count": 17
+        },
+        {
+          "leMs": 100,
+          "count": 17
+        },
+        {
+          "leMs": 500,
+          "count": 17
+        },
+        {
+          "leMs": 1000,
+          "count": 17
+        },
+        {
+          "leMs": 5000,
+          "count": 17
+        },
+        {
+          "leMs": 20000,
+          "count": 17
+        },
+        {
+          "leMs": 60000,
+          "count": 17
+        },
+        {
+          "leMs": 300000,
+          "count": 17
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.list",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 20,
+      "sumDurationMs": 107.9145849999868,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 19
+        },
+        {
+          "leMs": 50,
+          "count": 20
+        },
+        {
+          "leMs": 100,
+          "count": 20
+        },
+        {
+          "leMs": 500,
+          "count": 20
+        },
+        {
+          "leMs": 1000,
+          "count": 20
+        },
+        {
+          "leMs": 5000,
+          "count": 20
+        },
+        {
+          "leMs": 20000,
+          "count": 20
+        },
+        {
+          "leMs": 60000,
+          "count": 20
+        },
+        {
+          "leMs": 300000,
+          "count": 20
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.list",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 10,
+      "sumDurationMs": 20.536208999998053,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 10
+        },
+        {
+          "leMs": 50,
+          "count": 10
+        },
+        {
+          "leMs": 100,
+          "count": 10
+        },
+        {
+          "leMs": 500,
+          "count": 10
+        },
+        {
+          "leMs": 1000,
+          "count": 10
+        },
+        {
+          "leMs": 5000,
+          "count": 10
+        },
+        {
+          "leMs": 20000,
+          "count": 10
+        },
+        {
+          "leMs": 60000,
+          "count": 10
+        },
+        {
+          "leMs": 300000,
+          "count": 10
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.receipt-suggestion",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 13,
+      "sumDurationMs": 1280.4961659999972,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 0
+        },
+        {
+          "leMs": 50,
+          "count": 2
+        },
+        {
+          "leMs": 100,
+          "count": 10
+        },
+        {
+          "leMs": 500,
+          "count": 13
+        },
+        {
+          "leMs": 1000,
+          "count": 13
+        },
+        {
+          "leMs": 5000,
+          "count": 13
+        },
+        {
+          "leMs": 20000,
+          "count": 13
+        },
+        {
+          "leMs": 60000,
+          "count": 13
+        },
+        {
+          "leMs": 300000,
+          "count": 13
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.receipt-suggestion",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 11,
+      "sumDurationMs": 94.53295800000342,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 9
+        },
+        {
+          "leMs": 50,
+          "count": 11
+        },
+        {
+          "leMs": 100,
+          "count": 11
+        },
+        {
+          "leMs": 500,
+          "count": 11
+        },
+        {
+          "leMs": 1000,
+          "count": 11
+        },
+        {
+          "leMs": 5000,
+          "count": 11
+        },
+        {
+          "leMs": 20000,
+          "count": 11
+        },
+        {
+          "leMs": 60000,
+          "count": 11
+        },
+        {
+          "leMs": 300000,
+          "count": 11
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.receipt-suggestion",
+      "code": "http_5xx",
+      "result": "server_error",
+      "count": 1,
+      "sumDurationMs": 19.365125000000262,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 0
+        },
+        {
+          "leMs": 50,
+          "count": 1
+        },
+        {
+          "leMs": 100,
+          "count": 1
+        },
+        {
+          "leMs": 500,
+          "count": 1
+        },
+        {
+          "leMs": 1000,
+          "count": 1
+        },
+        {
+          "leMs": 5000,
+          "count": 1
+        },
+        {
+          "leMs": 20000,
+          "count": 1
+        },
+        {
+          "leMs": 60000,
+          "count": 1
+        },
+        {
+          "leMs": 300000,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.receipt-url",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 2,
+      "sumDurationMs": 19.07008400000268,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 1
+        },
+        {
+          "leMs": 50,
+          "count": 2
+        },
+        {
+          "leMs": 100,
+          "count": 2
+        },
+        {
+          "leMs": 500,
+          "count": 2
+        },
+        {
+          "leMs": 1000,
+          "count": 2
+        },
+        {
+          "leMs": 5000,
+          "count": 2
+        },
+        {
+          "leMs": 20000,
+          "count": 2
+        },
+        {
+          "leMs": 60000,
+          "count": 2
+        },
+        {
+          "leMs": 300000,
+          "count": 2
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.receipt-url",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 7,
+      "sumDurationMs": 26.148872999999185,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 7
+        },
+        {
+          "leMs": 50,
+          "count": 7
+        },
+        {
+          "leMs": 100,
+          "count": 7
+        },
+        {
+          "leMs": 500,
+          "count": 7
+        },
+        {
+          "leMs": 1000,
+          "count": 7
+        },
+        {
+          "leMs": 5000,
+          "count": 7
+        },
+        {
+          "leMs": 20000,
+          "count": 7
+        },
+        {
+          "leMs": 60000,
+          "count": 7
+        },
+        {
+          "leMs": 300000,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.receipt-url",
+      "code": "http_5xx",
+      "result": "server_error",
+      "count": 1,
+      "sumDurationMs": 17.9431250000016,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 0
+        },
+        {
+          "leMs": 50,
+          "count": 1
+        },
+        {
+          "leMs": 100,
+          "count": 1
+        },
+        {
+          "leMs": 500,
+          "count": 1
+        },
+        {
+          "leMs": 1000,
+          "count": 1
+        },
+        {
+          "leMs": 5000,
+          "count": 1
+        },
+        {
+          "leMs": 20000,
+          "count": 1
+        },
+        {
+          "leMs": 60000,
+          "count": 1
+        },
+        {
+          "leMs": 300000,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.submit",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 10,
+      "sumDurationMs": 129.61403899999277,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 0
+        },
+        {
+          "leMs": 50,
+          "count": 10
+        },
+        {
+          "leMs": 100,
+          "count": 10
+        },
+        {
+          "leMs": 500,
+          "count": 10
+        },
+        {
+          "leMs": 1000,
+          "count": 10
+        },
+        {
+          "leMs": 5000,
+          "count": 10
+        },
+        {
+          "leMs": 20000,
+          "count": 10
+        },
+        {
+          "leMs": 60000,
+          "count": 10
+        },
+        {
+          "leMs": 300000,
+          "count": 10
+        }
+      ]
+    },
+    {
+      "operation": "expense-notes.submit",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 19,
+      "sumDurationMs": 72.46287400000256,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 18
+        },
+        {
+          "leMs": 50,
+          "count": 19
+        },
+        {
+          "leMs": 100,
+          "count": 19
+        },
+        {
+          "leMs": 500,
+          "count": 19
+        },
+        {
+          "leMs": 1000,
+          "count": 19
+        },
+        {
+          "leMs": 5000,
+          "count": 19
+        },
+        {
+          "leMs": 20000,
+          "count": 19
+        },
+        {
+          "leMs": 60000,
+          "count": 19
+        },
+        {
+          "leMs": 300000,
+          "count": 19
+        }
+      ]
+    },
+    {
+      "operation": "expense.persist",
+      "code": "success",
+      "result": "success",
+      "count": 10,
+      "sumDurationMs": 38.794708999996146,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 10
+        },
+        {
+          "leMs": 50,
+          "count": 10
+        },
+        {
+          "leMs": 100,
+          "count": 10
+        },
+        {
+          "leMs": 500,
+          "count": 10
+        },
+        {
+          "leMs": 1000,
+          "count": 10
+        },
+        {
+          "leMs": 5000,
+          "count": 10
+        },
+        {
+          "leMs": 20000,
+          "count": 10
+        },
+        {
+          "leMs": 60000,
+          "count": 10
+        },
+        {
+          "leMs": 300000,
+          "count": 10
+        }
+      ]
+    },
+    {
+      "operation": "hr.expense-notes.approve",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 5,
+      "sumDurationMs": 27.4375399999999,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 5
+        },
+        {
+          "leMs": 50,
+          "count": 5
+        },
+        {
+          "leMs": 100,
+          "count": 5
+        },
+        {
+          "leMs": 500,
+          "count": 5
+        },
+        {
+          "leMs": 1000,
+          "count": 5
+        },
+        {
+          "leMs": 5000,
+          "count": 5
+        },
+        {
+          "leMs": 20000,
+          "count": 5
+        },
+        {
+          "leMs": 60000,
+          "count": 5
+        },
+        {
+          "leMs": 300000,
+          "count": 5
+        }
+      ]
+    },
+    {
+      "operation": "hr.expense-notes.approve",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 10,
+      "sumDurationMs": 33.215040999998564,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 10
+        },
+        {
+          "leMs": 50,
+          "count": 10
+        },
+        {
+          "leMs": 100,
+          "count": 10
+        },
+        {
+          "leMs": 500,
+          "count": 10
+        },
+        {
+          "leMs": 1000,
+          "count": 10
+        },
+        {
+          "leMs": 5000,
+          "count": 10
+        },
+        {
+          "leMs": 20000,
+          "count": 10
+        },
+        {
+          "leMs": 60000,
+          "count": 10
+        },
+        {
+          "leMs": 300000,
+          "count": 10
+        }
+      ]
+    },
+    {
+      "operation": "hr.expense-notes.list",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 7,
+      "sumDurationMs": 38.51908299999923,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 6
+        },
+        {
+          "leMs": 50,
+          "count": 7
+        },
+        {
+          "leMs": 100,
+          "count": 7
+        },
+        {
+          "leMs": 500,
+          "count": 7
+        },
+        {
+          "leMs": 1000,
+          "count": 7
+        },
+        {
+          "leMs": 5000,
+          "count": 7
+        },
+        {
+          "leMs": 20000,
+          "count": 7
+        },
+        {
+          "leMs": 60000,
+          "count": 7
+        },
+        {
+          "leMs": 300000,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "operation": "hr.expense-notes.list",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 4,
+      "sumDurationMs": 11.79070800000045,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 4
+        },
+        {
+          "leMs": 50,
+          "count": 4
+        },
+        {
+          "leMs": 100,
+          "count": 4
+        },
+        {
+          "leMs": 500,
+          "count": 4
+        },
+        {
+          "leMs": 1000,
+          "count": 4
+        },
+        {
+          "leMs": 5000,
+          "count": 4
+        },
+        {
+          "leMs": 20000,
+          "count": 4
+        },
+        {
+          "leMs": 60000,
+          "count": 4
+        },
+        {
+          "leMs": 300000,
+          "count": 4
+        }
+      ]
+    },
+    {
+      "operation": "hr.expense-notes.receipt-url",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 2,
+      "sumDurationMs": 9.22375000000011,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 2
+        },
+        {
+          "leMs": 50,
+          "count": 2
+        },
+        {
+          "leMs": 100,
+          "count": 2
+        },
+        {
+          "leMs": 500,
+          "count": 2
+        },
+        {
+          "leMs": 1000,
+          "count": 2
+        },
+        {
+          "leMs": 5000,
+          "count": 2
+        },
+        {
+          "leMs": 20000,
+          "count": 2
+        },
+        {
+          "leMs": 60000,
+          "count": 2
+        },
+        {
+          "leMs": 300000,
+          "count": 2
+        }
+      ]
+    },
+    {
+      "operation": "hr.expense-notes.receipt-url",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 7,
+      "sumDurationMs": 22.06287500000053,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 7
+        },
+        {
+          "leMs": 50,
+          "count": 7
+        },
+        {
+          "leMs": 100,
+          "count": 7
+        },
+        {
+          "leMs": 500,
+          "count": 7
+        },
+        {
+          "leMs": 1000,
+          "count": 7
+        },
+        {
+          "leMs": 5000,
+          "count": 7
+        },
+        {
+          "leMs": 20000,
+          "count": 7
+        },
+        {
+          "leMs": 60000,
+          "count": 7
+        },
+        {
+          "leMs": 300000,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "operation": "hr.expense-notes.reject",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 5,
+      "sumDurationMs": 25.82708300000104,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 5
+        },
+        {
+          "leMs": 50,
+          "count": 5
+        },
+        {
+          "leMs": 100,
+          "count": 5
+        },
+        {
+          "leMs": 500,
+          "count": 5
+        },
+        {
+          "leMs": 1000,
+          "count": 5
+        },
+        {
+          "leMs": 5000,
+          "count": 5
+        },
+        {
+          "leMs": 20000,
+          "count": 5
+        },
+        {
+          "leMs": 60000,
+          "count": 5
+        },
+        {
+          "leMs": 300000,
+          "count": 5
+        }
+      ]
+    },
+    {
+      "operation": "hr.expense-notes.reject",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 6,
+      "sumDurationMs": 18.125042000000576,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 6
+        },
+        {
+          "leMs": 50,
+          "count": 6
+        },
+        {
+          "leMs": 100,
+          "count": 6
+        },
+        {
+          "leMs": 500,
+          "count": 6
+        },
+        {
+          "leMs": 1000,
+          "count": 6
+        },
+        {
+          "leMs": 5000,
+          "count": 6
+        },
+        {
+          "leMs": 20000,
+          "count": 6
+        },
+        {
+          "leMs": 60000,
+          "count": 6
+        },
+        {
+          "leMs": 300000,
+          "count": 6
+        }
+      ]
+    },
+    {
+      "operation": "hr.users.list",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 5,
+      "sumDurationMs": 28.369333000007828,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 4
+        },
+        {
+          "leMs": 50,
+          "count": 5
+        },
+        {
+          "leMs": 100,
+          "count": 5
+        },
+        {
+          "leMs": 500,
+          "count": 5
+        },
+        {
+          "leMs": 1000,
+          "count": 5
+        },
+        {
+          "leMs": 5000,
+          "count": 5
+        },
+        {
+          "leMs": 20000,
+          "count": 5
+        },
+        {
+          "leMs": 60000,
+          "count": 5
+        },
+        {
+          "leMs": 300000,
+          "count": 5
+        }
+      ]
+    },
+    {
+      "operation": "hr.users.list",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 6,
+      "sumDurationMs": 15.660167000000001,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 6
+        },
+        {
+          "leMs": 50,
+          "count": 6
+        },
+        {
+          "leMs": 100,
+          "count": 6
+        },
+        {
+          "leMs": 500,
+          "count": 6
+        },
+        {
+          "leMs": 1000,
+          "count": 6
+        },
+        {
+          "leMs": 5000,
+          "count": 6
+        },
+        {
+          "leMs": 20000,
+          "count": 6
+        },
+        {
+          "leMs": 60000,
+          "count": 6
+        },
+        {
+          "leMs": 300000,
+          "count": 6
+        }
+      ]
+    },
+    {
+      "operation": "hr.users.manager",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 4,
+      "sumDurationMs": 18.192957999998725,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 4
+        },
+        {
+          "leMs": 50,
+          "count": 4
+        },
+        {
+          "leMs": 100,
+          "count": 4
+        },
+        {
+          "leMs": 500,
+          "count": 4
+        },
+        {
+          "leMs": 1000,
+          "count": 4
+        },
+        {
+          "leMs": 5000,
+          "count": 4
+        },
+        {
+          "leMs": 20000,
+          "count": 4
+        },
+        {
+          "leMs": 60000,
+          "count": 4
+        },
+        {
+          "leMs": 300000,
+          "count": 4
+        }
+      ]
+    },
+    {
+      "operation": "hr.users.manager",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 15,
+      "sumDurationMs": 51.94037499999831,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 15
+        },
+        {
+          "leMs": 50,
+          "count": 15
+        },
+        {
+          "leMs": 100,
+          "count": 15
+        },
+        {
+          "leMs": 500,
+          "count": 15
+        },
+        {
+          "leMs": 1000,
+          "count": 15
+        },
+        {
+          "leMs": 5000,
+          "count": 15
+        },
+        {
+          "leMs": 20000,
+          "count": 15
+        },
+        {
+          "leMs": 60000,
+          "count": 15
+        },
+        {
+          "leMs": 300000,
+          "count": 15
+        }
+      ]
+    },
+    {
+      "operation": "manager.expense-notes.approve",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 7,
+      "sumDurationMs": 38.766082999998616,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 7
+        },
+        {
+          "leMs": 50,
+          "count": 7
+        },
+        {
+          "leMs": 100,
+          "count": 7
+        },
+        {
+          "leMs": 500,
+          "count": 7
+        },
+        {
+          "leMs": 1000,
+          "count": 7
+        },
+        {
+          "leMs": 5000,
+          "count": 7
+        },
+        {
+          "leMs": 20000,
+          "count": 7
+        },
+        {
+          "leMs": 60000,
+          "count": 7
+        },
+        {
+          "leMs": 300000,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "operation": "manager.expense-notes.approve",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 19,
+      "sumDurationMs": 185.96920899999895,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 17
+        },
+        {
+          "leMs": 50,
+          "count": 18
+        },
+        {
+          "leMs": 100,
+          "count": 18
+        },
+        {
+          "leMs": 500,
+          "count": 19
+        },
+        {
+          "leMs": 1000,
+          "count": 19
+        },
+        {
+          "leMs": 5000,
+          "count": 19
+        },
+        {
+          "leMs": 20000,
+          "count": 19
+        },
+        {
+          "leMs": 60000,
+          "count": 19
+        },
+        {
+          "leMs": 300000,
+          "count": 19
+        }
+      ]
+    },
+    {
+      "operation": "manager.expense-notes.approve",
+      "code": "http_5xx",
+      "result": "server_error",
+      "count": 2,
+      "sumDurationMs": 9.112333000000035,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 2
+        },
+        {
+          "leMs": 50,
+          "count": 2
+        },
+        {
+          "leMs": 100,
+          "count": 2
+        },
+        {
+          "leMs": 500,
+          "count": 2
+        },
+        {
+          "leMs": 1000,
+          "count": 2
+        },
+        {
+          "leMs": 5000,
+          "count": 2
+        },
+        {
+          "leMs": 20000,
+          "count": 2
+        },
+        {
+          "leMs": 60000,
+          "count": 2
+        },
+        {
+          "leMs": 300000,
+          "count": 2
+        }
+      ]
+    },
+    {
+      "operation": "manager.expense-notes.list",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 5,
+      "sumDurationMs": 26.095250000002125,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 5
+        },
+        {
+          "leMs": 50,
+          "count": 5
+        },
+        {
+          "leMs": 100,
+          "count": 5
+        },
+        {
+          "leMs": 500,
+          "count": 5
+        },
+        {
+          "leMs": 1000,
+          "count": 5
+        },
+        {
+          "leMs": 5000,
+          "count": 5
+        },
+        {
+          "leMs": 20000,
+          "count": 5
+        },
+        {
+          "leMs": 60000,
+          "count": 5
+        },
+        {
+          "leMs": 300000,
+          "count": 5
+        }
+      ]
+    },
+    {
+      "operation": "manager.expense-notes.list",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 6,
+      "sumDurationMs": 21.698623999996016,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 6
+        },
+        {
+          "leMs": 50,
+          "count": 6
+        },
+        {
+          "leMs": 100,
+          "count": 6
+        },
+        {
+          "leMs": 500,
+          "count": 6
+        },
+        {
+          "leMs": 1000,
+          "count": 6
+        },
+        {
+          "leMs": 5000,
+          "count": 6
+        },
+        {
+          "leMs": 20000,
+          "count": 6
+        },
+        {
+          "leMs": 60000,
+          "count": 6
+        },
+        {
+          "leMs": 300000,
+          "count": 6
+        }
+      ]
+    },
+    {
+      "operation": "manager.expense-notes.receipt-url",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 2,
+      "sumDurationMs": 9.691792000000532,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 2
+        },
+        {
+          "leMs": 50,
+          "count": 2
+        },
+        {
+          "leMs": 100,
+          "count": 2
+        },
+        {
+          "leMs": 500,
+          "count": 2
+        },
+        {
+          "leMs": 1000,
+          "count": 2
+        },
+        {
+          "leMs": 5000,
+          "count": 2
+        },
+        {
+          "leMs": 20000,
+          "count": 2
+        },
+        {
+          "leMs": 60000,
+          "count": 2
+        },
+        {
+          "leMs": 300000,
+          "count": 2
+        }
+      ]
+    },
+    {
+      "operation": "manager.expense-notes.receipt-url",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 11,
+      "sumDurationMs": 152.09774899999866,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 10
+        },
+        {
+          "leMs": 50,
+          "count": 10
+        },
+        {
+          "leMs": 100,
+          "count": 10
+        },
+        {
+          "leMs": 500,
+          "count": 11
+        },
+        {
+          "leMs": 1000,
+          "count": 11
+        },
+        {
+          "leMs": 5000,
+          "count": 11
+        },
+        {
+          "leMs": 20000,
+          "count": 11
+        },
+        {
+          "leMs": 60000,
+          "count": 11
+        },
+        {
+          "leMs": 300000,
+          "count": 11
+        }
+      ]
+    },
+    {
+      "operation": "manager.expense-notes.reject",
+      "code": "http_2xx",
+      "result": "success",
+      "count": 3,
+      "sumDurationMs": 17.792708000000857,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 3
+        },
+        {
+          "leMs": 50,
+          "count": 3
+        },
+        {
+          "leMs": 100,
+          "count": 3
+        },
+        {
+          "leMs": 500,
+          "count": 3
+        },
+        {
+          "leMs": 1000,
+          "count": 3
+        },
+        {
+          "leMs": 5000,
+          "count": 3
+        },
+        {
+          "leMs": 20000,
+          "count": 3
+        },
+        {
+          "leMs": 60000,
+          "count": 3
+        },
+        {
+          "leMs": 300000,
+          "count": 3
+        }
+      ]
+    },
+    {
+      "operation": "manager.expense-notes.reject",
+      "code": "http_4xx",
+      "result": "client_error",
+      "count": 13,
+      "sumDurationMs": 47.26229200000489,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 13
+        },
+        {
+          "leMs": 50,
+          "count": 13
+        },
+        {
+          "leMs": 100,
+          "count": 13
+        },
+        {
+          "leMs": 500,
+          "count": 13
+        },
+        {
+          "leMs": 1000,
+          "count": 13
+        },
+        {
+          "leMs": 5000,
+          "count": 13
+        },
+        {
+          "leMs": 20000,
+          "count": 13
+        },
+        {
+          "leMs": 60000,
+          "count": 13
+        },
+        {
+          "leMs": 300000,
+          "count": 13
+        }
+      ]
+    },
+    {
+      "operation": "ocr.recognize",
+      "code": "ocr_empty",
+      "result": "success",
+      "count": 5,
+      "sumDurationMs": 270.6690839999974,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 0
+        },
+        {
+          "leMs": 50,
+          "count": 2
+        },
+        {
+          "leMs": 100,
+          "count": 5
+        },
+        {
+          "leMs": 500,
+          "count": 5
+        },
+        {
+          "leMs": 1000,
+          "count": 5
+        },
+        {
+          "leMs": 5000,
+          "count": 5
+        },
+        {
+          "leMs": 20000,
+          "count": 5
+        },
+        {
+          "leMs": 60000,
+          "count": 5
+        },
+        {
+          "leMs": 300000,
+          "count": 5
+        }
+      ]
+    },
+    {
+      "operation": "ocr.recognize",
+      "code": "ocr_failed",
+      "result": "error",
+      "count": 1,
+      "sumDurationMs": 6.641875000001164,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 1
+        },
+        {
+          "leMs": 50,
+          "count": 1
+        },
+        {
+          "leMs": 100,
+          "count": 1
+        },
+        {
+          "leMs": 500,
+          "count": 1
+        },
+        {
+          "leMs": 1000,
+          "count": 1
+        },
+        {
+          "leMs": 5000,
+          "count": 1
+        },
+        {
+          "leMs": 20000,
+          "count": 1
+        },
+        {
+          "leMs": 60000,
+          "count": 1
+        },
+        {
+          "leMs": 300000,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "operation": "ocr.recognize",
+      "code": "ocr_suggested",
+      "result": "success",
+      "count": 8,
+      "sumDurationMs": 885.663833000006,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 0
+        },
+        {
+          "leMs": 50,
+          "count": 0
+        },
+        {
+          "leMs": 100,
+          "count": 6
+        },
+        {
+          "leMs": 500,
+          "count": 8
+        },
+        {
+          "leMs": 1000,
+          "count": 8
+        },
+        {
+          "leMs": 5000,
+          "count": 8
+        },
+        {
+          "leMs": 20000,
+          "count": 8
+        },
+        {
+          "leMs": 60000,
+          "count": 8
+        },
+        {
+          "leMs": 300000,
+          "count": 8
+        }
+      ]
+    },
+    {
+      "operation": "storage.upload",
+      "code": "success",
+      "result": "success",
+      "count": 10,
+      "sumDurationMs": 37.65775200000735,
+      "buckets": [
+        {
+          "leMs": 10,
+          "count": 10
+        },
+        {
+          "leMs": 50,
+          "count": 10
+        },
+        {
+          "leMs": 100,
+          "count": 10
+        },
+        {
+          "leMs": 500,
+          "count": 10
+        },
+        {
+          "leMs": 1000,
+          "count": 10
+        },
+        {
+          "leMs": 5000,
+          "count": 10
+        },
+        {
+          "leMs": 20000,
+          "count": 10
+        },
+        {
+          "leMs": 60000,
+          "count": 10
+        },
+        {
+          "leMs": 300000,
+          "count": 10
+        }
+      ]
+    }
+  ],
+  "capacity": {
+    "workers": 1,
+    "active": 0,
+    "queued": 0,
+    "stopping": 0
+  }
+}

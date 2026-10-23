@@ -1,0 +1,3478 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "expense.io — delivered HTTP contract",
+    "version": "4.1.0",
+    "description": "Current contract after LE-05: bounded streamed request reads, image-only OCR, reusable process pool, bounded queue and actual process termination before capacity reuse. All business routes use HA-07 Problem Details. LE-03 optional idempotence remains supported. LE-07 adds opt-in page/pageSize on four existing GET lists, deterministic secondary IDs, filtered full totals and scoped global manager search/selection. Calls without paging retain full legacy arrays until LE-11."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Same origin as the application; no production hostname or credentials."
+    }
+  ],
+  "security": [
+    {
+      "sessionCookie": []
+    },
+    {
+      "secureSessionCookie": []
+    }
+  ],
+  "paths": {
+    "/api/expense-notes": {
+      "get": {
+        "operationId": "listOwnExpenses",
+        "summary": "Current active actor, own notes all statuses; safe allowlisted sort, no pagination. LE-07: explicit page or pageSize opts into a bounded envelope, default page1/pageSize20 and max100. Otherwise returns the full legacy array without silent truncation. Counts/totals and items share the exact same SQL snapshot and filter; offset ordering is stable only on an unchanged dataset. No frozen multi-page snapshot.",
+        "x-source": "src/app/api/expense-notes/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ExpenseNotes"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ExpensePage"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Pagination-Mode": {
+                "description": "Explicit compatibility mode. legacy is a complete array, paged is the opt-in envelope.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "legacy",
+                    "paged"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Strict allowlist, never SQL input; UUID is the secondary key in the same direction. Absent/empty keeps the historical default. Repeated sort rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at ASC",
+                "created_at DESC",
+                "amount ASC",
+                "amount DESC",
+                "expense_date ASC",
+                "expense_date DESC"
+              ],
+              "default": "created_at DESC"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createExpense",
+        "summary": "Legacy requests without Idempotency-Key retain LE-02 upload-first behavior. With a UUID key, reserve a durable current-user/company intention, fingerprint normalized fields and exact receipt bytes, then atomically commit the complete note and original response cache. Same completed intent returns original 201 without another upload; different content, active processing or expired intent return static 409. Each retry of an incomplete intent has its own fenced attempt/receipt key.",
+        "x-source": "src/app/api/expense-notes/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present only for keyed requests: true means original stored response; false means this request committed the intention. Body/status remain the same.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "408": {
+            "$ref": "#/components/responses/Problem408"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "499": {
+            "$ref": "#/components/responses/Problem499"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "expenseDate",
+                  "description",
+                  "receipt"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^(?!0+(?:\\.0{1,2})?$)\\d{1,8}(?:\\.\\d{1,2})?$",
+                    "description": "Complete positive decimal string, max 99999999.99, no sign/space/exponent/suffix; bound to SQL as validated text."
+                  },
+                  "expenseDate": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?!0000)\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "Real civil date, years 0001–9999. No future-date prohibition."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Trimmed value must be nonempty and at most 4000 UTF-16 units; C0/DEL controls except tab/newline/CR are refused. Raw whitespace is trimmed. Schema maxLength counts codepoints and cannot express this UTF-16/trim policy exactly; server enforces it."
+                  },
+                  "receipt": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Nonempty File, at most 10 MiB after multipart materialization. PNG/JPEG/WebP/PDF MIME must match structural container checks. Extension derived from validated MIME, client filename ignored. Not a full decoder/antivirus guarantee."
+                  }
+                },
+                "description": "Exactly one occurrence of each required field. Extra fields are ignored and cannot grant user/company/role rights. Invalid/duplicate fields, malformed multipart or invalid file yield Problem400."
+              },
+              "encoding": {
+                "receipt": {
+                  "contentType": "image/png, image/jpeg, image/webp, application/pdf"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Client intention UUID, normalized lowercase; scoped to current user+company+expense.create. Seven-day replay from first reservation. Required content fingerprint remains fixed. A processing 409 is replayable later with the same key. An expired key never creates another note; inspect history before a new intention. Header absent remains legacy, without deduplication. Repeated/malformed/empty key is 400."
+          }
+        ]
+      }
+    },
+    "/api/expense-notes/receipt-suggestion": {
+      "post": {
+        "operationId": "suggestExpenseFields",
+        "summary": "Synchronous French image OCR. Actual request bytes are bounded before multipart parsing; defaults 5 MiB file + 64 KiB multipart overhead, 12 million pixels, one reusable owned process, two queued jobs, 3s queue wait, 20s init/language/recognition deadline. Configurable bounded values; capacity is per process, not global. PDF is explicitly unsupported (415). Only successful analysis without usable suggestions returns 200 {}.",
+        "x-source": "src/app/api/expense-notes/receipt-suggestion/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Suggestion"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "408": {
+            "$ref": "#/components/responses/Problem408"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem415"
+          },
+          "499": {
+            "$ref": "#/components/responses/Problem499"
+          },
+          "502": {
+            "$ref": "#/components/responses/Problem502"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem503"
+          },
+          "504": {
+            "$ref": "#/components/responses/Problem504"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "receipt"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "receipt": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/expense-notes/{id}/receipt-url": {
+      "get": {
+        "operationId": "getOwnReceiptUrl",
+        "summary": "Current active owner, including after a decision. Empty/blank key and invisible/missing note return 404.",
+        "x-source": "src/app/api/expense-notes/[id]/receipt-url/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptUrl"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/manager/expense-notes": {
+      "get": {
+        "operationId": "managerListPending",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Pending only, oldest first, array without pagination. LE-07: explicit page or pageSize opts into a bounded envelope, default page1/pageSize20 and max100. Otherwise returns the full legacy array without silent truncation. Counts/totals and items share the exact same SQL snapshot and filter; offset ordering is stable only on an unchanged dataset. No frozen multi-page snapshot.",
+        "x-source": "src/app/api/manager/expense-notes/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ExpenseNotes"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ExpensePage"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Pagination-Mode": {
+                "description": "Explicit compatibility mode. legacy is a complete array, paged is the opt-in envelope.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "legacy",
+                    "paged"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Strict allowlist, never SQL input; UUID is the secondary key in the same direction. Absent/empty keeps the historical default. Repeated sort rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at ASC",
+                "created_at DESC",
+                "amount ASC",
+                "amount DESC",
+                "expense_date ASC",
+                "expense_date DESC"
+              ],
+              "default": "created_at ASC"
+            }
+          }
+        ]
+      }
+    },
+    "/api/manager/expense-notes/{id}/receipt-url": {
+      "get": {
+        "operationId": "managerReceiptUrl",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Blank receipt key returns 404; signing does not check S3 object existence.",
+        "x-source": "src/app/api/manager/expense-notes/[id]/receipt-url/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptUrl"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/manager/expense-notes/{id}/approve": {
+      "post": {
+        "operationId": "managerApprove",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
+        "x-source": "src/app/api/manager/expense-notes/[id]/approve/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/manager/expense-notes/{id}/reject": {
+      "post": {
+        "operationId": "managerReject",
+        "summary": "Current active manager; same-company direct reports whose current role is not HR, excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
+        "x-source": "src/app/api/manager/expense-notes/[id]/reject/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/expense-notes": {
+      "get": {
+        "operationId": "hrListPending",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Pending only, oldest first, array without pagination. LE-07: explicit page or pageSize opts into a bounded envelope, default page1/pageSize20 and max100. Otherwise returns the full legacy array without silent truncation. Counts/totals and items share the exact same SQL snapshot and filter; offset ordering is stable only on an unchanged dataset. No frozen multi-page snapshot.",
+        "x-source": "src/app/api/hr/expense-notes/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ExpenseNotes"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ExpensePage"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Pagination-Mode": {
+                "description": "Explicit compatibility mode. legacy is a complete array, paged is the opt-in envelope.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "legacy",
+                    "paged"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Strict allowlist, never SQL input; UUID is the secondary key in the same direction. Absent/empty keeps the historical default. Repeated sort rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at ASC",
+                "created_at DESC",
+                "amount ASC",
+                "amount DESC",
+                "expense_date ASC",
+                "expense_date DESC"
+              ],
+              "default": "created_at ASC"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/expense-notes/{id}/receipt-url": {
+      "get": {
+        "operationId": "hrReceiptUrl",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Blank receipt key returns 404; signing does not check S3 object existence.",
+        "x-source": "src/app/api/hr/expense-notes/[id]/receipt-url/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptUrl"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/expense-notes/{id}/approve": {
+      "post": {
+        "operationId": "hrApprove",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
+        "x-source": "src/app/api/hr/expense-notes/[id]/approve/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/expense-notes/{id}/reject": {
+      "post": {
+        "operationId": "hrReject",
+        "summary": "Current active HR; same-company other HR or non-HR author without an active same-company manager of manager role; excluding self. Requires pending, otherwise 409. No request body. Conditional pending update and one audit event commit atomically (HA-03). Concurrent or repeated decisions yield one success and a 409 loser.",
+        "x-source": "src/app/api/hr/expense-notes/[id]/reject/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseNote"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/users": {
+      "get": {
+        "operationId": "listCompanyUsers",
+        "summary": "Current HR; employee/manager users in own company (includes inactive accounts), sorted by name. No pagination. LE-07: explicit page or pageSize opts into a bounded envelope, default page1/pageSize20 and max100. Otherwise returns the full legacy array without silent truncation. Counts/totals and items share the exact same SQL snapshot and filter; offset ordering is stable only on an unchanged dataset. No frozen multi-page snapshot. role=manager restricts global candidates to active same-company managers; q is literal case-insensitive name/email search. The legacy directory still includes inactive employees/managers. selectedManagerId requires paging, resolves same-company identity outside q/page, and does not alter filtered totals.",
+        "x-source": "src/app/api/hr/users/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/DirectoryUsers"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DirectoryPage"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "X-Pagination-Mode": {
+                "description": "Explicit compatibility mode. legacy is a complete array, paged is the opt-in envelope.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "legacy",
+                    "paged"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "Strict positive canonical decimal integer; no repeats, signs, whitespace, exponent, fraction or leading zero. Offset product must fit a safe integer.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Strict allowlist, never SQL input; UUID is the secondary key in the same direction. Absent/empty keeps the historical default. Repeated sort rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name ASC",
+                "name DESC"
+              ],
+              "default": "name ASC"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Trimmed global literal name/email substring, max120 UTF-16 units, no controls or repeated parameter. Percent, underscore and backslash are literal. New term should start client page1.",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Only manager is accepted. Limits candidates to active same-company managers, independently of the displayed directory page.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "manager"
+              ]
+            }
+          },
+          {
+            "name": "selectedManagerId",
+            "in": "query",
+            "description": "Requires explicit page or pageSize. Current selection identity, independent of q and page; inactive/reclassified identity is returned with isEligible=false. Foreign/missing both null. Never part of the filtered result totals.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/users/{id}/manager": {
+      "put": {
+        "operationId": "assignManager",
+        "summary": "Current active HR; same-company employee/manager target. Explicit null removes an edge. Active same-company managers only; direct, indirect, historical and concurrent management cycles are refused. Busy candidate locks return retryable 409 without automatic retry.",
+        "x-source": "src/app/api/hr/users/[id]/manager/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryUser"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "managerId"
+                ],
+                "properties": {
+                  "managerId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "nullable": true
+                  }
+                },
+                "description": "Other properties currently ignored; they cannot change company/role."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/{action}": {
+      "parameters": [
+        {
+          "name": "action",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Delegated catch-all, including multi-segment callback/credentials. See concrete integration endpoints below."
+        }
+      ],
+      "get": {
+        "operationId": "authDelegateGet",
+        "summary": "Auth.js delegated surface; framework-specific redirects, HTML and JSON, outside the business error contract.",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "responses": {
+          "default": {
+            "description": "Auth.js-owned response. No ProblemDetails or request ID guarantee. Concrete tested JSON endpoints are listed separately."
+          }
+        }
+      },
+      "post": {
+        "operationId": "authDelegatePost",
+        "summary": "Auth.js delegated surface; framework-specific redirects, HTML and JSON, outside the business error contract.",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "responses": {
+          "default": {
+            "description": "Auth.js-owned response. No ProblemDetails or request ID guarantee. Concrete tested JSON endpoints are listed separately."
+          }
+        }
+      }
+    },
+    "/api/auth/csrf": {
+      "get": {
+        "operationId": "authCsrfToken",
+        "summary": "Auth.js JSON integration endpoint; session is null when unauthenticated, deleted or inactive.",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Auth.js JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfToken"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Framework-owned failure; no business error envelope."
+          }
+        }
+      }
+    },
+    "/api/auth/session": {
+      "get": {
+        "operationId": "authSession",
+        "summary": "Auth.js JSON integration endpoint; session is null when unauthenticated, deleted or inactive.",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Auth.js JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Framework-owned failure; no business error envelope."
+          }
+        }
+      }
+    },
+    "/api/auth/callback/credentials": {
+      "post": {
+        "operationId": "credentialsCallback",
+        "x-source": "src/app/api/auth/[...nextauth]/route.ts",
+        "x-delegated": true,
+        "security": [],
+        "summary": "Obtain CSRF token/cookie first, then send credentials with same cookie jar. Redirect mode used by integration tests. Never hardcode or publish session cookies.",
+        "parameters": [
+          {
+            "name": "X-Auth-Return-Redirect",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Auth.js may use JSON redirect mode instead of HTTP redirect."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "csrfToken",
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "csrfToken": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "callbackUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "302": {
+            "description": "Auth.js redirect; inspect destination/session to distinguish successful login and credential failure.",
+            "headers": {
+              "Location": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Auth.js JSON redirect mode",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "url"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Auth.js-owned failure or redirect. No business error envelope."
+          }
+        }
+      }
+    },
+    "/api/expense-notes/{id}/history": {
+      "get": {
+        "operationId": "getExpenseHistory",
+        "summary": "Current active owner or currently eligible same-company manager/HR, including after decision. items ordered by server timestamp then event UUID; empty when no recorded event. Actor display name is snapshotted. Previous-company events are excluded.",
+        "x-source": "src/app/api/expense-notes/[id]/history/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionHistory"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "UUID required by clients. Malformed IDs currently reach PostgreSQL and return sanitized 500, not a guaranteed 400."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/hr/users/{id}/access": {
+      "put": {
+        "operationId": "changeUserAccess",
+        "summary": "Current active same-company HR only; role/activation change, no company transfer or deletion. Last active HR and busy locks return 409. Malformed target UUID returns 400.",
+        "x-source": "src/app/api/hr/users/[id]/access/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Target UUID; authorization derives from the authenticated current actor."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAccess"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserAccessChange"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/expense-notes/{id}/validation-status": {
+      "get": {
+        "operationId": "getValidationStatus",
+        "summary": "Current active owner only; current eligibility and explicit waiting reason, no invented HR assignee. Malformed UUID currently returns sanitized 500; foreign/missing note returns 404.",
+        "x-source": "src/app/api/expense-notes/[id]/validation-status/route.ts",
+        "x-error-contract": "problem-details-v1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Target UUID; authorization derives from the authenticated current actor."
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem401"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Problem500"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "authjs.session-token",
+        "description": "Opaque JWT session from Auth.js credentials flow on local HTTP. Current rights reloaded on every request."
+      },
+      "secureSessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Secure-authjs.session-token",
+        "description": "HTTPS secure-cookie variant. Chunked cookies are managed by Auth.js. Never send as Bearer authorization."
+      }
+    },
+    "schemas": {
+      "ExpenseNote": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "amount",
+          "expenseDate",
+          "description",
+          "receiptKey",
+          "status",
+          "createdAt"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 99999999.99
+          },
+          "expenseDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "description": {
+            "type": "string"
+          },
+          "receiptKey": {
+            "type": "string",
+            "description": "Opaque storage key, not a URL. Legacy partial rows may still contain empty keys. New submissions insert only after successful upload and always include a nonempty key."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "author": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "displayName"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "displayName": {
+                "type": "string"
+              }
+            },
+            "description": "Optional shared LE-12 metadata supplied by approval lists; never an author email."
+          }
+        },
+        "example": {
+          "id": "11111111-1111-4111-8111-111111111111",
+          "userId": "22222222-2222-4222-8222-222222222222",
+          "amount": 12.5,
+          "expenseDate": "2024-02-29",
+          "description": "Synthetic taxi",
+          "receiptKey": "synthetic/receipt.png",
+          "status": "pending",
+          "createdAt": "2026-10-22T10:00:00.000Z"
+        }
+      },
+      "ExpenseNotes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ExpenseNote"
+        }
+      },
+      "DirectoryUser": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role",
+          "managerId"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "employee",
+              "manager"
+            ]
+          },
+          "managerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        }
+      },
+      "DirectoryUsers": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/DirectoryUser"
+        }
+      },
+      "ReceiptUrl": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?://",
+            "description": "Presigned GET, default expiry 300 seconds. Signing does not verify object existence; treat as a secret."
+          }
+        },
+        "example": {
+          "url": "https://storage.example.test/synthetic/receipt.png?synthetic=example-only"
+        }
+      },
+      "Suggestion": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 99999999.99
+          },
+          "expenseDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "example": {
+          "amount": 12.5,
+          "expenseDate": "2024-02-29"
+        }
+      },
+      "CsrfToken": {
+        "type": "object",
+        "required": [
+          "csrfToken"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "csrfToken": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "Session": {
+        "nullable": true,
+        "type": "object",
+        "required": [
+          "user",
+          "expires"
+        ],
+        "properties": {
+          "user": {
+            "type": "object",
+            "required": [
+              "id",
+              "email",
+              "role"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "employee",
+                  "manager",
+                  "hr_admin"
+                ]
+              }
+            }
+          },
+          "expires": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "error",
+          "requestId"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string",
+            "description": "Compatibility extension, identical to detail."
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:validation"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Invalid request"
+                ]
+              },
+              "status": {
+                "enum": [
+                  400
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "Check the required fields and their format."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "Check the required fields and their format."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:invalid_json"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Invalid JSON"
+                ]
+              },
+              "status": {
+                "enum": [
+                  400
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The request body must be a valid JSON object."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The request body must be a valid JSON object."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:invalid_manager_assignment"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Invalid manager assignment"
+                ]
+              },
+              "status": {
+                "enum": [
+                  400
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "Provide managerId as a UUID or explicit null."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "Provide managerId as a UUID or explicit null."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:unauthenticated"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Authentication required"
+                ]
+              },
+              "status": {
+                "enum": [
+                  401
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "Sign in to continue."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "Sign in to continue."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:forbidden"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Forbidden"
+                ]
+              },
+              "status": {
+                "enum": [
+                  403
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "Your role does not allow this operation."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "Your role does not allow this operation."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:not_found"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Not found"
+                ]
+              },
+              "status": {
+                "enum": [
+                  404
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The requested resource was not found."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The requested resource was not found."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:conflict"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Conflict"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This expense has already been decided."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This expense has already been decided."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:invalid_manager"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Invalid manager"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The selected manager cannot be assigned."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The selected manager cannot be assigned."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:manager_assignment_busy"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Assignment busy"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This assignment is being used by another operation. Try again."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This assignment is being used by another operation. Try again."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:technical_failure"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Internal server error"
+                ]
+              },
+              "status": {
+                "enum": [
+                  500
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The operation could not be completed. Try again later."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The operation could not be completed. Try again later."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:idempotency_conflict"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Request key conflict"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This request key was already used with different expense content."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This request key was already used with different expense content."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:idempotency_in_progress"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Submission in progress"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This submission is already being processed. Retry later with the same request key."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This submission is already being processed. Retry later with the same request key."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:idempotency_expired"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Request key expired"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This request key has expired. Check your expense history before starting a new submission."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This request key has expired. Check your expense history before starting a new submission."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:payload_too_large"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Payload too large"
+                ]
+              },
+              "status": {
+                "enum": [
+                  413
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The submitted file or request exceeds the allowed size."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The submitted file or request exceeds the allowed size."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:unsupported_ocr_media"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Unsupported OCR format"
+                ]
+              },
+              "status": {
+                "enum": [
+                  415
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "OCR accepts PNG, JPEG and WebP images. PDF extraction is not supported."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "OCR accepts PNG, JPEG and WebP images. PDF extraction is not supported."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:ocr_image_too_large"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Image too large"
+                ]
+              },
+              "status": {
+                "enum": [
+                  413
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The image exceeds the allowed dimensions or pixel count."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The image exceeds the allowed dimensions or pixel count."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:ocr_busy"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "OCR busy"
+                ]
+              },
+              "status": {
+                "enum": [
+                  503
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "OCR capacity is full. Try again later."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "OCR capacity is full. Try again later."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:ocr_timeout"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "OCR timed out"
+                ]
+              },
+              "status": {
+                "enum": [
+                  504
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "OCR did not finish within the allowed time."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "OCR did not finish within the allowed time."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:ocr_failure"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "OCR failed"
+                ]
+              },
+              "status": {
+                "enum": [
+                  502
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The image could not be analyzed. You can enter the expense fields manually."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The image could not be analyzed. You can enter the expense fields manually."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:request_aborted"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Request cancelled"
+                ]
+              },
+              "status": {
+                "enum": [
+                  499
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The request was cancelled."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The request was cancelled."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:request_timeout"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Request timed out"
+                ]
+              },
+              "status": {
+                "enum": [
+                  408
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "The request body was not received within the allowed time."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "The request body was not received within the allowed time."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:manager_cycle"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Management cycle"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This assignment would create or join a management cycle."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This assignment would create or join a management cycle."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:last_active_hr"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Last active HR"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "Assign another active HR before removing this HR access."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "Assign another active HR before removing this HR access."
+                ]
+              }
+            }
+          }
+        ],
+        "example": {
+          "type": "urn:expense-io:problem:not_found",
+          "title": "Not found",
+          "status": 404,
+          "detail": "The requested resource was not found.",
+          "error": "The requested resource was not found.",
+          "requestId": "33333333-3333-4333-8333-333333333333"
+        }
+      },
+      "DecisionHistory": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "fromStatus",
+                "toStatus",
+                "decidedAt",
+                "actor"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "fromStatus": {
+                  "type": "string",
+                  "enum": [
+                    "pending"
+                  ]
+                },
+                "toStatus": {
+                  "type": "string",
+                  "enum": [
+                    "approved",
+                    "rejected"
+                  ]
+                },
+                "decidedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "actor": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "displayName"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "items": [
+            {
+              "id": "44444444-4444-4444-8444-444444444444",
+              "fromStatus": "pending",
+              "toStatus": "approved",
+              "decidedAt": "2026-10-22T10:00:00.000Z",
+              "actor": {
+                "id": "55555555-5555-4555-8555-555555555555",
+                "displayName": "Synthetic manager"
+              }
+            }
+          ]
+        }
+      },
+      "UserAccessChange": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "employee",
+              "manager",
+              "hr_admin"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "isActive": false
+        }
+      },
+      "UserAccess": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "role",
+          "isActive",
+          "managerId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "employee",
+              "manager",
+              "hr_admin"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "managerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "example": {
+          "id": "11111111-1111-4111-8111-111111111111",
+          "role": "employee",
+          "isActive": false,
+          "managerId": null
+        }
+      },
+      "ValidationStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "validation"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "validation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "reasonCode",
+              "message"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "manager",
+                  "hr",
+                  "none"
+                ]
+              },
+              "reasonCode": {
+                "type": "string",
+                "enum": [
+                  "direct_manager",
+                  "peer_hr",
+                  "hr_recourse",
+                  "no_other_active_hr",
+                  "routing_policy_pending",
+                  "already_decided"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "example": {
+          "status": "pending",
+          "validation": {
+            "kind": "none",
+            "reasonCode": "no_other_active_hr",
+            "message": "Aucun autre RH actif ne peut valider cette note. Elle reste en attente."
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "required": [
+          "page",
+          "pageSize",
+          "totalItems"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "totalItems": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        }
+      },
+      "FilteredTotals": {
+        "type": "object",
+        "required": [
+          "amount",
+          "count",
+          "scope"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "SQL sum over the complete authorized/filter-matching set, not just this page. Decimal cents must fit a safe JSON numeric response; an unrepresentable aggregate is a sanitized technical failure."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "filtered"
+            ]
+          }
+        }
+      },
+      "DirectoryTotals": {
+        "type": "object",
+        "required": [
+          "count",
+          "scope"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "filtered"
+            ]
+          }
+        }
+      },
+      "SelectedManager": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "role",
+          "isActive",
+          "isEligible"
+        ],
+        "additionalProperties": false,
+        "description": "Same-company selected identity independently of current page/q. Can be inactive or reclassified; only an active current manager is eligible. Foreign/missing UUIDs both resolve to null. No email or private account fields.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "employee",
+              "manager",
+              "hr_admin"
+            ]
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isEligible": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ExpensePage": {
+        "type": "object",
+        "required": [
+          "items",
+          "pagination",
+          "totals"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/ExpenseNote"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/FilteredTotals"
+          }
+        }
+      },
+      "DirectoryPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "pagination",
+          "totals"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/DirectoryUser"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/DirectoryTotals"
+          },
+          "selectedManager": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SelectedManager"
+              },
+              {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "Problem400": {
+        "description": "Invalid input",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        400
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem401": {
+        "description": "Missing, deleted or inactive identity",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        401
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem403": {
+        "description": "Current role cannot perform this operation",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        403
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem404": {
+        "description": "Missing, invisible, self-validation or blank receipt; indistinguishable public response",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        404
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem409": {
+        "description": "Already decided, invalid manager or busy assignment",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        409
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem500": {
+        "description": "Sanitized technical failure",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        500
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem413": {
+        "description": "Payload too large",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        413
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem415": {
+        "description": "Unsupported OCR format",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        415
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem503": {
+        "description": "OCR busy",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        503
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem504": {
+        "description": "OCR timed out",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        504
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem502": {
+        "description": "OCR failed",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        502
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem499": {
+        "description": "Request cancelled",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        499
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Problem408": {
+        "description": "Request timed out",
+        "headers": {
+          "X-Request-Id": {
+            "required": true,
+            "description": "UUID normalized from a valid caller ID or generated. Matches problem body requestId.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                },
+                {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        408
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

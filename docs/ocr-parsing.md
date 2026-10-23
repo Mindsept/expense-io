@@ -47,10 +47,11 @@ ligne contenant « total » est écarté : cela choisissait 40 au lieu du total
 après remise de 35. Des heuristiques prudentes privilégient une saisie manuelle
 à une suggestion injustifiée ; il ne s'agit pas d'un moteur comptable universel.
 
-Le formulaire existant garde ses champs montant/date éditables et annonce
-explicitement la saisie manuelle lorsqu'une réponse est vide. Il peut encore
-écraser une saisie concurrente pendant la reconnaissance : EL-03 possède ce
-correctif, distinct de LE-04. Ce ticket ne change ni le frontend, ni les droits,
+Le formulaire garde ses champs montant/date éditables et annonce explicitement
+la saisie manuelle lorsqu'une réponse est vide. Les changements d'Elyes fusionnés
+dans `9adbd6e` ajoutent la protection des saisies concurrentes pendant l'OCR
+(code EL-03 et ses tests unitaires), distincte du parseur LE-04.
+LE-04 ne change ni le frontend, ni les droits,
 ni les formats de dépôt PNG/JPEG/WebP/PDF. Les bornes de corps, de concurrence
 et de durée ainsi que la distinction panne/timeout/résultat vide restent LE-05.
 Le traitement existant des exceptions du moteur reste inchangé.

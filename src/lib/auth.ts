@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { getPool } from '@/lib/db'
 import { readAuthConfig } from '@/lib/auth-config.mjs'
+import { refreshCurrentSession } from '@/lib/current-session'
 
 const { secret } = readAuthConfig()
 
@@ -29,7 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: string
           password_hash: string
           role: 'employee' | 'manager' | 'hr_admin'
-        }>('SELECT id, email, password_hash, role FROM users WHERE email = $1', [email])
+        }>('SELECT id, email, password_hash, role FROM expense_auth.credentials($1::text)', [email])
         const user = result.rows[0]
         if (!user) return null
 
@@ -46,7 +47,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id
         token.role = user.role
       }
-      return token
+      // Every auth()/session request reloads current rights. A signed old claim
+      // cannot keep a deleted/disabled account or an obsolete role alive.
+      return refreshCurrentSession(token)
     },
     async session({ session, token }) {
       if (session.user) {

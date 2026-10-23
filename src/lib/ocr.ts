@@ -1,37 +1,26 @@
-import path from 'node:path'
-import { createWorker } from 'tesseract.js'
+import { measurePhase } from '@/observability/diagnostics'
+import { ApiError } from '@/lib/errors'
 import { parseReceiptText, type ExpenseNoteSuggestion } from '@/lib/ocr-parser'
+import { OcrPool, OcrPoolError } from '@/lib/ocr-pool.mjs'
+import { ocrSettings } from '@/lib/ocr-settings'
 export type { ExpenseNoteSuggestion } from '@/lib/ocr-parser'
 
-const SUPPORTED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp']
-const TESSDATA_PATH = path.join(process.cwd(), 'tessdata')
+export const OCR_SETTINGS = ocrSettings()
+const pool = new OcrPool(OCR_SETTINGS)
+export function ocrCapacity() { return pool.snapshot() }
 
-// Pas de limite de taille de fichier ici (contrairement à la création d'une
-// note de frais) : un gros fichier peut monopoliser le worker un long
-// moment avant de renvoyer une suggestion vide.
-export async function suggestFields(receipt: {
-  data: Buffer
-  mimeType: string
-}): Promise<ExpenseNoteSuggestion> {
-  if (!SUPPORTED_MIME_TYPES.includes(receipt.mimeType)) {
-    return {}
-  }
-
-  try {
-    const worker = await createWorker('fra', undefined, {
-      langPath: TESSDATA_PATH,
-      cacheMethod: 'none',
-    })
-    try {
-      const {
-        data: { text },
-      } = await worker.recognize(receipt.data)
-      return parseReceiptText(text)
-    } finally {
-      await worker.terminate()
+export async function suggestFields(receipt: { data: Buffer; mimeType: string }, signal?: AbortSignal, context: { requestId?: string } = {}): Promise<ExpenseNoteSuggestion> {
+  try { return await measurePhase('ocr.recognize', context, async () => parseReceiptText(await pool.recognize(receipt.data, signal)),
+    suggestion => Object.values(suggestion).some(value => value !== undefined) ? 'ocr_suggested' : 'ocr_empty',
+    error => error instanceof OcrPoolError && ['ocr_timeout', 'ocr_busy', 'request_aborted'].includes(error.code) ? error.code : 'ocr_failed', () => pool.snapshot()) }
+  catch (error) {
+    if (error instanceof OcrPoolError) {
+      switch (error.code) {
+        case 'ocr_timeout': throw new ApiError('ocr_timeout')
+        case 'ocr_busy': throw new ApiError('ocr_busy')
+        case 'request_aborted': throw new ApiError('request_aborted')
+      }
     }
-  } catch (error) {
-    console.error('[ocr] Extraction échouée, suggestion vide renvoyée', error)
-    return {}
+    throw new ApiError('ocr_failure')
   }
 }

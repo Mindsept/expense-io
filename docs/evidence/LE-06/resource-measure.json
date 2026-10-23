@@ -1,0 +1,142 @@
+{
+  "schema": "expense.ocr.decision-measure.v1",
+  "node": "v24.22.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "scope": "local pool component; not HTTP or production workload",
+  "corpus": 8,
+  "source": {
+    "gitHead": "139c848a92d4f7f1ca7fdc5eaac4fa41ad5e0514",
+    "poolSha256": "e83be9b2da4e64011a944f9f2a191ea3ddc3eb4ce7b52a9ff545aed0d9d44a08",
+    "workerSha256": "e98772c8700a32c02f16526727abe8817f8d16588dfc3c9a56900475e92d0aca"
+  },
+  "scenarios": [
+    {
+      "concurrency": 1,
+      "requests": 24,
+      "options": {
+        "workers": 1,
+        "queue": 2,
+        "queueMs": 3000,
+        "timeoutMs": 20000,
+        "idleMs": 30000
+      },
+      "counts": {
+        "success": 24
+      },
+      "wallMs": 2158,
+      "successLatencyMs": {
+        "min": 28.669208000000026,
+        "p50": 64.06333300000006,
+        "p95": 101.04320800000005,
+        "max": 653.7876249999999
+      },
+      "sampledCapacity": {
+        "peakWorkers": 1,
+        "peakQueued": 0,
+        "peakActive": 1,
+        "peakChildRss": 145883136
+      },
+      "parentRssBefore": 53346304,
+      "parentRssAfter": 49479680,
+      "parentEventLoopDelayMs": {
+        "mean": 11.597757217391305,
+        "max": 58.884095
+      },
+      "after": {
+        "workers": 0,
+        "active": 0,
+        "queued": 0,
+        "stopping": 0,
+        "completed": 24,
+        "peakWorkers": 1,
+        "childRssBytes": 0
+      }
+    },
+    {
+      "concurrency": 3,
+      "requests": 24,
+      "options": {
+        "workers": 1,
+        "queue": 2,
+        "queueMs": 3000,
+        "timeoutMs": 20000,
+        "idleMs": 30000
+      },
+      "counts": {
+        "success": 24
+      },
+      "wallMs": 2131,
+      "successLatencyMs": {
+        "min": 27.416541000000052,
+        "p50": 155.8124170000001,
+        "p95": 399.8480419999996,
+        "max": 496.31916699999965
+      },
+      "sampledCapacity": {
+        "peakWorkers": 1,
+        "peakQueued": 2,
+        "peakActive": 1,
+        "peakChildRss": 163479552
+      },
+      "parentRssBefore": 49594368,
+      "parentRssAfter": 49463296,
+      "parentEventLoopDelayMs": {
+        "mean": 11.100742063157895,
+        "max": 20.971519
+      },
+      "after": {
+        "workers": 0,
+        "active": 0,
+        "queued": 0,
+        "stopping": 0,
+        "completed": 24,
+        "peakWorkers": 1,
+        "childRssBytes": 0
+      }
+    },
+    {
+      "concurrency": 6,
+      "requests": 24,
+      "options": {
+        "workers": 1,
+        "queue": 2,
+        "queueMs": 3000,
+        "timeoutMs": 20000,
+        "idleMs": 30000
+      },
+      "counts": {
+        "ocr_busy": 12,
+        "success": 12
+      },
+      "wallMs": 1040,
+      "successLatencyMs": {
+        "min": 60.68562500000007,
+        "p50": 158.94287499999973,
+        "p95": 453.47650000000067,
+        "max": 453.47650000000067
+      },
+      "sampledCapacity": {
+        "peakWorkers": 1,
+        "peakQueued": 2,
+        "peakActive": 1,
+        "peakChildRss": 161169408
+      },
+      "parentRssBefore": 49577984,
+      "parentRssAfter": 50921472,
+      "parentEventLoopDelayMs": {
+        "mean": 10.949048430107526,
+        "max": 13.246463
+      },
+      "after": {
+        "workers": 0,
+        "active": 0,
+        "queued": 0,
+        "stopping": 0,
+        "completed": 12,
+        "peakWorkers": 1,
+        "childRssBytes": 0
+      }
+    }
+  ]
+}

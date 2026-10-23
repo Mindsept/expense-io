@@ -7,6 +7,7 @@ import { getClientErrorMessage, isConflict } from '@/utils/client-errors'
 interface ExpenseNote {
   id: string
   userId: string
+  author?: { id: string; displayName: string }
   amount: number
   expenseDate: string
   description: string
@@ -146,8 +147,8 @@ export function PendingApprovalsPanel() {
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {notes.map((note) => (
                   <tr key={note.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                    <td className="px-6 py-3 font-mono text-xs text-gray-500 dark:text-gray-400">
-                      {note.userId.slice(0, 8)}…
+                    <td className="px-6 py-3">
+                      {note.author?.displayName || 'Auteur non disponible'}
                     </td>
                     <td className="px-6 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">
                       {formatCivilDate(note.expenseDate)}
@@ -159,7 +160,7 @@ export function PendingApprovalsPanel() {
                     <td className="px-6 py-3 text-right whitespace-nowrap">
                       <button
                         type="button"
-                        aria-label={`Voir le reçu pour ${note.description}`}
+                        aria-label={`Voir le reçu de ${note.author?.displayName || 'l’auteur non disponible'}, ${note.description}`}
                         onClick={() => handleViewReceipt(note.id)}
                         className="mr-3 text-sm font-medium text-brand-600 hover:underline"
                       >
@@ -168,7 +169,7 @@ export function PendingApprovalsPanel() {
                       <button
                         type="button"
                         disabled={decidingId !== null}
-                        aria-label={`Approuver la note de ${note.userId.slice(0, 8)}, ${note.description}`}
+                        aria-label={`Approuver la note de ${note.author?.displayName || 'l’auteur non disponible'}, ${note.description}`}
                         onClick={() => handleDecide(note.id, 'approve')}
                         className="mr-3 text-sm font-medium text-green-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -177,7 +178,7 @@ export function PendingApprovalsPanel() {
                       <button
                         type="button"
                         disabled={decidingId !== null}
-                        aria-label={`Rejeter la note de ${note.userId.slice(0, 8)}, ${note.description}`}
+                        aria-label={`Rejeter la note de ${note.author?.displayName || 'l’auteur non disponible'}, ${note.description}`}
                         onClick={() => handleDecide(note.id, 'reject')}
                         className="text-sm font-medium text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
                       >

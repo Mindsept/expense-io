@@ -1,0 +1,2 @@
+# PDF xref entries have a fixed byte width; preserve this binary fixture exactly.
+valid.pdf binary

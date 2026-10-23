@@ -15,6 +15,7 @@ interface CompanyUser {
 interface ExpenseNote {
   id: string
   userId: string
+  author?: { id: string; displayName: string }
   amount: number
   expenseDate: string
   description: string
@@ -292,10 +293,10 @@ export function AdminConsole() {
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {notes.map((note) => {
-                  const author = users.find((user) => user.id === note.userId)
+                  const authorName = note.author?.displayName || 'Auteur non disponible'
                   return (
                     <tr key={note.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                      <td className="px-6 py-3">{author?.name ?? note.userId.slice(0, 8)}</td>
+                      <td className="px-6 py-3">{authorName}</td>
                       <td className="px-6 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">
                         {formatCivilDate(note.expenseDate)}
                       </td>
@@ -306,7 +307,7 @@ export function AdminConsole() {
                       <td className="px-6 py-3 text-right whitespace-nowrap">
                         <button
                           type="button"
-                          aria-label={`Voir le reçu de ${author?.name ?? note.userId.slice(0, 8)}, ${note.description}`}
+                          aria-label={`Voir le reçu de ${authorName}, ${note.description}`}
                           onClick={() => handleViewReceipt(note.id)}
                           className="mr-3 text-sm font-medium text-brand-600 hover:underline"
                         >
@@ -315,7 +316,7 @@ export function AdminConsole() {
                         <button
                           type="button"
                           disabled={decidingId !== null}
-                          aria-label={`Approuver la note de ${author?.name ?? note.userId.slice(0, 8)}, ${note.description}`}
+                          aria-label={`Approuver la note de ${authorName}, ${note.description}`}
                           onClick={() => handleDecide(note.id, 'approve')}
                           className="mr-3 text-sm font-medium text-green-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
                         >
@@ -324,7 +325,7 @@ export function AdminConsole() {
                         <button
                           type="button"
                           disabled={decidingId !== null}
-                          aria-label={`Rejeter la note de ${author?.name ?? note.userId.slice(0, 8)}, ${note.description}`}
+                          aria-label={`Rejeter la note de ${authorName}, ${note.description}`}
                           onClick={() => handleDecide(note.id, 'reject')}
                           className="text-sm font-medium text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
                         >

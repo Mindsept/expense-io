@@ -1,0 +1,92 @@
+{
+  "scope": "public schema structural checks only; policies and application flows still require review",
+  "role": {
+    "name": "ha04_owner",
+    "superuser": true,
+    "bypass_rls": true,
+    "create_role": true,
+    "create_database": true
+  },
+  "tables": [
+    {
+      "name": "companies",
+      "owner": "ha04_owner",
+      "enabled": false,
+      "forced": false,
+      "effective_owner": true,
+      "business_access": true,
+      "can_truncate": true,
+      "policy_count": 0
+    },
+    {
+      "name": "expense_notes",
+      "owner": "ha04_owner",
+      "enabled": true,
+      "forced": true,
+      "effective_owner": true,
+      "business_access": true,
+      "can_truncate": true,
+      "policy_count": 6
+    },
+    {
+      "name": "users",
+      "owner": "ha04_owner",
+      "enabled": false,
+      "forced": false,
+      "effective_owner": true,
+      "business_access": true,
+      "can_truncate": true,
+      "policy_count": 0
+    }
+  ],
+  "issues": [
+    {
+      "code": "role.superuser"
+    },
+    {
+      "code": "role.bypass_rls"
+    },
+    {
+      "code": "role.create_role"
+    },
+    {
+      "code": "role.create_database"
+    },
+    {
+      "code": "schema.create"
+    },
+    {
+      "code": "table.owner",
+      "table": "companies"
+    },
+    {
+      "code": "table.truncate",
+      "table": "companies"
+    },
+    {
+      "code": "table.rls_disabled",
+      "table": "companies"
+    },
+    {
+      "code": "table.owner",
+      "table": "expense_notes"
+    },
+    {
+      "code": "table.truncate",
+      "table": "expense_notes"
+    },
+    {
+      "code": "table.owner",
+      "table": "users"
+    },
+    {
+      "code": "table.truncate",
+      "table": "users"
+    },
+    {
+      "code": "table.rls_disabled",
+      "table": "users"
+    }
+  ],
+  "status": "blocked"
+}

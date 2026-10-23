@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 let client: S3Client | undefined
@@ -20,16 +20,14 @@ function getClient(): S3Client {
 
 const BUCKET = process.env.S3_BUCKET ?? 'receipts'
 
-// Nom de fichier lisible, dérivé du compteur de reçu de la note plutôt que
-// d'un identifiant opaque.
-export function receiptKeyFor(receiptSeq: number, extension: string): string {
-  return `receipts/${receiptSeq}${extension}`
-}
-
 export async function uploadReceipt(key: string, body: Buffer, contentType: string): Promise<void> {
   await getClient().send(
     new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: body, ContentType: contentType })
   )
+}
+
+export async function removeReceipt(key: string): Promise<void> {
+  await getClient().send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }), { abortSignal: AbortSignal.timeout(5000) })
 }
 
 export async function getReceiptUrl(key: string, expiresInSeconds = 300): Promise<string> {

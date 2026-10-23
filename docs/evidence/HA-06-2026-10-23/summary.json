@@ -1,0 +1,13 @@
+{
+  "outcome": "failed",
+  "node": "v26.8.1",
+  "baseline": "Privileged bootstrap role; this run does not prove RLS isolation.",
+  "suites": [
+    {
+      "name": "verify",
+      "exitCode": 1,
+      "durationMs": 5941
+    }
+  ],
+  "error": "verify failed (exit 1). See .ci-output/verify.log."
+}

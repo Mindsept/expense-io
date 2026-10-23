@@ -1,0 +1,220 @@
+{
+  "operation": "ocr.synthetic.measure",
+  "requests": 24,
+  "durationMs": 1885,
+  "parentBefore": 49332224,
+  "peakChildRssBytes": 165445632,
+  "peakParentRssBytes": 52117504,
+  "during": {
+    "workers": 1,
+    "active": 0,
+    "queued": 0,
+    "stopping": 0,
+    "completed": 24,
+    "peakWorkers": 1,
+    "childRssBytes": 165445632
+  },
+  "after": {
+    "workers": 0,
+    "active": 0,
+    "queued": 0,
+    "stopping": 0,
+    "completed": 24,
+    "peakWorkers": 1,
+    "childRssBytes": 0
+  },
+  "samples": [
+    {
+      "durationMs": 326,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 134725632,
+      "parentRssBytes": 49922048
+    },
+    {
+      "durationMs": 70,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 137625600,
+      "parentRssBytes": 50003968
+    },
+    {
+      "durationMs": 83,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 138919936,
+      "parentRssBytes": 50053120
+    },
+    {
+      "durationMs": 58,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 141656064,
+      "parentRssBytes": 50135040
+    },
+    {
+      "durationMs": 57,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 141787136,
+      "parentRssBytes": 50839552
+    },
+    {
+      "durationMs": 56,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 150994944,
+      "parentRssBytes": 50855936
+    },
+    {
+      "durationMs": 70,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 163938304,
+      "parentRssBytes": 50905088
+    },
+    {
+      "durationMs": 27,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164020224,
+      "parentRssBytes": 50937856
+    },
+    {
+      "durationMs": 65,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164134912,
+      "parentRssBytes": 51085312
+    },
+    {
+      "durationMs": 67,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164298752,
+      "parentRssBytes": 51200000
+    },
+    {
+      "durationMs": 80,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164560896,
+      "parentRssBytes": 51265536
+    },
+    {
+      "durationMs": 59,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164577280,
+      "parentRssBytes": 51298304
+    },
+    {
+      "durationMs": 78,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164675584,
+      "parentRssBytes": 51347456
+    },
+    {
+      "durationMs": 110,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164528128,
+      "parentRssBytes": 51396608
+    },
+    {
+      "durationMs": 139,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164642816,
+      "parentRssBytes": 51478528
+    },
+    {
+      "durationMs": 36,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164642816,
+      "parentRssBytes": 51494912
+    },
+    {
+      "durationMs": 87,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164773888,
+      "parentRssBytes": 51609600
+    },
+    {
+      "durationMs": 65,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 164904960,
+      "parentRssBytes": 51724288
+    },
+    {
+      "durationMs": 77,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 165019648,
+      "parentRssBytes": 51806208
+    },
+    {
+      "durationMs": 55,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 165117952,
+      "parentRssBytes": 51888128
+    },
+    {
+      "durationMs": 56,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 165216256,
+      "parentRssBytes": 51953664
+    },
+    {
+      "durationMs": 53,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 165281792,
+      "parentRssBytes": 52002816
+    },
+    {
+      "durationMs": 68,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 165412864,
+      "parentRssBytes": 52051968
+    },
+    {
+      "durationMs": 29,
+      "workers": 1,
+      "active": 0,
+      "queued": 0,
+      "childRssBytes": 165445632,
+      "parentRssBytes": 52117504
+    }
+  ]
+}

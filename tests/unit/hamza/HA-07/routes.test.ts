@@ -24,6 +24,19 @@ import { GET as ownReceipt } from '../../../../src/app/api/expense-notes/[id]/re
 
 const requestId = '11111111-1111-4111-8111-111111111111'
 const resourceId = '22222222-2222-4222-8222-222222222222'
+const actorId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+const companyId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
+let actorRole = 'manager'
+function loginAs(role: string) {
+  actorRole = role
+  mocks.auth.mockResolvedValue({ user: { id: actorId, role } })
+}
+function queryWithActor(implementation: (sql: string) => Promise<{ rows: Record<string, unknown>[] }>) {
+  mocks.query.mockImplementation((sql: string) => sql.startsWith('SELECT id, company_id, role')
+    ? Promise.resolve({ rows: [{ id: actorId, company_id: companyId, is_active: true, role: actorRole }] })
+    : implementation(sql))
+}
+
 const secret = 'private-sentinel-postgres://password@host/SELECT-token'
 const params = () => ({ params: Promise.resolve({ id: resourceId }) })
 const request = (body?: string) => new Request('http://localhost/api/test', {
@@ -41,8 +54,8 @@ beforeEach(() => {
   globalThis.__pgPool = undefined
   process.env.DATABASE_URL = 'postgres://unused-test-value'
   mocks.connect.mockResolvedValue({ query: mocks.query, release: mocks.release })
-  mocks.query.mockResolvedValue({ rows: [] })
-  mocks.auth.mockResolvedValue({ user: { id: 'actor', role: 'manager' } })
+  queryWithActor(async () => ({ rows: [] }))
+  loginAs('manager')
   logs = []
   for (const level of ['info', 'warn', 'error'] as const) {
     vi.spyOn(console, level).mockImplementation((value: string) => { logs.push(value) })
@@ -65,7 +78,7 @@ async function expectProblem(response: Response, status: number, code?: string) 
 }
 
 describe('all Hamza routes use the boundary', () => {
-  it.each(routes)('%s requires a session before DB access', async (_label, handler) => {
+  it.each(routes)('%s requires a session before business data access', async (_label, handler) => {
     mocks.auth.mockResolvedValue(null)
     await expectProblem(await handler(request(), params()), 401, 'unauthenticated')
     expect(mocks.connect).not.toHaveBeenCalled()
@@ -73,9 +86,10 @@ describe('all Hamza routes use the boundary', () => {
   })
 
   it.each(routes.filter(([label]) => label !== 'own receipt'))('%s distinguishes a forbidden role', async (_label, handler) => {
-    mocks.auth.mockResolvedValue({ user: { id: 'actor', role: 'employee' } })
+    loginAs('employee')
     await expectProblem(await handler(request(), params()), 403, 'forbidden')
-    expect(mocks.query).not.toHaveBeenCalled()
+    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('SELECT id, company_id, role'), [actorId])
+    expect(mocks.query.mock.calls.some(([sql]) => /UPDATE|expense_notes/.test(sql))).toBe(false)
   })
 
   it.each(routes)('%s catches asynchronous authentication rejection', async (_label, handler) => {
@@ -91,7 +105,7 @@ describe('real route and withUserScope asynchronous boundaries', () => {
   })
 
   it.each(['BEGIN', 'set_config', 'SELECT en.*', 'COMMIT'])('catches %s rejection and releases the client', async (failure) => {
-    mocks.query.mockImplementation(async (sql: string) => {
+    queryWithActor(async (sql: string) => {
       await Promise.resolve()
       if (sql.includes(failure)) throw new Error(secret)
       return { rows: [] }
@@ -107,15 +121,15 @@ describe('real route and withUserScope asynchronous boundaries', () => {
     expect(mocks.release).toHaveBeenCalledOnce()
   })
 
-  it('catches a direct pool query failure', async () => {
-    mocks.auth.mockResolvedValue({ user: { id: 'actor', role: 'hr_admin' } })
+  it('catches a directory transaction query failure', async () => {
+    loginAs('hr_admin')
     mocks.query.mockRejectedValue(new Error(secret))
     await expectProblem(await hrUsers(request()), 500)
   })
 
   it.each([['own', ownReceipt, 'employee'], ['manager', managerReceipt, 'manager'], ['HR', hrReceipt, 'hr_admin']] as const)('catches %s receipt presigning failure', async (_name, handler, role) => {
-    mocks.auth.mockResolvedValue({ user: { id: 'actor', role } })
-    mocks.query.mockResolvedValue({ rows: [{ receipt_key: 'opaque-receipt' }] })
+    loginAs(role)
+    queryWithActor(async () => ({ rows: [{ receipt_key: 'opaque-receipt' }] }))
     mocks.receipt.mockRejectedValue(new Error(secret))
     await expectProblem(await handler(request(), params()), 500)
   })
@@ -125,15 +139,15 @@ describe('real route and withUserScope asynchronous boundaries', () => {
   })
 
   it('preserves the successful list representation', async () => {
-    mocks.query.mockImplementation(async (sql: string) => ({ rows: sql.startsWith('SELECT en.*') ? [{
+    queryWithActor(async (sql: string) => ({ rows: sql.startsWith('SELECT en.*') ? [{
       id: resourceId, user_id: 'owner', amount: '42.50', expense_date: '2026-10-21',
-      description: 'Taxi', receipt_key: 'opaque-key', status: 'pending', created_at: '2026-10-21T10:00:00Z',
+      description: 'Taxi', receipt_key: 'opaque-key', status: 'pending', created_at: '2026-10-21T10:00:00Z', author_name: 'Taylor',
     }] : [] }))
     const response = await managerList(request())
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual([{
       id: resourceId, userId: 'owner', amount: 42.5, expenseDate: '2026-10-21', description: 'Taxi',
-      receiptKey: 'opaque-key', status: 'pending', createdAt: '2026-10-21T10:00:00.000Z',
+      receiptKey: 'opaque-key', status: 'pending', createdAt: '2026-10-21T10:00:00.000Z', author: { id: 'owner', displayName: 'Taylor' },
     }])
   })
 
@@ -142,37 +156,40 @@ describe('real route and withUserScope asynchronous boundaries', () => {
   })
 
   it('preserves the already-decided conflict', async () => {
-    mocks.query.mockResolvedValue({ rows: [{ status: 'approved' }] })
+    queryWithActor(async () => ({ rows: [{ status: 'approved' }] }))
     await expectProblem(await managerApprove(request(), params()), 409, 'conflict')
   })
 })
 
 describe('manager assignment body errors do not mutate data', () => {
-  beforeEach(() => mocks.auth.mockResolvedValue({ user: { id: 'actor', role: 'hr_admin' } }))
-  it.each(['{', '', 'null', '[]', '42'])('rejects malformed/non-object JSON %s before DB access', async (body) => {
+  beforeEach(() => loginAs('hr_admin'))
+  it.each(['{', '', 'null', '[]', '42'])('rejects malformed/non-object JSON %s before business data access', async (body) => {
     await expectProblem(await assignManager(request(body), params()), 400, 'invalid_json')
-    expect(mocks.query).not.toHaveBeenCalled()
+    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('SELECT id, company_id, role'), [actorId])
+    expect(mocks.query.mock.calls.some(([sql]) => /UPDATE|SELECT id, role/.test(sql))).toBe(false)
   })
   it.each(['{}', '{"managerId":42}', '{"managerId":"password-value"}'])('requires a well-shaped explicit managerId: %s', async (body) => {
     await expectProblem(await assignManager(request(body), params()), 400, 'invalid_manager_assignment')
-    expect(mocks.query).not.toHaveBeenCalled()
+    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('SELECT id, company_id, role'), [actorId])
+    expect(mocks.query.mock.calls.some(([sql]) => /UPDATE|SELECT id, role/.test(sql))).toBe(false)
   })
   it.each([null, '33333333-3333-4333-8333-333333333333'])('accepts an explicit valid managerId: %s', async (managerId) => {
-    mocks.query.mockImplementation(async (sql: string) => {
-      if (sql.startsWith('SELECT company_id')) return { rows: [{ company_id: 'company' }] }
+    queryWithActor(async (sql: string) => {
+      if (sql.startsWith('SELECT id, role')) return { rows: [{ id: resourceId, role: 'employee', is_active: true, manager_id: null }, { id: managerId, role: 'manager', is_active: true, manager_id: null }] }
       if (sql.startsWith('UPDATE')) return { rows: [{ id: resourceId, name: 'Employee', email: 'employee@example.test', role: 'employee', manager_id: managerId }] }
       return { rows: [{ id: resourceId }] }
     })
     const response = await assignManager(request(JSON.stringify({ managerId })), params())
     expect(response.status).toBe(200)
     expect((await response.json()).managerId).toBe(managerId)
-    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('UPDATE users'), [managerId, resourceId])
+    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('UPDATE users'), [managerId, resourceId, companyId])
   })
 
   it('catches an asynchronous body stream read failure as a technical error', async () => {
     const incoming = request()
     vi.spyOn(incoming, 'json').mockRejectedValue(new Error(secret))
     await expectProblem(await assignManager(incoming, params()), 500, 'technical_failure')
-    expect(mocks.query).not.toHaveBeenCalled()
+    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('SELECT id, company_id, role'), [actorId])
+    expect(mocks.query.mock.calls.some(([sql]) => /UPDATE|SELECT id, role/.test(sql))).toBe(false)
   })
 })

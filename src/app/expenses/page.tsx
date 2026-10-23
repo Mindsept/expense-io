@@ -1,9 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react'
 import { formatCivilDate } from '@/utils/civil-date'
 import { formatRequestFailure, getClientErrorMessage } from '@/utils/client-errors'
 import { selectOcrSuggestions } from '@/utils/ocr-suggestion'
+import { createSubmissionIntent, matchesSubmissionIntent, type SubmissionIntent, type SubmissionIntentPayload } from '@/utils/submission-intent'
 
 interface ExpenseNote {
   id: string
@@ -14,6 +15,23 @@ interface ExpenseNote {
   createdAt: string
 }
 
+interface ValidationStatus {
+  kind: 'manager' | 'hr' | 'none'
+  reasonCode: string
+  message: string
+}
+
+interface DecisionHistoryItem {
+  id: string
+  toStatus: 'approved' | 'rejected'
+  decidedAt: string
+  actor: { id: string; displayName: string }
+}
+
+type WorkflowDetails =
+  | { kind: 'validation'; loading: boolean; validation?: ValidationStatus; error?: string }
+  | { kind: 'history'; loading: boolean; items?: DecisionHistoryItem[]; error?: string }
+
 const inputClass =
   'w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-brand-900'
 
@@ -21,6 +39,45 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
   currency: 'EUR',
 })
+const decisionDateFormatter = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZoneName: 'short',
+})
+
+function formatDecisionDate(value: string) {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? 'Date indisponible' : decisionDateFormatter.format(date)
+}
+
+const submissionHistoryCheckKey = 'expense-io:submission-history-check'
+const submissionHistoryCheckEvent = 'expense-io:submission-history-check-change'
+
+function subscribeToSubmissionHistoryCheck(onChange: () => void) {
+  window.addEventListener(submissionHistoryCheckEvent, onChange)
+  return () => window.removeEventListener(submissionHistoryCheckEvent, onChange)
+}
+
+function getSubmissionHistoryCheck() {
+  try {
+    return sessionStorage.getItem(submissionHistoryCheckKey) === '1'
+  } catch {
+    return false
+  }
+}
+
+function setSubmissionHistoryCheckRequired(required: boolean) {
+  try {
+    if (required) sessionStorage.setItem(submissionHistoryCheckKey, '1')
+    else sessionStorage.removeItem(submissionHistoryCheckKey)
+    window.dispatchEvent(new Event(submissionHistoryCheckEvent))
+  } catch {
+    // The in-memory retry still works when browser storage is unavailable.
+  }
+}
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
@@ -50,16 +107,28 @@ export default function ExpensesPage() {
   const [historyError, setHistoryError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [submissionUncertain, setSubmissionUncertain] = useState(false)
+  const storedSubmissionNeedsHistoryCheck = useSyncExternalStore(
+    subscribeToSubmissionHistoryCheck,
+    getSubmissionHistoryCheck,
+    () => false,
+  )
+  const reloadNeedsHistoryCheck = storedSubmissionNeedsHistoryCheck && !submitting && !submissionUncertain
   const [extracting, setExtracting] = useState(false)
   const [suggestionNotice, setSuggestionNotice] = useState<string | null>(null)
   const [amount, setAmount] = useState('')
   const [expenseDate, setExpenseDate] = useState('')
   const [submissionNotice, setSubmissionNotice] = useState<string | null>(null)
+  const [workflowDetails, setWorkflowDetails] = useState<Record<string, WorkflowDetails>>({})
+  const [expandedWorkflowId, setExpandedWorkflowId] = useState<string | null>(null)
+  const [workflowLoadingId, setWorkflowLoadingId] = useState<string | null>(null)
   const receiptInputRef = useRef<HTMLInputElement>(null)
   const historyHeadingRef = useRef<HTMLHeadingElement>(null)
   const suggestionGeneration = useRef(0)
   const suggestionFieldsEdited = useRef({ amount: 0, expenseDate: 0 })
   const mounted = useRef(true)
+  const submissionIntent = useRef<SubmissionIntent | null>(null)
+  const submittingLock = useRef(false)
 
   const loadNotes = useCallback(async () => {
     setLoading(true)
@@ -108,21 +177,57 @@ export default function ExpensesPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (reloadNeedsHistoryCheck) {
+      setError('Vérifie l’historique avant de commencer une nouvelle soumission.')
+      return
+    }
+    if (submittingLock.current) return
+    submittingLock.current = true
     setSubmitting(true)
     setError(null)
     setSubmissionNotice(null)
     const form = event.currentTarget
     const formData = new FormData(form)
+    const candidate: SubmissionIntentPayload = {
+      amount: String(formData.get('amount') ?? ''),
+      expenseDate: String(formData.get('expenseDate') ?? ''),
+      description: String(formData.get('description') ?? ''),
+      receipt: formData.get('receipt') as File,
+    }
+
+    if (submissionIntent.current && !matchesSubmissionIntent(submissionIntent.current, candidate)) {
+      setError('Le formulaire a changé depuis la tentative incertaine. Restaure les mêmes valeurs et le même reçu pour réessayer, ou vérifie l’historique avant d’abandonner cette tentative.')
+      setSubmitting(false)
+      submittingLock.current = false
+      return
+    }
+    if (!submissionIntent.current) {
+      submissionIntent.current = createSubmissionIntent(candidate)
+      setSubmissionHistoryCheckRequired(true)
+    }
 
     try {
       const response = await fetch('/api/expense-notes', {
         method: 'POST',
+        headers: { 'Idempotency-Key': submissionIntent.current.key },
         body: formData,
       })
       if (!response.ok) {
-        setError(await getClientErrorMessage(response, 'Échec de la soumission de la note de frais.'))
+        const message = await getClientErrorMessage(response, 'Échec de la soumission de la note de frais.')
+        if (response.status === 409 || response.status >= 500) {
+          setSubmissionUncertain(true)
+          setError(message)
+        } else {
+          submissionIntent.current = null
+          setSubmissionHistoryCheckRequired(false)
+          setSubmissionUncertain(false)
+          setError(message)
+        }
         return
       }
+      submissionIntent.current = null
+      setSubmissionHistoryCheckRequired(false)
+      setSubmissionUncertain(false)
       form.reset()
       setAmount('')
       setExpenseDate('')
@@ -132,10 +237,25 @@ export default function ExpensesPage() {
       setSubmissionNotice('Note de frais enregistrée.')
       await loadNotes()
     } catch (failure) {
+      setSubmissionUncertain(true)
       setError(formatRequestFailure(failure, 'Échec de la soumission de la note de frais.'))
     } finally {
       setSubmitting(false)
+      submittingLock.current = false
     }
+  }
+
+  function abandonSubmissionIntent() {
+    submissionIntent.current = null
+    setSubmissionHistoryCheckRequired(false)
+    setSubmissionUncertain(false)
+    setError(null)
+    setSubmissionNotice('Tentative abandonnée. Vérifie l’historique avant de soumettre à nouveau cette dépense.')
+  }
+
+  function acknowledgeReloadHistoryCheck() {
+    setSubmissionHistoryCheckRequired(false)
+    setError(null)
   }
 
   async function handleSuggestFields() {
@@ -223,7 +343,51 @@ export default function ExpensesPage() {
     }
   }
 
+  async function toggleWorkflowDetails(note: ExpenseNote) {
+    if (expandedWorkflowId === note.id) {
+      setExpandedWorkflowId(null)
+      return
+    }
+    setExpandedWorkflowId(note.id)
+    const kind = note.status === 'pending' ? 'validation' : 'history'
+    setWorkflowLoadingId(note.id)
+    setWorkflowDetails((current) => ({ ...current, [note.id]: { kind, loading: true } }))
+    try {
+      const path = kind === 'validation'
+        ? `/api/expense-notes/${note.id}/validation-status`
+        : `/api/expense-notes/${note.id}/history`
+      const response = await fetch(path)
+      if (!response.ok) {
+        const message = await getClientErrorMessage(response, 'Impossible de charger le circuit de validation.')
+        setWorkflowDetails((current) => ({ ...current, [note.id]: { kind, loading: false, error: message } }))
+        return
+      }
+      const result: unknown = await response.json()
+      if (kind === 'validation') {
+        if (!result || typeof result !== 'object' || !('validation' in result)) throw new Error('Invalid validation status')
+        const validation = (result as { validation?: ValidationStatus }).validation
+        if (!validation || typeof validation.message !== 'string' || typeof validation.kind !== 'string') throw new Error('Invalid validation status')
+        setWorkflowDetails((current) => ({ ...current, [note.id]: { kind, loading: false, validation } }))
+      } else {
+        if (!result || typeof result !== 'object' || !Array.isArray((result as { items?: unknown }).items)) throw new Error('Invalid decision history')
+        const items = (result as { items: DecisionHistoryItem[] }).items
+        if (items.some((item) => typeof item.actor?.displayName !== 'string' || typeof item.decidedAt !== 'string')) throw new Error('Invalid decision history')
+        setWorkflowDetails((current) => ({ ...current, [note.id]: { kind, loading: false, items } }))
+      }
+    } catch {
+      setWorkflowDetails((current) => ({
+        ...current,
+        [note.id]: { kind, loading: false, error: 'Impossible de charger le circuit de validation. Vérifie ta connexion puis réessaie.' },
+      }))
+    } finally {
+      setWorkflowLoadingId(null)
+    }
+  }
+
   const total = notes.reduce((sum, note) => sum + note.amount, 0)
+  const visibleError = reloadNeedsHistoryCheck
+    ? 'Une tentative précédente a peut-être été enregistrée avant le rechargement. Son reçu ne peut pas être restauré ici : vérifie l’historique avant de recommencer.'
+    : error
 
   return (
     <main className="flex flex-col gap-8">
@@ -321,17 +485,32 @@ export default function ExpensesPage() {
           </div>
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || reloadNeedsHistoryCheck}
             className="self-start rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting ? 'Envoi…' : 'Soumettre'}
+            {submitting ? 'Envoi…' : submissionUncertain ? 'Réessayer la même soumission' : 'Soumettre'}
           </button>
+          {submissionUncertain && !submitting && (
+            <>
+              <p role="status" className="text-sm text-amber-700 dark:text-amber-400">
+                Vérifie l’historique avant toute nouvelle soumission. Tant que cette page reste ouverte, la reprise réutilise la même clé et le même contenu.
+              </p>
+              <button type="button" onClick={abandonSubmissionIntent} className="self-start text-sm font-medium text-red-700 hover:underline dark:text-red-300">
+                J’ai vérifié l’historique, abandonner cette tentative
+              </button>
+            </>
+          )}
+          {reloadNeedsHistoryCheck && (
+            <button type="button" onClick={acknowledgeReloadHistoryCheck} className="self-start text-sm font-medium text-brand-700 hover:underline dark:text-brand-300">
+              J’ai vérifié l’historique, continuer
+            </button>
+          )}
         </form>
       </section>
 
-      {error && (
+      {visibleError && (
         <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-          {error}
+          {visibleError}
         </p>
       )}
       {submissionNotice && (
@@ -371,11 +550,14 @@ export default function ExpensesPage() {
                   <th className="px-6 py-3 font-medium">Description</th>
                   <th className="px-6 py-3 text-right font-medium">Montant</th>
                   <th className="px-6 py-3 font-medium">Statut</th>
+                  <th className="px-6 py-3 font-medium">Circuit / décision</th>
                   <th className="px-6 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {notes.map((note) => (
+                {notes.map((note) => {
+                  const details = workflowDetails[note.id]
+                  return (
                   <tr key={note.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="px-6 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">
                       {formatCivilDate(note.expenseDate)}
@@ -386,6 +568,41 @@ export default function ExpensesPage() {
                     </td>
                     <td className="px-6 py-3">
                       <StatusBadge status={note.status} />
+                    </td>
+                    <td className="px-6 py-3">
+                      <button
+                        type="button"
+                        aria-expanded={expandedWorkflowId === note.id}
+                        aria-label={`${expandedWorkflowId === note.id ? 'Masquer' : 'Voir'} ${note.status === 'pending' ? 'le circuit' : 'la décision'} pour ${note.description}`}
+                        onClick={() => toggleWorkflowDetails(note)}
+                        disabled={workflowLoadingId === note.id}
+                        className="text-sm font-medium text-brand-600 hover:underline disabled:opacity-60"
+                      >
+                        {workflowLoadingId === note.id ? 'Chargement…' : expandedWorkflowId === note.id ? 'Masquer' : note.status === 'pending' ? 'Voir le circuit' : 'Voir la décision'}
+                      </button>
+                      {expandedWorkflowId === note.id && details && (
+                        <div className="mt-2 min-w-56 text-xs text-gray-600 dark:text-gray-300" aria-live="polite">
+                          {details.loading ? (
+                            <p role="status">Chargement du circuit…</p>
+                          ) : details.error ? (
+                            <p role="alert">{details.error}</p>
+                          ) : details.kind === 'validation' ? (
+                            <p role="status">{details.validation?.message}</p>
+                          ) : details.kind === 'history' ? (
+                            details.items?.length ? (
+                              <ul className="space-y-1">
+                                {details.items?.map((item) => (
+                                  <li key={item.id}>
+                                    {item.toStatus === 'approved' ? 'Approuvée' : 'Rejetée'} par {item.actor.displayName} le {formatDecisionDate(item.decidedAt)}.
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p role="status">L’historique de décision ne contient aucun événement.</p>
+                            )
+                          ) : null}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-3 text-right">
                       <button
@@ -398,7 +615,8 @@ export default function ExpensesPage() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

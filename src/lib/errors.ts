@@ -7,6 +7,20 @@ const problems = {
   not_found: { status: 404, title: 'Not found', detail: 'The requested resource was not found.' },
   conflict: { status: 409, title: 'Conflict', detail: 'This expense has already been decided.' },
   invalid_manager: { status: 409, title: 'Invalid manager', detail: 'The selected manager cannot be assigned.' },
+  manager_cycle: { status: 409, title: 'Management cycle', detail: 'This assignment would create or join a management cycle.' },
+  last_active_hr: { status: 409, title: 'Last active HR', detail: 'Assign another active HR before removing this HR access.' },
+  manager_assignment_busy: { status: 409, title: 'Assignment busy', detail: 'This assignment is being used by another operation. Try again.' },
+  idempotency_conflict: { status: 409, title: 'Request key conflict', detail: 'This request key was already used with different expense content.' },
+  idempotency_in_progress: { status: 409, title: 'Submission in progress', detail: 'This submission is already being processed. Retry later with the same request key.' },
+  idempotency_expired: { status: 409, title: 'Request key expired', detail: 'This request key has expired. Check your expense history before starting a new submission.' },
+  payload_too_large: { status: 413, title: 'Payload too large', detail: 'The submitted file or request exceeds the allowed size.' },
+  unsupported_ocr_media: { status: 415, title: 'Unsupported OCR format', detail: 'OCR accepts PNG, JPEG and WebP images. PDF extraction is not supported.' },
+  ocr_image_too_large: { status: 413, title: 'Image too large', detail: 'The image exceeds the allowed dimensions or pixel count.' },
+  ocr_busy: { status: 503, title: 'OCR busy', detail: 'OCR capacity is full. Try again later.' },
+  ocr_timeout: { status: 504, title: 'OCR timed out', detail: 'OCR did not finish within the allowed time.' },
+  ocr_failure: { status: 502, title: 'OCR failed', detail: 'The image could not be analyzed. You can enter the expense fields manually.' },
+  request_aborted: { status: 499, title: 'Request cancelled', detail: 'The request was cancelled.' },
+  request_timeout: { status: 408, title: 'Request timed out', detail: 'The request body was not received within the allowed time.' },
   technical_failure: { status: 500, title: 'Internal server error', detail: 'The operation could not be completed. Try again later.' },
 } as const
 
@@ -90,7 +104,7 @@ export function respondError(error: unknown): Response {
 export async function withApiHandler(
   request: Request,
   operation: string,
-  handler: () => Promise<Response>,
+  handler: (context: Readonly<{ requestId: string }>) => Promise<Response>,
   observer?: HttpObserver,
 ): Promise<Response> {
   const requestId = requestIdFor(request.headers.get('x-request-id'))
@@ -98,7 +112,7 @@ export async function withApiHandler(
   let response: Response
   try {
     // Await the entire handler, including transactions and COMMIT, before returning success.
-    response = await handler()
+    response = await handler(Object.freeze({ requestId }))
   } catch (error) {
     response = problemResponse(error, requestId)
   }

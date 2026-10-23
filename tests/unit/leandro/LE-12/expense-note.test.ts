@@ -3,6 +3,13 @@ import { toExpenseNote } from '@/adapters/expense-note-mapper'
 
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), query: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ auth: mocks.auth }))
+vi.mock('@/lib/current-actor', () => ({
+  withCurrentActor: async (_role: unknown, operation: (client: unknown, actor: { id: string }) => unknown) => {
+    const session = await mocks.auth()
+    if (!session?.user) throw new Error('Unexpected unauthenticated DTO fixture')
+    return operation({ query: mocks.query }, { id: session.user.id })
+  },
+}))
 vi.mock('@/lib/db', () => ({ withUserScope: async (_id: string, fn: (client: unknown) => unknown) => fn({ query: mocks.query }), getPool: vi.fn() }))
 vi.mock('@/lib/storage', () => ({ receiptKeyFor: vi.fn(), uploadReceipt: vi.fn() }))
 import { NextRequest } from 'next/server'
