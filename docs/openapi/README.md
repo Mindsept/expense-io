@@ -1,8 +1,8 @@
 # LE-10 — Contrat HTTP livré
 
 Le fichier [expense-io.v2.json](expense-io.v2.json) décrit les réponses réellement
-livrées sur `main` **45086ba**, après HA-02/HA-03/LE-10, avec le correctif LE-01 de cette PR (22 octobre 2026). Version du contrat :
-**2.0.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
+livrées sur `main` **1bcebdb**, après LE-01, avec le protocole de soumission LE-02 de cette PR (22 octobre 2026). Version du contrat :
+**2.1.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
 Ce contrat initial est publiable indépendamment des autres refontes.
 
 Les requêtes utilisent l'origine de l'application. L'authentification est la
@@ -88,10 +88,14 @@ UTF-16, et fichier non vide jusqu'à 10 MiB dont le conteneur correspond au MIME
 PNG/JPEG/WebP/PDF. Il ne garantit pas un décodage complet/antivirus. La borne de
 poids intervient après matérialisation ; LE-05 conserve la limite de lecture HTTP.
 
-Chaque écriture de création recharge l'acteur courant et la finalisation vérifie
-le propriétaire. La séquence PostgreSQL/S3 reste séparée : un échec ou une
-révocation entre étapes peut laisser une note/objet partiel. LE-02 n'est donc
-pas présenté comme livré ; aucun résultat idempotent n'est promis.
+La création vérifie l'acteur courant, uploade le reçu sous une clé UUID puis
+insère une note complète dans une seule transaction scoped, avec nouvel acteur
+courant. Une erreur connue avant COMMIT compense l'objet ; un commit incertain
+le conserve pour réconciliation. Aucune note vide n'est nouvellement insérée.
+Les anciennes lignes partielles ne sont pas inventoriées/réparées par cette
+tranche ; un arrêt brutal ou une réponse perdue peut laisser un orphelin ou un
+retry en doublon. Voir [LE-02](../expense-submission.md). La reprise durable et
+l'idempotence restent LE-03.
 
 ## Cible approuvée et transitions
 
@@ -167,10 +171,12 @@ contrat. Une route ajoutée sans inventaire ou un type modifié sans schéma fai
 avec le code intégré ; mettre à jour la base et ce tableau dans la même PR.
 
 La version `info.version` décrit le contrat, pas la version du format OpenAPI.
-Cette v2 accompagne le refus des tris auparavant libres et le passage des erreurs
+La v2.0 accompagne le refus des tris auparavant libres et le passage des erreurs
 personnelles à `application/problem+json`. L'extension `error` reste compatible
 avec les écrans existants. [v1](expense-io.v1.json) est une archive de main
-b6bf206, pas le comportement courant ; les tests chargent exclusivement v2.
+b6bf206, pas le comportement courant ; les tests chargent exclusivement v2. La v2.1
+documente LE-02 : insertion complète après upload et compensation, sans changer
+le DTO de succès ni promettre une transaction distribuée.
 Correction documentaire sans changement livré : patch ; ajout compatible : mineur ;
 retrait/changement de type, enveloppe paginée ou suppression d'`error` : majeur avec
 plan client et transition explicite. Les schémas fermés imposent de revoir même un

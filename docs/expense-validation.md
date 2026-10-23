@@ -1,6 +1,8 @@
 # LE-01 — Validation stricte, tri fermé et acteur courant
 
-HA-02 et HA-03 sont intégrés sur main. Cette version consomme réellement
+HA-02 et HA-03 sont intégrés sur main. LE-02 remplace désormais la séquence de
+soumission décrite dans les preuves historiques LE-01 : voir
+[le protocole courant](expense-submission.md). Cette version consomme réellement
 `withCurrentActor`, sans copier son contrat ni faire autorité avec les anciennes
 revendications de rôle/entreprise de la session. La RLS reste une preuve séparée.
 
@@ -58,18 +60,10 @@ tests de non-authentification de Mathis migrent vers le contrat HA-07 exact,
 sans retirer leurs assertions de refus et d'absence de DB.
 
 Le contrôle de poids intervient **après** `request.formData()` : il ne borne pas
-la lecture HTTP avant matérialisation. LE-05 conserve ce chantier. La séquence
-note vide → S3 → finalisation séparée reste à remplacer dans LE-02. Chaque
-écriture est maintenant dans un scope HA-02 distinct, et la finalisation vérifie
-également `user_id`. Aucune transaction ni verrou d'acteur n'est tenu pendant
-la lecture du formulaire ou l'upload S3. Après l'upload, les droits sont rechargés :
-une désactivation empêche la finalisation et ne produit pas de faux succès.
-Cela peut encore laisser une création partielle ; aucune compensation automatique
-ou idempotence n'est inventée ici.
-
-Le GET résout l'acteur courant puis applique le tri constant et le filtre propre.
-Le POST vérifie d'abord la session rafraîchie avant de lire le multipart, valide
-l'entrée puis recharge/verrouille l'acteur dans chaque transaction d'écriture.
+la lecture HTTP avant matérialisation. LE-05 conserve ce chantier. Le POST valide l'entrée avant le cas d'usage de soumission. LE-02 vérifie
+l'acteur, envoie S3 hors transaction puis insère une note complète sous l'acteur
+rechargé ; une révocation après upload empêche l'INSERT et compense l'objet.
+Le GET résout l'acteur courant, applique le tri constant et le filtre propre.
 Les opérations personnelles restent permises aux trois rôles actifs ; retirer
 un rôle RH retire ses droits RH sans lui interdire ses propres notes.
 Les champs supplémentaires `userId/companyId/role` ne font jamais autorité.
@@ -84,4 +78,4 @@ la liste des objets S3 sont inchangés après les requêtes refusées.
 Le contrat [OpenAPI courant v2](openapi/expense-io.v2.json) accompagne le changement
 de tri et de format/média d'erreur ; v1 reste une archive historique. Aucun nouveau
 contrat concurrent d'erreurs n'est ajouté. Les limites pré-matérialisation et
-l'orchestration/reprise DB-S3 restent respectivement LE-05 et LE-02/03.
+la reprise durable DB-S3 restent respectivement LE-05 et LE-03.

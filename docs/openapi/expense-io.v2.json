@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "expense.io — delivered HTTP contract",
-    "version": "2.0.0",
-    "description": "LE-10 contract updated with LE-01 on main 45086ba, 22 October 2026. Delivered current-actor enforcement, strict personal input/sort and HA-07 migration. The legacy v1 file is an archived snapshot. No atomic creation, idempotency, pagination or async OCR guarantee."
+    "version": "2.1.0",
+    "description": "LE-10 current contract with LE-02 upload-first complete submission on main 1bcebdb, 23 October 2026. Known insert failures compensate; uncertain commits retain the receipt for reconciliation. No cross-store transaction, idempotency, pagination or async OCR guarantee. v1 is an archive."
   },
   "servers": [
     {
@@ -89,7 +89,7 @@
       },
       "post": {
         "operationId": "createExpense",
-        "summary": "Active actor reloaded for each database operation. Validate complete input before expense/storage writes. No atomic creation/idempotency guarantee: deactivation after upload refuses finalization and can leave a partial submission (LE-02).",
+        "summary": "Current actor checked before upload and reloaded before one complete scoped INSERT. Upload uses an opaque UUID key; known pre-commit failures compensate the object. Cleanup failure/uncertain COMMIT records an operational reference. Crash/retry recovery and idempotency remain LE-03.",
         "x-source": "src/app/api/expense-notes/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -121,9 +121,6 @@
           },
           "500": {
             "$ref": "#/components/responses/Problem500"
-          },
-          "404": {
-            "$ref": "#/components/responses/Problem404"
           }
         },
         "requestBody": {
@@ -1210,7 +1207,7 @@
           },
           "receiptKey": {
             "type": "string",
-            "description": "Opaque storage key, not a URL. May be empty in existing partial submissions (LE-02 pending)."
+            "description": "Opaque storage key, not a URL. Legacy partial rows may still contain empty keys. New submissions insert only after successful upload and always include a nonempty key."
           },
           "status": {
             "type": "string",

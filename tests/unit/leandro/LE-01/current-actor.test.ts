@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs'
 import { beforeEach, expect, it, vi } from 'vitest'
 
 // Exercise the real HA-02 contract through Leandro's routes, not a JWT-only stub.
-const mocks = vi.hoisted(() => ({ auth: vi.fn(), query: vi.fn(), upload: vi.fn() }))
+const mocks = vi.hoisted(() => ({ auth: vi.fn(), query: vi.fn(), upload: vi.fn(), remove: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ auth: mocks.auth }))
 vi.mock('@/lib/db', () => ({ withUserScope: async (_id: string, operation: (client: unknown) => unknown) => operation({ query: mocks.query }) }))
-vi.mock('@/lib/storage', () => ({ receiptKeyFor: () => 'receipts/1.png', uploadReceipt: mocks.upload }))
+vi.mock('@/lib/storage', () => ({ uploadReceipt: mocks.upload, removeReceipt: mocks.remove, getReceiptUrl: vi.fn() }))
 import { GET, POST } from '@/app/api/expense-notes/route'
 
 const id = '11111111-1111-4111-8111-111111111111'
@@ -21,6 +21,7 @@ function submission() {
 beforeEach(() => {
   vi.resetAllMocks()
   mocks.auth.mockResolvedValue({ user: { id, companyId: 'untrusted-old-company', role: 'hr_admin' } })
+  mocks.query.mockImplementation(async (sql: string, values: unknown[]) => ({ rows: [sql.includes('FROM users') ? actor : { ...row, receipt_key: values[4] }] }))
 })
 
 for (const missing of [true, false]) for (const method of ['GET', 'POST']) {
@@ -33,24 +34,24 @@ for (const missing of [true, false]) for (const method of ['GET', 'POST']) {
   })
 }
 
-it('uses the locked current actor for both submission writes and applies ownership to the final update', async () => {
-  mocks.query.mockResolvedValueOnce({ rows: [actor] }).mockResolvedValueOnce({ rows: [row] })
-    .mockResolvedValueOnce({ rows: [actor] }).mockResolvedValueOnce({ rows: [{ ...row, receipt_key: 'receipts/1.png' }] })
+it('rechecks the current actor after upload and inserts a complete note exactly once', async () => {
   const response = await POST(submission())
   expect(response.status).toBe(201)
-  expect(mocks.query).toHaveBeenNthCalledWith(2, expect.stringContaining('INSERT INTO expense_notes'), [id, '12.34', '2024-02-29', 'Synthetic taxi', ''])
-  expect(mocks.query).toHaveBeenNthCalledWith(4, expect.stringContaining('AND user_id = $3'), ['receipts/1.png', row.id, id])
+  const note = await response.json()
+  expect(mocks.query).toHaveBeenNthCalledWith(1, expect.stringContaining('FROM users'), [id])
+  expect(mocks.query).toHaveBeenNthCalledWith(2, expect.stringContaining('FROM users'), [id])
+  expect(mocks.query).toHaveBeenNthCalledWith(3, expect.stringContaining('INSERT INTO expense_notes'), [id, '12.34', '2024-02-29', 'Synthetic taxi', note.receiptKey])
+  expect(mocks.upload.mock.invocationCallOrder[0]).toBeLessThan(mocks.query.mock.invocationCallOrder[2])
   expect(mocks.upload).toHaveBeenCalledOnce()
+  expect(mocks.remove).not.toHaveBeenCalled()
 })
 
-it('rechecks the actor after storage and cannot finalize using a now-disabled identity', async () => {
-  mocks.query.mockResolvedValueOnce({ rows: [actor] }).mockResolvedValueOnce({ rows: [row] })
-    .mockResolvedValueOnce({ rows: [{ ...actor, is_active: false }] })
+it('a now-disabled identity cannot insert after upload, and its uploaded object is compensated', async () => {
+  mocks.query.mockResolvedValueOnce({ rows: [actor] }).mockResolvedValueOnce({ rows: [{ ...actor, is_active: false }] })
   const response = await POST(submission())
   expect(response.status).toBe(401)
-  expect(mocks.query).toHaveBeenCalledTimes(3)
-  expect(mocks.query.mock.calls.some(([sql]) => String(sql).includes('UPDATE expense_notes'))).toBe(false)
+  expect(mocks.query).toHaveBeenCalledTimes(2)
+  expect(mocks.query.mock.calls.some(([sql]) => /INSERT INTO expense_notes|UPDATE expense_notes/.test(String(sql)))).toBe(false)
   expect(mocks.upload).toHaveBeenCalledOnce()
-  // This deliberately exposes the existing partial creation boundary; LE-02
-  // must compensate/reconcile it rather than returning a fabricated success.
+  expect(mocks.remove).toHaveBeenCalledExactlyOnceWith(mocks.upload.mock.calls[0][0])
 })
