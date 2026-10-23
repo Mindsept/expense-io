@@ -51,12 +51,12 @@
       <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="ci.md">Guide et preuves ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="3 sur 8" data-title="ARLA-41 · Seed et reprise">
-      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-41">ARLA-41 / MATH-03</a><span class="state">Validation en cours</span></div>
+      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-41">ARLA-41 / MATH-03</a><span class="state">En revue</span></div>
       <h2 tabindex="-1" data-reveal>Relancer la démo sans écraser l’existant</h2>
       <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Préserver l’organisation et reprendre une préparation DB/S3 interrompue.</p>
       <div class="body brief" data-reveal="3">
         <div class="done"><h3>Réalisé</h3><ul><li>Initialisation et réparation séparées ; comptes préservés, notes et reçus strictement identifiés.</li><li>Reprises DB/S3 vérifiées ; démo à trois rôles sous expense_web et reset explicitement jetable.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Implémenté · validation</p><p class="status-detail">Guide Bash / PowerShell, tests isolés et preuve du défaut initial.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hamza : revue des droits et du script ; Hugo : parcours.</li><li>Passage du guide par un autre membre et Windows natif à confirmer.</li></ul></div></div>
+        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Livré · relecture attendue</p><p class="status-detail">Validation locale : 672 unitaires, 234 API, 25 tests navigateur ; guide livré.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hamza : revue des droits et du script ; Hugo : parcours.</li><li>Passage du guide par un autre membre et Windows natif à confirmer.</li></ul></div></div>
       </div>
       <p class="takeaway"><strong>Deux relances :</strong> 3 comptes · 2 notes · 2 PNG, sans doublon ni réécriture. Aucun reset implicite.</p>
       <footer class="source"><span>Mathis Galliano · mise à jour du 24 octobre 2026</span><a href="demo.md">Guide et preuves ↗</a></footer>
@@ -108,8 +108,8 @@
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="8 sur 8" data-title="Synthèse · Blocages et validations">
       <div class="eyebrow"><span class="ticket">SYNTHÈSE</span><span class="state wait">Points encore ouverts</span></div>
       <h2 tabindex="-1" data-reveal>Ce qui reste à débloquer</h2>
-      <p class="subtitle" data-reveal="2">ARLA-39, 40 et 45 terminés · ARLA-43 en revue · ARLA-41, 42 et 44 à poursuivre.</p>
-      <div class="body" data-reveal="3"><table class="blockers"><thead><tr><th>Attendu</th><th>Responsable</th><th>Impact</th></tr></thead><tbody><tr><td>Contrat HA-04 livré</td><td>Mathis</td><td>Seed et exploitation désormais démarrables ; ARLA-41 validé par Mathis.</td></tr><tr><td>Relectures et décisions</td><td>Leandro · Hamza · Hugo</td><td>Réception du benchmark par Leandro ; contrôles humains des prochains livrables.</td></tr><tr><td>Portabilité</td><td>Hamza</td><td>Ancien EPERM non reproduit dans la nouvelle campagne macOS ; OS de remise à confirmer.</td></tr><tr><td>Version de remise</td><td>Hugo + Mathis</td><td>Choisir le commit final, approuver les approches restantes et exécuter la recette.</td></tr></tbody></table></div>
+      <p class="subtitle" data-reveal="2">ARLA-39, 40 et 45 terminés · ARLA-41 et 43 en revue · ARLA-42 et 44 à poursuivre.</p>
+      <div class="body" data-reveal="3"><table class="blockers"><thead><tr><th>Attendu</th><th>Responsable</th><th>Impact</th></tr></thead><tbody><tr><td>Contrat HA-04 livré</td><td>Mathis</td><td>ARLA-41 livré pour revue ; exploitation ARLA-44 encore à faire valider.</td></tr><tr><td>Relectures et décisions</td><td>Leandro · Hamza · Hugo</td><td>Réception du benchmark par Leandro ; contrôles humains des prochains livrables.</td></tr><tr><td>Portabilité</td><td>Hamza</td><td>Ancien EPERM non reproduit dans la nouvelle campagne macOS ; OS de remise à confirmer.</td></tr><tr><td>Version de remise</td><td>Hugo + Mathis</td><td>Choisir le commit final, approuver les approches restantes et exécuter la recette.</td></tr></tbody></table></div>
       <p class="takeaway"><strong>Dernière CI intégrée :</strong> 665 unitaires · 223 API · 25 tests navigateur réussis (ARLA-43). La recette finale reste à faire.</p>
       <footer class="source"><a href="defauts-ouverts.md">Registre des défauts ↗</a><a href="https://github.com/Mindsept/expense-io/actions/runs/40030381666">Preuve CI Linux ↗</a></footer>
     </section>

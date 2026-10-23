@@ -1,0 +1,5 @@
+
+> expense-io-version-b@0.1.0 seed
+> node scripts/seed.mjs --config /Users/mathisgalliano/Documents/Travail/ARLA/expense-io/.ci-output/demo/seed.json
+
+{"operation":"init","companiesCreated":0,"usersCreated":0,"usersPreserved":3,"notesCreated":0,"notesPreserved":2,"receiptsUploaded":0,"receiptsRepaired":0,"cleanupNotices":[]}
