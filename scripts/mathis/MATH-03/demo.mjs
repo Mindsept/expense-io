@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import path from 'node:path'
 import net from 'node:net'
 import { setTimeout as delay } from 'node:timers/promises'
@@ -8,6 +8,7 @@ import { Pool } from 'pg'
 import { prepare } from '../../../tests/support/prepare.mjs'
 import { preflight } from '../../../tests/support/preflight.mjs'
 import { spawnOwnedNodeProcess, stopOwnedNodeProcess } from '../../../tests/support/process-tree.mjs'
+import { writeNewPrivateJson } from './private-files.mjs'
 import { provisionRuntime } from '../../rls/provision-runtime.mjs'
 
 const directory=path.resolve('.ci-output/demo'),state=path.join(directory,'runtime.json'),seedFile=path.join(directory,'seed.json')
@@ -44,20 +45,20 @@ function read(required=true){
 }
 async function down(){check();localDocker();ownership();await vacant(3215);docker([...compose(),'down','--volumes','--remove-orphans']);rmSync(state);rmSync(seedFile,{force:true});console.info('Only the explicitly owned disposable demo stack and its private configuration were removed.')}
 async function up(){
- safeDirectories();if(existsSync(state))throw new DemoEnvironmentError('Demo already prepared. Reuse it or explicitly reset it.')
+ safeDirectories();if([state,seedFile].some(file=>lstatSync(file,{throwIfNoEntry:false})))throw new DemoEnvironmentError('Demo private files already exist. Reuse the prepared demo or explicitly reset it; no file is overwritten.')
  const id=randomBytes(6).toString('hex'),env={ARLA_TEST_ENV:'isolated',ARLA_TEST_PROJECT:`arla-ci-demo-${id}`,ARLA_TEST_BASE_URL:'http://127.0.0.1:3215',ARLA_TEST_DB_PORT:'55440',ARLA_TEST_S3_PORT:'45740',HA01_TEST_PORT:'3216',POSTGRES_USER:'expense_test',POSTGRES_DB:'expense_io_test',POSTGRES_PASSWORD:secret(),S3_ENDPOINT:'http://127.0.0.1:45740',S3_BUCKET:'receipts-ci-test',S3_REGION:'us-east-1',S3_ACCESS_KEY_ID:'test',S3_SECRET_ACCESS_KEY:'test',S3_FORCE_PATH_STYLE:'true',AUTH_SECRET:secret(),AUTH_TRUST_HOST:'true',AUTH_URL:'http://127.0.0.1:3215',NEXT_TELEMETRY_DISABLED:'1'}
  env.DATABASE_URL=`postgres://expense_test:${env.POSTGRES_PASSWORD}@127.0.0.1:55440/expense_io_test`
  for(const role of ['HR','MANAGER','EMPLOYEE']){env[`ARLA_TEST_${role}_EMAIL`]=env[`SEED_${role}_EMAIL`]=`${role.toLowerCase()}@expense.test`;env[`ARLA_TEST_${role}_PASSWORD`]=env[`SEED_${role}_PASSWORD`]=secret()}
  const web=new URL(env.DATABASE_URL);web.username='expense_web';web.password=secret()
  config={project:env.ARLA_TEST_PROJECT,env,webURL:web.href};check();localDocker();ownership()
  for(const port of [3215,3216,55440,45740])await vacant(port)
- writeFileSync(state,JSON.stringify(config,null,2)+'\n',{mode:0o600})
+ writeNewPrivateJson(state,config)
  try {
   docker([...compose(),'up','-d','--wait','--wait-timeout','90']);await prepare(env)
   const admin=new Pool({connectionString:env.DATABASE_URL,max:1,connectionTimeoutMillis:3000,statement_timeout:5000})
   try{await provisionRuntime(admin,decodeURIComponent(web.password))}finally{await admin.end()}
   const seed={...env,SEED_ADMIN_DATABASE_URL:env.DATABASE_URL,SEED_DEMO_ENV:'local-test',SEED_CONFIRM_DATABASE:'expense_io_test'}
-  writeFileSync(seedFile,JSON.stringify(seed,null,2)+'\n',{mode:0o600})
+  writeNewPrivateJson(seedFile,seed)
   const build=spawnSync(process.execPath,[process.env.npm_execpath,'run','build'],{env:webEnvironment(),encoding:'utf8',timeout:240000,maxBuffer:8*1024*1024})
   if(build.status!==0)throw new DemoEnvironmentError('Demo production build failed; no captured child output or credentials printed.')
   console.info(JSON.stringify({ready:true,project:config.project,url:env.ARLA_TEST_BASE_URL,privateSeedConfiguration:seedFile,guide:'docs/demo.md'}))

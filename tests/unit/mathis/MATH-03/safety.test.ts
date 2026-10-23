@@ -1,5 +1,9 @@
 import { expect, test, vi } from 'vitest'
 import { Readable } from 'node:stream'
+import { mkdtempSync, writeFileSync, readFileSync, symlinkSync, linkSync, statSync, rmSync } from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { writeNewPrivateJson } from '../../../../scripts/mathis/MATH-03/private-files.mjs'
 import { S3Client, CreateBucketCommand } from '@aws-sdk/client-s3'
 import { demoSettings, demoNote, selectDemoNote } from '../../../../scripts/mathis/MATH-03/settings.mjs'
 import { ensureDemoBucket, healthyDemoObject, DEMO_PNG } from '../../../../scripts/mathis/MATH-03/storage.mjs'
@@ -65,4 +69,18 @@ test('existing receipt content is checked, and a foreign/corrupt object is never
 test('403 on an object remains an authorization failure, never a repair candidate',async()=>{
  const s3=client(),send=mockSend(s3).mockRejectedValue({$metadata:{httpStatusCode:403}})
  try{await expect(healthyDemoObject(settings(),s3,'receipts/known.png')).rejects.toThrow('storage_access_denied');expect(send).toHaveBeenCalledOnce()}finally{s3.destroy()}
+})
+
+test('private JSON creation refuses existing files and aliases instead of overwriting their target',()=>{
+ const directory=mkdtempSync(path.join(os.tmpdir(),'math03-private-')),target=path.join(directory,'existing.env'),alias=path.join(directory,'seed.json'),fresh=path.join(directory,'runtime.json')
+ try{
+  writeFileSync(target,'preserve-existing-content')
+  if(process.platform==='win32')linkSync(target,alias);else symlinkSync(target,alias)
+  expect(()=>writeNewPrivateJson(alias,{secret:'not-written'})).toThrow()
+  expect(()=>writeNewPrivateJson(target,{secret:'not-written'})).toThrow()
+  expect(readFileSync(target,'utf8')).toBe('preserve-existing-content')
+  writeNewPrivateJson(fresh,{synthetic:true})
+  expect(JSON.parse(readFileSync(fresh,'utf8'))).toEqual({synthetic:true})
+  if(process.platform!=='win32')expect(statSync(fresh).mode&0o077).toBe(0)
+ }finally{rmSync(directory,{recursive:true,force:true})}
 })
