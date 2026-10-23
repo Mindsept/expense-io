@@ -14,6 +14,23 @@ interface ExpenseNote {
   createdAt: string
 }
 
+interface ValidationStatus {
+  kind: 'manager' | 'hr' | 'none'
+  reasonCode: string
+  message: string
+}
+
+interface DecisionHistoryItem {
+  id: string
+  toStatus: 'approved' | 'rejected'
+  decidedAt: string
+  actor: { id: string; displayName: string }
+}
+
+type WorkflowDetails =
+  | { kind: 'validation'; loading: boolean; validation?: ValidationStatus; error?: string }
+  | { kind: 'history'; loading: boolean; items?: DecisionHistoryItem[]; error?: string }
+
 const inputClass =
   'w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-brand-900'
 
@@ -21,6 +38,19 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
   currency: 'EUR',
 })
+const decisionDateFormatter = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZoneName: 'short',
+})
+
+function formatDecisionDate(value: string) {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? 'Date indisponible' : decisionDateFormatter.format(date)
+}
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
@@ -55,6 +85,9 @@ export default function ExpensesPage() {
   const [amount, setAmount] = useState('')
   const [expenseDate, setExpenseDate] = useState('')
   const [submissionNotice, setSubmissionNotice] = useState<string | null>(null)
+  const [workflowDetails, setWorkflowDetails] = useState<Record<string, WorkflowDetails>>({})
+  const [expandedWorkflowId, setExpandedWorkflowId] = useState<string | null>(null)
+  const [workflowLoadingId, setWorkflowLoadingId] = useState<string | null>(null)
   const receiptInputRef = useRef<HTMLInputElement>(null)
   const historyHeadingRef = useRef<HTMLHeadingElement>(null)
   const suggestionGeneration = useRef(0)
@@ -223,6 +256,47 @@ export default function ExpensesPage() {
     }
   }
 
+  async function toggleWorkflowDetails(note: ExpenseNote) {
+    if (expandedWorkflowId === note.id) {
+      setExpandedWorkflowId(null)
+      return
+    }
+    setExpandedWorkflowId(note.id)
+    const kind = note.status === 'pending' ? 'validation' : 'history'
+    setWorkflowLoadingId(note.id)
+    setWorkflowDetails((current) => ({ ...current, [note.id]: { kind, loading: true } }))
+    try {
+      const path = kind === 'validation'
+        ? `/api/expense-notes/${note.id}/validation-status`
+        : `/api/expense-notes/${note.id}/history`
+      const response = await fetch(path)
+      if (!response.ok) {
+        const message = await getClientErrorMessage(response, 'Impossible de charger le circuit de validation.')
+        setWorkflowDetails((current) => ({ ...current, [note.id]: { kind, loading: false, error: message } }))
+        return
+      }
+      const result: unknown = await response.json()
+      if (kind === 'validation') {
+        if (!result || typeof result !== 'object' || !('validation' in result)) throw new Error('Invalid validation status')
+        const validation = (result as { validation?: ValidationStatus }).validation
+        if (!validation || typeof validation.message !== 'string' || typeof validation.kind !== 'string') throw new Error('Invalid validation status')
+        setWorkflowDetails((current) => ({ ...current, [note.id]: { kind, loading: false, validation } }))
+      } else {
+        if (!result || typeof result !== 'object' || !Array.isArray((result as { items?: unknown }).items)) throw new Error('Invalid decision history')
+        const items = (result as { items: DecisionHistoryItem[] }).items
+        if (items.some((item) => typeof item.actor?.displayName !== 'string' || typeof item.decidedAt !== 'string')) throw new Error('Invalid decision history')
+        setWorkflowDetails((current) => ({ ...current, [note.id]: { kind, loading: false, items } }))
+      }
+    } catch {
+      setWorkflowDetails((current) => ({
+        ...current,
+        [note.id]: { kind, loading: false, error: 'Impossible de charger le circuit de validation. Vérifie ta connexion puis réessaie.' },
+      }))
+    } finally {
+      setWorkflowLoadingId(null)
+    }
+  }
+
   const total = notes.reduce((sum, note) => sum + note.amount, 0)
 
   return (
@@ -371,11 +445,14 @@ export default function ExpensesPage() {
                   <th className="px-6 py-3 font-medium">Description</th>
                   <th className="px-6 py-3 text-right font-medium">Montant</th>
                   <th className="px-6 py-3 font-medium">Statut</th>
+                  <th className="px-6 py-3 font-medium">Circuit / décision</th>
                   <th className="px-6 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {notes.map((note) => (
+                {notes.map((note) => {
+                  const details = workflowDetails[note.id]
+                  return (
                   <tr key={note.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="px-6 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">
                       {formatCivilDate(note.expenseDate)}
@@ -386,6 +463,41 @@ export default function ExpensesPage() {
                     </td>
                     <td className="px-6 py-3">
                       <StatusBadge status={note.status} />
+                    </td>
+                    <td className="px-6 py-3">
+                      <button
+                        type="button"
+                        aria-expanded={expandedWorkflowId === note.id}
+                        aria-label={`${expandedWorkflowId === note.id ? 'Masquer' : 'Voir'} ${note.status === 'pending' ? 'le circuit' : 'la décision'} pour ${note.description}`}
+                        onClick={() => toggleWorkflowDetails(note)}
+                        disabled={workflowLoadingId === note.id}
+                        className="text-sm font-medium text-brand-600 hover:underline disabled:opacity-60"
+                      >
+                        {workflowLoadingId === note.id ? 'Chargement…' : expandedWorkflowId === note.id ? 'Masquer' : note.status === 'pending' ? 'Voir le circuit' : 'Voir la décision'}
+                      </button>
+                      {expandedWorkflowId === note.id && details && (
+                        <div className="mt-2 min-w-56 text-xs text-gray-600 dark:text-gray-300" aria-live="polite">
+                          {details.loading ? (
+                            <p role="status">Chargement du circuit…</p>
+                          ) : details.error ? (
+                            <p role="alert">{details.error}</p>
+                          ) : details.kind === 'validation' ? (
+                            <p role="status">{details.validation?.message}</p>
+                          ) : details.kind === 'history' ? (
+                            details.items?.length ? (
+                              <ul className="space-y-1">
+                                {details.items?.map((item) => (
+                                  <li key={item.id}>
+                                    {item.toStatus === 'approved' ? 'Approuvée' : 'Rejetée'} par {item.actor.displayName} le {formatDecisionDate(item.decidedAt)}.
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p role="status">L’historique de décision ne contient aucun événement.</p>
+                            )
+                          ) : null}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-3 text-right">
                       <button
@@ -398,7 +510,8 @@ export default function ExpensesPage() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
