@@ -6,10 +6,14 @@ test.use({ baseURL: readTestTarget() })
 
 test('submitting while OCR is pending ends its spinner and ignores the old suggestion', async ({ page }) => {
   const ocr = deferred()
-  await page.route('**/api/expense-notes', route => route.fulfill({
-    status: route.request().method() === 'POST' ? 201 : 200,
-    json: route.request().method() === 'POST' ? employeeNote : [],
-  }))
+  const refresh = deferred()
+  let submitted = false
+  await page.route('**/api/expense-notes', async route => {
+    const posting = route.request().method() === 'POST'
+    if (posting) submitted = true
+    else if (submitted) await refresh.promise
+    await route.fulfill({ status: posting ? 201 : 200, json: posting ? employeeNote : [] })
+  })
   await page.route('**/api/expense-notes/receipt-suggestion', async route => {
     await ocr.promise
     await route.fulfill({ json: { amount: 99, expenseDate: '2026-01-01' } })
@@ -22,8 +26,12 @@ test('submitting while OCR is pending ends its spinner and ignores the old sugge
   await request
   await expect(page.getByRole('button', { name: 'Analyse du reçu…', exact: true })).toBeDisabled()
   await page.getByRole('button', { name: 'Soumettre', exact: true }).click()
-  await expect(page.getByRole('status')).toHaveText('Note de frais enregistrée.')
+  // Submission success is independent of the history refresh. Both statuses
+  // intentionally coexist here; do not select an arbitrary first/last status.
+  await expect(page.getByRole('status').filter({ hasText: /^Chargement…$/ })).toBeVisible()
+  await expect(page.getByRole('status').filter({ hasText: /^Note de frais enregistrée\.$/ })).toHaveText('Note de frais enregistrée.')
   await expect(page.getByRole('button', { name: 'Pré-remplir depuis le reçu', exact: true })).toBeEnabled()
+  refresh.release()
   const response = page.waitForResponse('**/api/expense-notes/receipt-suggestion')
   ocr.release()
   await (await response).finished()
@@ -58,7 +66,7 @@ test('the newer file wins when B finishes before A and manual edits stay intact'
   second.release()
   await expect(page.getByLabel('Date', { exact: true })).toHaveValue('2026-10-16')
   await expect(page.getByLabel('Montant (€)', { exact: true })).toHaveValue('20.00')
-  await expect(page.getByRole('status')).toContainText('Saisie conservée : montant.')
+  await expect(page.getByRole('status').filter({ hasText: 'Saisie conservée : montant.' })).toContainText('Saisie conservée : montant.')
   const responseA = page.waitForResponse('**/api/expense-notes/receipt-suggestion')
   first.release()
   await (await responseA).finished()

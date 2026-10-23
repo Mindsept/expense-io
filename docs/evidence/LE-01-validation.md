@@ -121,3 +121,14 @@ Aucun résultat de la campagne précédente n'est présenté comme preuve de ces
 nouveaux scénarios. Les preuves sur le rôle privilégié de bootstrap ne prouvent
 pas une RLS effective ; la limite de lecture HTTP et les créations partielles
 restent des limites explicitement affectées à LE-05 et LE-02/03.
+
+## Sélecteur E2E concurrent — 23 octobre 2026
+
+La CI 39811210493 passe les 438 unitaires, 120 API et le build standard, puis
+échoue dans EL-03 : `getByRole('status')` correspond simultanément au succès de
+soumission et au chargement de l'historique. Le scénario LE-01 réel passe.
+Le sélecteur EL-03 cible désormais le texte précis, sans première/dernière
+occurrence ni assertion supprimée. Le rafraîchissement est maintenu en attente
+par un deferred, ce qui reproduit systématiquement les deux statuts légitimes
+pendant l'assertion, puis il est libéré. Le contrôle du résultat OCR obsolète,
+du bouton et des champs reste intact. Aucun retry ou délai arbitraire ajouté.
