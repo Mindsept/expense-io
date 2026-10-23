@@ -79,10 +79,10 @@ describe('LE-10 executable delivered contract', () => {
     expect(() => assertResponse('/api/future', 'get', 200, jsonHeaders, {})).toThrow('Undocumented operation')
   })
 
-  it('keeps legacy and migrated errors distinct and does not accept an arbitrary JSON object', () => {
-    assertResponse('/api/expense-notes', 'get', 401, jsonHeaders, { error: 'Unauthorized' })
-    expect(() => assertResponse('/api/expense-notes', 'get', 401, jsonHeaders, {})).toThrow()
-    expect(() => assertResponse(receiptPath, 'get', 401, jsonHeaders, { error: 'Unauthorized' })).toThrow()
-    expect(operation('/api/expense-notes', 'get')['x-error-contract']).toBe('legacy-early-problem-catch')
+  it('keeps the remaining OCR legacy errors separate from migrated personal responses', () => {
+    assertResponse('/api/expense-notes/receipt-suggestion', 'post', 401, jsonHeaders, { error: 'Unauthorized' })
+    expect(() => assertResponse('/api/expense-notes/receipt-suggestion', 'post', 401, jsonHeaders, {})).toThrow()
+    expect(() => assertResponse('/api/expense-notes', 'get', 401, jsonHeaders, { error: 'Unauthorized' })).toThrow()
+    expect(operation('/api/expense-notes', 'get')['x-error-contract']).toBe('problem-details-v1')
   })
 })
