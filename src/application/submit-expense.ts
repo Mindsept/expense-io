@@ -1,3 +1,4 @@
+import { measurePhase } from '@/observability/diagnostics'
 import type { ReceiptStoragePort } from '@/ports/ReceiptStoragePort'
 import { ExpensePersistenceFailure, type ExpenseSubmissionInput, type ExpenseSubmissionPort, type ReceiptCleanupNotice, type ReceiptCleanupReporter } from '@/ports/ExpenseSubmissionPort'
 
@@ -26,9 +27,9 @@ export class SubmitExpense<T> {
     }
     let persistenceStarted = false
     try {
-      await this.receipts.upload(key, input.buffer, input.mimeType)
+      await measurePhase('storage.upload', context, () => this.receipts.upload(key, input.buffer, input.mimeType), () => 'success', () => 'storage_upload_failed')
       persistenceStarted = true
-      return await this.expenses.createComplete({ amount: input.amount, expenseDate: input.expenseDate, description: input.description, receiptKey: key })
+      return await measurePhase('expense.persist', context, () => this.expenses.createComplete({ amount: input.amount, expenseDate: input.expenseDate, description: input.description, receiptKey: key }), () => 'success', error => error instanceof ExpensePersistenceFailure && error.outcome === 'not_committed' ? 'persist_not_committed' : 'persist_commit_unknown')
     } catch (error) {
       const uncertainCommit = persistenceStarted && (!(error instanceof ExpensePersistenceFailure) || error.outcome === 'unknown')
       if (uncertainCommit) {
@@ -36,7 +37,7 @@ export class SubmitExpense<T> {
         // LE-03/operator reconciliation must first check the database reference.
         notice('commit_unconfirmed')
       } else {
-        try { await this.receipts.remove(key) }
+        try { await measurePhase('storage.remove', context, () => this.receipts.remove(key), () => 'success', () => 'storage_delete_failed') }
         catch { notice('cleanup_failed') }
         // A failed upload acknowledgement can leave a late-arriving object even
         // after a successful delete. Record its reference for later reconciliation.

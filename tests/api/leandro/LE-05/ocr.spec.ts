@@ -50,7 +50,7 @@ function raw(baseURL: string, path: string, headers: Record<string, string>, chu
     request.on('error', error => {
       // An early 413 can close the upload socket while writes are outstanding.
       // Still require its actual HTTP response; never accept EPIPE as proof.
-      if ((error as NodeJS.ErrnoException).code === 'EPIPE') return
+      if (['EPIPE', 'ECONNRESET'].includes((error as NodeJS.ErrnoException).code ?? '')) return
       if (!responding) { clearTimeout(deadline); reject(error) }
     })
     let index = 0
@@ -103,8 +103,12 @@ test('empty, malformed, duplicate and excessive images have explicit bounded fai
   assertResponse(endpoint, 'post', response.status, Object.fromEntries(response.headers), await response.json())
 })
 test('actual chunked HTTP without Content-Length is bounded before multipart materialization on both routes', async () => {
-  for (const [path, bytes] of [[endpoint, 6 * 1024 * 1024], ['/api/expense-notes', 11 * 1024 * 1024]] as const) {
-    const response = await raw(target, path, { cookie, 'content-type': 'multipart/form-data; boundary=le05' }, Array.from({ length: bytes / 65536 }, () => Buffer.alloc(65536)))
+  for (const [path, bytes] of [[endpoint, 5 * 1024 * 1024 + 65536], ['/api/expense-notes', 10 * 1024 * 1024 + 65536]] as const) {
+    // Finish a chunked body exactly one byte over the actual envelope. This
+    // proves the boundary while avoiding a TCP reset from megabytes of writes
+    // still pending after the server has correctly refused an earlier chunk.
+    const chunks = [...Array.from({ length: bytes / 65536 }, () => Buffer.alloc(65536)), Buffer.alloc(1)]
+    const response = await raw(target, path, { cookie, 'content-type': 'multipart/form-data; boundary=le05' }, chunks)
     expect(response.status).toBe(413)
     assertResponse(path, 'post', response.status, response.headers as Record<string, string>, response.result)
     expect(response.result.type).toBe('urn:expense-io:problem:payload_too_large')
