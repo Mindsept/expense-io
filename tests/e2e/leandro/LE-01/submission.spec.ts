@@ -29,6 +29,10 @@ async function ownNotes() {
 
 test.afterAll(async () => {
   try {
+    await pool.query(`DELETE FROM expense_submission_attempts esa
+      USING expense_submission_operations eso, expense_notes en, users u
+      WHERE esa.operation_id = eso.id AND eso.note_id = en.id
+        AND en.user_id = u.id AND u.email = $1 AND en.description = $2`, [identity.email, description])
     await pool.query(`DELETE FROM expense_submission_operations eso
       USING expense_notes en, users u
       WHERE eso.note_id = en.id AND en.user_id = u.id AND u.email = $1 AND en.description = $2`, [identity.email, description])
