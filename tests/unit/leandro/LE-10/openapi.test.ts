@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { assertResponse, assertSchema, contract, methods, operation, type Operation } from '../../../contracts/leandro/LE-10/openapi'
+import { assertResponse, assertSchema, contract, methods, type Operation } from '../../../contracts/leandro/LE-10/openapi'
 
 const note = contract.components.schemas.ExpenseNote.example as Record<string, unknown>
 const requestId = '33333333-3333-4333-8333-333333333333'
@@ -79,10 +79,11 @@ describe('LE-10 executable delivered contract', () => {
     expect(() => assertResponse('/api/future', 'get', 200, jsonHeaders, {})).toThrow('Undocumented operation')
   })
 
-  it('keeps the remaining OCR legacy errors separate from migrated personal responses', () => {
-    assertResponse('/api/expense-notes/receipt-suggestion', 'post', 401, jsonHeaders, { error: 'Unauthorized' })
-    expect(() => assertResponse('/api/expense-notes/receipt-suggestion', 'post', 401, jsonHeaders, {})).toThrow()
+  it('uses the shared Problem Details contract for all business routes including OCR', () => {
+    for (const { op } of operations.filter(({ op }) => !op['x-delegated'])) {
+      if (!op['x-source'].includes('/auth/')) expect(op['x-error-contract']).toBe('problem-details-v1')
+    }
+    expect(() => assertResponse('/api/expense-notes/receipt-suggestion', 'post', 401, jsonHeaders, { error: 'Unauthorized' })).toThrow()
     expect(() => assertResponse('/api/expense-notes', 'get', 401, jsonHeaders, { error: 'Unauthorized' })).toThrow()
-    expect(operation('/api/expense-notes', 'get')['x-error-contract']).toBe('problem-details-v1')
   })
 })

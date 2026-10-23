@@ -42,6 +42,10 @@ The temporary `error: string` extension equals `detail`, so existing screens kee
 | `idempotency_conflict` | 409 | Same scoped intention key with different validated content |
 | `idempotency_in_progress` | 409 | Another attempt currently owns the submission lease |
 | `idempotency_expired` | 409 | Seven-day replay window expired; inspect history before a new intention |
+| `payload_too_large` / `ocr_image_too_large` | 413 | Actual body/file bytes or image dimensions exceed the bound |
+| `unsupported_ocr_media` | 415 | OCR image formats only; PDF unsupported |
+| `request_timeout` / `request_aborted` | 408 / 499 | Body reading deadline or cancellation |
+| `ocr_failure` / `ocr_busy` / `ocr_timeout` | 502 / 503 / 504 | Failed engine, bounded capacity/wait, or active deadline |
 | `technical_failure` | 500 | Unexpected application/infrastructure failure |
 
 Only typed codes select reviewed, static details. Never put caught exception messages, SQL, submitted input or credentials in a detail. Add a reviewed code to this shared catalog when a consumer needs a new validation message; do not create a second error schema or treat arbitrary exceptions as 400. `readJsonObject` maps JSON syntax/non-object bodies to 400 and lets I/O failures become 500.
@@ -107,3 +111,11 @@ npm run test:api -- tests/api/hamza/HA-07
 Before collecting/running the API suite, initialize a dedicated local `_test` PostgreSQL database with the existing migration and start the built application against it. Privately inject `HA07_TEST_BASE_URL`, `HA07_TEST_DATABASE_URL` and a generated disposable `HA07_TEST_PASSWORD`; none has a fallback. The application needs matching `DATABASE_URL` and local Auth.js trusted-host configuration. Once HA-01 is integrated, also provide a private generated `AUTH_SECRET` for build/start, following `docs/authentication-configuration.md`; never copy the former public constant or expose credentials in logs. The API suite sets up its own UUID-scoped fixtures and signs in through Auth.js; it does not need the seed script, S3, or pre-created accounts.
 
 No browser E2E suite exists on the base commit; this ticket changes no UI and adds HTTP/database tests instead. Storage and connection/commit fault injection are route-level tests using doubles, not a claim of tested real S3 outages. The existing dependency audit findings remain assigned to HA-08/MATH-07; adding runners is not a dependency-remediation claim. Shared CI, final consumer adoption and independent human review remain separate follow-up work.
+
+### LE-05 consumer adoption
+
+Both personal route files now use withApiHandler, including OCR early failures.
+Actual streamed bytes are bounded before formData. OCR refreshes the current
+actor before reading and before admission, and never converts an engine failure
+into an empty 200. See [resource limits](ocr-resource-limits.md) and OpenAPI v3.
+Earlier handoff paragraphs above describe the HA-07 publication baseline.

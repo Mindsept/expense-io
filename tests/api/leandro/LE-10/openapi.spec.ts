@@ -128,11 +128,10 @@ test('real multipart submission validates numeric success; a mutated real respon
   expect((await list.json() as Array<{ id: string }>).some(note => note.id === body.id)).toBe(true)
 })
 
-test('legacy invalid multipart, OCR empty suggestion and malformed-ID technical failure match documented statuses', async () => {
+test('invalid multipart, explicit unsupported OCR and malformed-ID technical failure match documented statuses', async () => {
   await problem(await clients.employee.post('/api/expense-notes', { multipart: { amount: 'invalid' } }), '/api/expense-notes', 'post', 400)
   await problem(await clients.employee.post('/api/expense-notes/receipt-suggestion', { multipart: { other: 'missing receipt' } }), '/api/expense-notes/receipt-suggestion', 'post', 400)
-  const suggestion = await checked(await clients.employee.post('/api/expense-notes/receipt-suggestion', { multipart: { receipt: { name: 'synthetic.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF synthetic unsupported OCR') } } }), '/api/expense-notes/receipt-suggestion', 'post', 200)
-  expect(suggestion).toEqual({})
+  await problem(await clients.employee.post('/api/expense-notes/receipt-suggestion', { multipart: { receipt: { name: 'synthetic.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF synthetic unsupported OCR') } } }), '/api/expense-notes/receipt-suggestion', 'post', 415)
   await problem(await clients.employee.get('/api/expense-notes/not-a-uuid/receipt-url'), '/api/expense-notes/{id}/receipt-url', 'get', 500)
 })
 

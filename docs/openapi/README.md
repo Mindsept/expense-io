@@ -1,8 +1,8 @@
 # LE-10 — Contrat HTTP livré
 
-Le fichier [expense-io.v2.json](expense-io.v2.json) décrit les réponses réellement
-livrées après LE-01/02 et avec le protocole durable LE-03 (23 octobre 2026). Version du contrat :
-**2.2.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
+Le fichier [expense-io.v3.json](expense-io.v3.json) décrit les réponses réellement
+livrées après LE-01/02 et avec les protocoles LE-03 et OCR borné LE-05 (23 octobre 2026). Version du contrat :
+**3.0.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
 Ce contrat initial est publiable indépendamment des autres refontes.
 
 Les requêtes utilisent l'origine de l'application. L'authentification est la
@@ -23,7 +23,7 @@ les méthodes exportées aux **15 fichiers** `src/app/api/**/route.ts`.
 | --- | --- | --- |
 | `auth/[...nextauth]/route.ts` | GET, POST | Délégation Auth.js ; pas d'enveloppe HA-07 |
 | `expense-notes/route.ts` | GET, POST | Notes propres, tableau sans pagination ; création multipart 201 |
-| `expense-notes/receipt-suggestion/route.ts` | POST | OCR français synchrone, suggestions facultatives, `{}` possible |
+| `expense-notes/receipt-suggestion/route.ts` | POST | OCR image synchrone borné, erreurs explicites, `{}` après succès vide |
 | `expense-notes/[id]/receipt-url/route.ts` | GET | Reçu du propriétaire actif, même après décision |
 | `expense-notes/[id]/history/route.ts` | GET | Historique pour propriétaire/valideur courant, événements ordonnés, `{items: []}` possible |
 | `manager/expense-notes/route.ts` | GET | Notes en attente des subordonnés directs éligibles, ordre croissant |
@@ -70,15 +70,14 @@ substituer au détail. Voir [HA-07](../api-errors.md).
 - **409** : note déjà décidée, manager invalide ou affectation occupée par une
   autre transaction ; intention en cours, expirée ou réutilisée avec un contenu différent.
   Aucun retry automatique n'est promis.
-- **400** : JSON/affectation invalide ; seul le POST OCR conserve ses validations précoces
-  `{error: string}` en JSON normal.
+- **400** : JSON/affectation/multipart/image invalide.
+- **408/413/415/499/502/503/504** : lecture lente, poids/pixels excessifs, format OCR
+  non pris en charge, annulation, moteur défaillant, saturation et timeout OCR.
 - **500** : échec technique assaini. Un UUID de chemin malformé atteint encore
   PostgreSQL : ne pas promettre un 400 qui n'existe pas.
 
-Les GET/POST personnels utilisent maintenant l'enveloppe HA-07 pour toutes leurs
-erreurs. Seul le POST OCR garde encore ses erreurs précoces `{error: string}`
-sans corrélation garantie ; ses erreurs attrapées utilisent Problem Details.
-Les extensions `x-error-contract` matérialisent cette transition.
+Tous les handlers métier utilisent désormais l'enveloppe HA-07 pour leurs
+erreurs et leur corrélation. Auth.js conserve son contrat propre.
 
 Le tri personnel accepte les six fragments constants `created_at/amount/expense_date`
 avec `ASC/DESC` exacts. Absence/valeur vide : `created_at DESC`. Valeur inconnue,
@@ -86,8 +85,10 @@ clé de prototype ou paramètre répété : 400 avant toute requête de notes.
 Le multipart impose une occurrence de chaque champ requis, montant décimal entier
 valide, date civile réelle, description trimée non vide et bornée à 4000 unités
 UTF-16, et fichier non vide jusqu'à 10 MiB dont le conteneur correspond au MIME
-PNG/JPEG/WebP/PDF. Il ne garantit pas un décodage complet/antivirus. La borne de
-poids intervient après matérialisation ; LE-05 conserve la limite de lecture HTTP.
+PNG/JPEG/WebP/PDF. Il ne garantit pas un décodage complet/antivirus. LE-05 borne
+également les octets réels du corps avant matérialisation : 10 MiB + 64 KiB de
+multipart en création ; 5 MiB + 64 KiB par défaut pour OCR, configurable.
+Voir [les limites OCR](../ocr-resource-limits.md).
 
 La création vérifie l'acteur courant, uploade le reçu sous une clé UUID puis
 insère une note complète dans une seule transaction scoped, avec nouvel acteur
@@ -125,7 +126,7 @@ actuels décrivent du code ; ils ne constituent pas un nouvel arbitrage produit.
 | --- | --- | --- |
 | Pagination LE-07 | Tableau complet, aucun curseur/compte total | Enveloppe et paramètres à publier avec le code, sans inventer leur nom |
 | Idempotence LE-03 | Clé UUID facultative, portée acteur+entreprise+opération, rejeu sept jours, conflits 409, réconciliation privée bornée | EL-04 doit adopter la clé ; son obligation finale exige une décision explicite après vérification des clients |
-| OCR LE-05/06 | Réponse synchrone 200 avec champs facultatifs ; PDF et échec peuvent produire `{}` ; pas de limite de taille dans cette route | Bornes/erreurs LE-05 d'abord ; 202/job/polling seulement si variante asynchrone décidée et intégrée |
+| OCR LE-05/06 | Synchrone image, poids/pixels/lecture/pool/file/durée bornés, PDF 415 et pannes explicites ; 200 vide seulement après succès | LE-06 évalue le besoin durable ; aucun 202/job/polling actuellement promis |
 | Décision HA-03 | Transition conditionnelle et événement atomiques ; GET historique `{items}` avec auteur figé à la décision | Intégration écran EL-06 ; aucune notification revendiquée |
 
 ## Validation et maintenance
@@ -178,7 +179,8 @@ La version `info.version` décrit le contrat, pas la version du format OpenAPI.
 La v2.0 accompagne le refus des tris auparavant libres et le passage des erreurs
 personnelles à `application/problem+json`. L'extension `error` reste compatible
 avec les écrans existants. [v1](expense-io.v1.json) est une archive de main
-b6bf206, pas le comportement courant ; les tests chargent exclusivement v2. La v2.1
+b6bf206, pas le comportement courant. v2.2 archive le protocole avant LE-05 ; les tests
+chargent exclusivement v3. La v2.1
 documente LE-02 : insertion complète après upload et compensation, sans changer
 le DTO de succès ni promettre une transaction distribuée. La v2.2 ajoute la clé
 facultative LE-03, les trois conflits et l'en-tête de rejeu ; la forme sans clé
@@ -195,3 +197,10 @@ Une spécification idéale qui annoncerait déjà pagination, idempotence et OCR
 asynchrone est écartée : elle ferait échouer les consommateurs du code livré.
 La validation de forme ne prouve ni les règles métier complètes, ni la RLS, ni un
 échec réel de stockage, ni la validité/décodabilité de tout document uploadé.
+
+La v3.0 rend les erreurs OCR explicites et migre ses erreurs précoces vers HA-07 :
+PDF auparavant 200 vide devient 415 ; saturation/timeout/moteur ont leurs statuts.
+Les lectures effectives des POST OCR/création sont bornées avant parsing, avec
+408/413/499 possibles. Le DTO de succès et la clé facultative LE-03 restent stables.
+Les clients qui utilisaient `error` gardent ce champ ; adapter tout client qui
+interprétait un succès vide comme une panne ou exigeait exclusivement 400/500.
