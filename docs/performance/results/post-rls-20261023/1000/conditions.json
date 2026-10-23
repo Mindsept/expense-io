@@ -1,0 +1,97 @@
+{
+  "protocol": "math05-v3-limited-runtime-20261023",
+  "at": "2026-10-23T21:53:27.199Z",
+  "timezone": "Europe/Paris",
+  "sha": "a48fb9c1ecc6f6546d6b12fe07d50ec270e2bb4d",
+  "workingTree": "clean",
+  "hashes": {
+    "scripts/bench.mjs": "4bfc48be9b22141817147dc77c15318d5722f9581a213b2f9b20219964085e0d",
+    "scripts/mathis/MATH-05/metrics.mjs": "e9fd144397f1f2aa7ff75609be8bd1e0a9a3ed3e29c3dffdcb74fceadf649d6b",
+    "scripts/mathis/MATH-05/runtime.mjs": "b31313421661c855c80d3be56b0f17241a58b125eb7a75104718b892cb587dce",
+    "src/lib/runtime-database.ts": "f4c647404adbc0706a0206fc8eb6e3f67b6ad851c81d8533a60325f2c5897ec9",
+    "src/lib/expense-access.ts": "12966fedd8e70972685f7cf5cd2e611a6a8c74e20b260358fc55e35cf57de0ed",
+    "src/lib/pagination.ts": "b85e62ca3f66ca5da4cc8c63dc7daf3895ac7ff5255df8203561aa1cfb7c2ea1",
+    "src/lib/ocr.ts": "c6786c99749af0bef1451d5ceb9ccf9d150cfd7ab0c6dbc17b02a0ca547c4f0d",
+    "src/lib/ocr-parser.ts": "8772d49586b3cdc29c791a9fb8a312e97a8b3118099c53e05717972071d3d771",
+    "package-lock.json": "cdedc30bc5e33f3d6a958834c04b33498f67db33936043762cad4a7a2ee67d88",
+    "src/app/api/expense-notes/route.ts": "fee010ecf878326511c6ef92b0f0792b9b9fc796ea18876a5a58d4ef45f45053",
+    "src/app/api/manager/expense-notes/route.ts": "0772bd4f35c2dcb2197a257852eda894334176c7b719ba2164d5089cf323dd54",
+    "src/app/api/hr/expense-notes/route.ts": "2d65d8e180ee0f6d14d38d84c5f264ecff21c0fe3806910406c4fbd5ab75dc98"
+  },
+  "node": "v24.22.1",
+  "npm": "npm/11.19.1 node/v24.22.1 darwin arm64 workspaces/false",
+  "os": {
+    "platform": "darwin",
+    "release": "27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M5",
+    "logicalCpus": 10,
+    "totalMemory": 17179869184,
+    "freeMemory": 99778560,
+    "loadAverage": [
+      3.80029296875,
+      3.24072265625,
+      2.5986328125
+    ]
+  },
+  "db": {
+    "database": "expense_io_test",
+    "role": "expense_web",
+    "login": "expense_web",
+    "rolsuper": false,
+    "rolbypassrls": false,
+    "rolcreatedb": false,
+    "rolcreaterole": false,
+    "rolinherit": false,
+    "version": "PostgreSQL 16.15 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "startupIsolationCheck": "passed",
+    "notesWithoutActor": 0
+  },
+  "preparationDb": {
+    "database": "expense_io_test",
+    "role": "expense_test",
+    "login": "expense_test",
+    "rolsuper": true,
+    "rolbypassrls": true,
+    "rolcreatedb": true,
+    "rolcreaterole": true,
+    "rolinherit": true,
+    "version": "PostgreSQL 16.15 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit"
+  },
+  "webEnvironment": {
+    "maintenanceCredentials": false,
+    "bootstrapException": false
+  },
+  "fixture": {
+    "protocol": "math05-v3-limited-runtime-20261023",
+    "volume": 1000,
+    "distribution": [
+      {
+        "status": "approved",
+        "count": 200
+      },
+      {
+        "status": "pending",
+        "count": 700
+      },
+      {
+        "status": "rejected",
+        "count": 100
+      }
+    ],
+    "digest": "60da41a3bd0cbe7fe0494186830b4246",
+    "extraSeedCompanies": 1,
+    "extraSeedUsers": 3,
+    "extraSeedNotes": 2,
+    "benchmarkCompanies": 1,
+    "benchmarkUsers": 3
+  },
+  "passes": 3,
+  "concurrency": 4,
+  "requestsPerPass": 30,
+  "pagination": "legacy full lists intentionally retained; opt-in page/pageSize available on measured main but not mixed into this workload",
+  "warmup": "3 GETs per route excluded and preserved separately; OS/DB caches not flushed",
+  "receiptBytesPerListRow": 0,
+  "otherServices": "Colima Docker plus local slide preview; hosted GitHub CI external. No claim of exclusive host.",
+  "limits": "actual expense_web runtime with HA-04 startup check; SQL plans under the same restricted role; this benchmark is not the exhaustive security matrix or a production capacity test; OCR below is a standalone diagnostic, not the bounded HTTP OCR pool"
+}

@@ -1,5 +1,7 @@
 # Référence mesurée — 22 octobre 2026
 
+> Référence historique du 22 octobre. La [campagne sur le rôle limité](results/post-rls-20261023/reference.md) et son [protocole actualisé](post-rls.md) décrivent le runtime actuel ; les anciens résultats bruts sont conservés.
+
 Code de mesure **c512b7eb7c889fb21d41b934f57c4cd0a6323d62**, après intégration du main `a0a0ab0` et patchs ARLA-45. Les deux volumes utilisent les mêmes empreintes de code ; les dossiers de résultats étaient non versionnés pendant la mesure, ce qui figure dans l’état du dossier. Aucun résultat de l’ancien arbre parallèle n’est mélangé ici.
 
 | Notes benchmark | Liste | n | Médiane ms | p95 empirique ms | Médianes des 3 passages ms | Erreurs |

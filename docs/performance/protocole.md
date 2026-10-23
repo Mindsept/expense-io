@@ -1,5 +1,7 @@
 # MATH-05 / ARLA-43 — référence avant optimisation
 
+> Référence historique du 22 octobre. La [campagne sur le rôle limité](results/post-rls-20261023/reference.md) et son [protocole actualisé](post-rls.md) décrivent le runtime actuel ; les anciens résultats bruts sont conservés.
+
 Responsable : Mathis. Relecture : Leandro. Proposition validée par Mathis ; réception/relecture Leandro attendues. Dossier destiné à LE-09 puis MATH-04. Aucun index, route ou algorithme OCR modifié. Cette référence ne dépend pas de la réalisation de LE-09.
 
 ## Questions et hypothèses

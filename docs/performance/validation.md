@@ -1,5 +1,7 @@
 # Validation MATH-05 / ARLA-43
 
+> Référence historique du 22 octobre. La [campagne sur le rôle limité](results/post-rls-20261023/reference.md) et son [protocole actualisé](post-rls.md) décrivent le runtime actuel ; les anciens résultats bruts sont conservés.
+
 [PR #17](https://github.com/Mindsept/expense-io/pull/17), empilée sur [ARLA-45 #16](https://github.com/Mindsept/expense-io/pull/16), elle-même réalignée sur main après l’intégration #14.
 
 - Mesures locales : code `c512b7eb7c889fb21d41b934f57c4cd0a6323d62`, deux volumes, trois passages, conditions et empreintes conservées dans les deux dossiers de résultats. États de campagne `passed`, nettoyage des stacks possédées réussi ; aucune configuration active restante.
