@@ -61,6 +61,7 @@ export async function runDemoSeed(settings:Settings, options:{pool:Pool;s3:S3Cli
     for(const kind of ['EMPLOYEE','MANAGER']) {
       const actor=actors[kind],expected=demoNote(actor.id,kind)
       const rows=(await client.query<Note>('SELECT id,user_id,description,receipt_key FROM expense_notes WHERE id=$3 OR (user_id=$1 AND description=$2)',[actor.id,expected.description,expected.id])).rows
+      if(rows.some(row=>row.description===expected.legacyDescription)) throw new DemoSeedError('legacy_demo_requires_review')
       const existing=selectDemoNote(rows,actor.id,expected) as Note|undefined
       if(!existing && (await client.query('SELECT 1 FROM expense_notes WHERE user_id=$1 AND description=$2 LIMIT 1',[actor.id,expected.legacyDescription])).rowCount) throw new DemoSeedError('legacy_demo_requires_review')
       if(!existing && mode==='repair') throw new DemoSeedError('initialisation_required')

@@ -41,6 +41,7 @@ test.beforeAll(async()=>{
  await runner({databaseUrl:url.href,dir:'migrations',migrationsTable:'pgmigrations',direction:'up',checkOrder:true,singleTransaction:true,logger:{debug:quiet,info:quiet,warn:quiet,error:quiet}})
  try{await s3.send(new HeadBucketCommand({Bucket:bucket}));throw Error('MATH-03 test bucket already exists; refuse adopting it.')}
  catch(error){if((error as {$metadata?:{httpStatusCode?:number}}).$metadata?.httpStatusCode!==404)throw error}
+ await ensureDemoBucket(settings(),s3);bucketOwned=true
 })
 test.afterAll(async()=>{
  try{
@@ -57,9 +58,13 @@ test.afterAll(async()=>{
 
 test('missing bucket fails before data creation; explicit ensure-bucket creates and rechecks it',async()=>{
  const config=settings()
- await expect(runDemoSeed(config,{pool,s3})).rejects.toThrow('bucket_missing')
- expect((await pool.query('SELECT count(*)::int AS count FROM companies')).rows[0].count).toBe(0)
- await expect(ensureDemoBucket(config,s3)).resolves.toEqual({bucket:'ready'});bucketOwned=true
+ // Only this suite's freshly-created, empty bucket is removed. Setup is also
+ // self-contained after a worker restart; later tests never depend on this case.
+ await s3.send(new DeleteBucketCommand({Bucket:bucket}));bucketOwned=false
+ try {
+  await expect(runDemoSeed(config,{pool,s3})).rejects.toThrow('bucket_missing')
+  expect((await pool.query('SELECT count(*)::int AS count FROM companies')).rows[0].count).toBe(0)
+ } finally { await ensureDemoBucket(config,s3);bucketOwned=true }
  await expect(ensureDemoBucket(config,s3)).resolves.toEqual({bucket:'existing'})
 })
 test('two runs preserve role, company, password hash, name and a changed manager without duplicates or uploads',async()=>{
