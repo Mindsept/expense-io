@@ -129,3 +129,7 @@ createWorker actuelle ne rend le worker qu'après ses phases d'initialisation ;
 une simple course de promesses ou l'appel de terminate sur un worker encore
 inaccessible ne suffit pas. Une file distribuée ou un broker n'est pas nécessaire
 pour ce ticket ; LE-06 évaluera séparément le besoin asynchrone sur les mesures.
+
+Décision LE-06 du 23 octobre : [conserver le synchrone borné](adr/LE-06-bounded-ocr.md),
+avec campagne reproductible, limites et conditions de réexamen. Cette décision
+ne livre aucun job durable et ne fixe aucun SLO de production.
