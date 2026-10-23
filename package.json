@@ -19,7 +19,13 @@
     "test:collect": "node tests/support/check-collection.mjs",
     "verify": "npm run lint && npm run typecheck && npm run test:unit",
     "test:prepare": "node tests/support/prepare.mjs",
-    "test:ci": "node tests/support/ci.mjs"
+    "test:ci": "node tests/support/ci.mjs",
+    "seed:repair": "node scripts/seed-repair.mjs",
+    "test:tooling": "playwright test --config playwright.config.ts --project=api tests/api/mathis/MATH-03",
+    "demo:prepare": "node scripts/mathis/MATH-03/demo.mjs prepare",
+    "demo:start": "node scripts/mathis/MATH-03/demo.mjs start",
+    "demo:reset": "node scripts/mathis/MATH-03/demo.mjs reset",
+    "demo:down": "node scripts/mathis/MATH-03/demo.mjs down"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",

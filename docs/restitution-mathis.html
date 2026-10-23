@@ -26,7 +26,7 @@
 </head>
 <body>
 <main class="shell">
-  <header class="topline"><div class="brand">expense<span>.io</span> / ARLA</div><div class="edition">Mathis Galliano · ARLA-43 actualisé le 24 octobre 2026</div></header>
+  <header class="topline"><div class="brand">expense<span>.io</span> / ARLA</div><div class="edition">Mathis Galliano · ARLA-41 / 43 actualisés le 24 octobre 2026</div></header>
   <div class="deck" role="region" aria-roledescription="diaporama" aria-label="Restitution des tickets de Mathis">
     <section class="slide active" aria-roledescription="diapositive" aria-label="1 sur 8" data-title="ARLA-39 · Socle de tests">
       <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-39">ARLA-39 / MATH-01</a><span class="state">Intégré</span></div>
@@ -51,15 +51,15 @@
       <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="ci.md">Guide et preuves ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="3 sur 8" data-title="ARLA-41 · Seed et reprise">
-      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-41">ARLA-41 / MATH-03</a><span class="state wait">Diagnostic seulement</span></div>
+      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-41">ARLA-41 / MATH-03</a><span class="state">Validation en cours</span></div>
       <h2 tabindex="-1" data-reveal>Relancer la démo sans écraser l’existant</h2>
-      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Préserver les comptes et réparer les reçus de démonstration incomplets.</p>
+      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Préserver l’organisation et reprendre une préparation DB/S3 interrompue.</p>
       <div class="body brief" data-reveal="3">
-        <div class="done"><h3>Réalisé</h3><ul><li>Diagnostic du seed et cadrage des réparations.</li><li>Approche : créer le manquant, préserver les réglages et tester la reprise DB/S3.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead pending">Non implémenté</p><p class="status-detail">Aucune modification du seed ni réparation effectuée.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hamza : stabiliser rôles, schéma et fixtures HA-04 / ARLA-13.</li><li>Mathis : valider l’approche avant de coder.</li></ul></div></div>
+        <div class="done"><h3>Réalisé</h3><ul><li>Initialisation et réparation séparées ; comptes préservés, notes et reçus strictement identifiés.</li><li>Reprises DB/S3 vérifiées ; démo à trois rôles sous expense_web et reset explicitement jetable.</li></ul></div>
+        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Implémenté · validation</p><p class="status-detail">Guide Bash / PowerShell, tests isolés et preuve du défaut initial.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hamza : revue des droits et du script ; Hugo : parcours.</li><li>Passage du guide par un autre membre et Windows natif à confirmer.</li></ul></div></div>
       </div>
-      <p class="takeaway"><strong>Suite :</strong> Stabiliser le contrat, puis faire approuver la réparation.</p>
-      <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="https://mindsept.atlassian.net/browse/ARLA-41">Suivi Jira ↗</a></footer>
+      <p class="takeaway"><strong>Deux relances :</strong> 3 comptes · 2 notes · 2 PNG, sans doublon ni réécriture. Aucun reset implicite.</p>
+      <footer class="source"><span>Mathis Galliano · mise à jour du 24 octobre 2026</span><a href="demo.md">Guide et preuves ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="4 sur 8" data-title="ARLA-42 · Recette finale">
       <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-42">ARLA-42 / MATH-04</a><span class="state wait">À exécuter</span></div>
@@ -81,7 +81,7 @@
         <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Publié · PR #17 → main</p><p class="status-detail">Local et CI Linux verts : 665 unitaires, 223 API, 25 tests navigateur.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Leandro : réception et relecture avant clôture.</li><li>Listes legacy complètes, poste partagé ; OCR de diagnostic hors HTTP.</li></ul></div></div>
       </div>
       <p class="takeaway"><strong>À 10 000 notes :</strong> médianes employé 51 ms · manager 175 ms · RH 280 ms. Aucun gain d’optimisation revendiqué.</p>
-      <footer class="source"><span>Mesures du 23 octobre 2026 · code a48fb9c · anciennes mesures conservées</span><a href="performance/results/post-rls-20261023/reference.md">Résultats et preuves ↗</a></footer>
+      <footer class="source"><span>Mesures du 23 octobre 2026 · code a48fb9c · anciennes mesures conservées</span><a href="https://github.com/Mindsept/expense-io/blob/1f41af2239382996ce1b2504e64c6fa6db74da55/docs/performance/results/post-rls-20261023/reference.md">Résultats et preuves ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="6 sur 8" data-title="ARLA-44 · Diagnostic et restauration">
       <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-44">ARLA-44 / MATH-06</a><span class="state wait">Cadrage seulement</span></div>
