@@ -348,7 +348,7 @@ test('real migration runner upgrades the existing LE-03 database in order and ro
   const scoped = new Pool({ connectionString: databaseURL, options: `-c search_path=${schema},public` })
   let created = false
   try {
-    for (const name of await readdir('migrations')) if (name.endsWith('.sql') && name !== migration) {
+    for (const name of await readdir('migrations')) if (name.endsWith('.sql') && Number(name.split('_')[0]) < Number(migration.split('_')[0])) {
       await copyFile(path.join('migrations', name), path.join(directory, name))
     }
     await runner({ ...options, direction: 'up' }); created = true

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { AdminConsole } from '@/components/AdminConsole'
 
@@ -15,5 +16,8 @@ export default async function HrPage() {
     )
   }
 
-  return <AdminConsole />
+  return <>
+    <p className="mb-4 text-right"><Link href="/hr/invitations" className="font-medium text-brand-600 hover:underline">Gérer les invitations</Link></p>
+    <AdminConsole />
+  </>
 }
