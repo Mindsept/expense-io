@@ -26,7 +26,7 @@
 </head>
 <body>
 <main class="shell">
-  <header class="topline"><div class="brand">expense<span>.io</span> / ARLA</div><div class="edition">Mathis Galliano · 22 octobre 2026</div></header>
+  <header class="topline"><div class="brand">expense<span>.io</span> / ARLA</div><div class="edition">Mathis Galliano · ARLA-43 actualisé le 24 octobre 2026</div></header>
   <div class="deck" role="region" aria-roledescription="diaporama" aria-label="Restitution des tickets de Mathis">
     <section class="slide active" aria-roledescription="diapositive" aria-label="1 sur 8" data-title="ARLA-39 · Socle de tests">
       <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-39">ARLA-39 / MATH-01</a><span class="state">Intégré</span></div>
@@ -72,16 +72,16 @@
       <p class="takeaway"><strong>Suite :</strong> Rejouer les preuves des auteurs sur la version retenue.</p>
       <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="https://mindsept.atlassian.net/browse/ARLA-42">Suivi Jira ↗</a></footer>
     </section>
-    <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="5 sur 8" data-title="ARLA-43 · Référence de performance">
+    <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="5 sur 8" data-title="ARLA-43 · Référence sous rôle limité">
       <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-43">ARLA-43 / MATH-05</a><span class="state">En revue</span></div>
-      <h2 tabindex="-1" data-reveal>Mesurer avant d’optimiser</h2>
-      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Donner à Leandro une référence réelle avant le choix des index.</p>
+      <h2 tabindex="-1" data-reveal>Une référence avec la sécurité active</h2>
+      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Mesurer le runtime actuel pour guider les optimisations de Leandro.</p>
       <div class="body brief" data-reveal="3">
-        <div class="done"><h3>Réalisé</h3><ul><li>1 000 et 10 000 notes fictives ; trois passages, concurrence limitée.</li><li>540 requêtes sans erreur, 18 plans SQL et 48 OCR réels ; données régénérées à l’identique.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Livré · PR #17</p><p class="status-detail">Scripts, protocole, conditions et résultats bruts publiés.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Leandro : réception et relecture pour LE-09.</li><li>Limites : poste partagé, listes non paginées, rôle DB privilégié.</li></ul></div></div>
+        <div class="done"><h3>Réalisé</h3><ul><li>1 000 et 10 000 notes ; serveur et plans SQL sous le vrai rôle limité expense_web.</li><li>540 requêtes sans erreur, 18 plans SQL et 48 OCR conformes ; régénération identique.</li></ul></div>
+        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Publié · PR #17 → main</p><p class="status-detail">Local et CI Linux verts : 665 unitaires, 223 API, 25 tests navigateur.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Leandro : réception et relecture avant clôture.</li><li>Listes legacy complètes, poste partagé ; OCR de diagnostic hors HTTP.</li></ul></div></div>
       </div>
-      <p class="takeaway"><strong>Suite :</strong> Comparer après optimisation, sans annoncer de gain à ce stade.</p>
-      <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="performance/reference.md">Référence et protocole ↗</a></footer>
+      <p class="takeaway"><strong>À 10 000 notes :</strong> médianes employé 51 ms · manager 175 ms · RH 280 ms. Aucun gain d’optimisation revendiqué.</p>
+      <footer class="source"><span>Mesures du 23 octobre 2026 · code a48fb9c · anciennes mesures conservées</span><a href="performance/results/post-rls-20261023/reference.md">Résultats et preuves ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="6 sur 8" data-title="ARLA-44 · Diagnostic et restauration">
       <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-44">ARLA-44 / MATH-06</a><span class="state wait">Cadrage seulement</span></div>
@@ -108,10 +108,10 @@
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="8 sur 8" data-title="Synthèse · Blocages et validations">
       <div class="eyebrow"><span class="ticket">SYNTHÈSE</span><span class="state wait">Points encore ouverts</span></div>
       <h2 tabindex="-1" data-reveal>Ce qui reste à débloquer</h2>
-      <p class="subtitle" data-reveal="2">Deux tickets intégrés, deux livrés pour revue, trois encore ouverts.</p>
-      <div class="body" data-reveal="3"><table class="blockers"><thead><tr><th>Attendu</th><th>Responsable</th><th>Impact</th></tr></thead><tbody><tr><td>Contrat HA-04</td><td>Hamza</td><td>Seed, sauvegarde/restauration et preuve d’isolation RLS.</td></tr><tr><td>Relectures et décisions</td><td>Leandro · Hamza · Hugo</td><td>Socle/CI, réception du benchmark, dépendances et exception braces.</td></tr><tr><td>Portabilité</td><td>Hamza</td><td>Échec EPERM du test de processus sur macOS ; Linux passe. OS de livraison à confirmer.</td></tr><tr><td>Version de remise</td><td>Hugo + Mathis</td><td>Choisir le commit final, approuver les approches restantes et exécuter la recette.</td></tr></tbody></table></div>
-      <p class="takeaway"><strong>Dernière CI intégrée :</strong> 282 unitaires · 21 API · 12 tests navigateur réussis. La recette finale reste à faire.</p>
-      <footer class="source"><a href="defauts-ouverts.md">Registre des défauts ↗</a><a href="https://github.com/Mindsept/expense-io/actions/runs/39786432720">Preuve CI Linux ↗</a></footer>
+      <p class="subtitle" data-reveal="2">ARLA-39, 40 et 45 terminés · ARLA-43 en revue · ARLA-41, 42 et 44 à poursuivre.</p>
+      <div class="body" data-reveal="3"><table class="blockers"><thead><tr><th>Attendu</th><th>Responsable</th><th>Impact</th></tr></thead><tbody><tr><td>Contrat HA-04 livré</td><td>Mathis</td><td>Seed et exploitation désormais démarrables ; ARLA-41 validé par Mathis.</td></tr><tr><td>Relectures et décisions</td><td>Leandro · Hamza · Hugo</td><td>Réception du benchmark par Leandro ; contrôles humains des prochains livrables.</td></tr><tr><td>Portabilité</td><td>Hamza</td><td>Ancien EPERM non reproduit dans la nouvelle campagne macOS ; OS de remise à confirmer.</td></tr><tr><td>Version de remise</td><td>Hugo + Mathis</td><td>Choisir le commit final, approuver les approches restantes et exécuter la recette.</td></tr></tbody></table></div>
+      <p class="takeaway"><strong>Dernière CI intégrée :</strong> 665 unitaires · 223 API · 25 tests navigateur réussis (ARLA-43). La recette finale reste à faire.</p>
+      <footer class="source"><a href="defauts-ouverts.md">Registre des défauts ↗</a><a href="https://github.com/Mindsept/expense-io/actions/runs/40030381666">Preuve CI Linux ↗</a></footer>
     </section>
     <div class="progress" aria-hidden="true"></div>
   </div>
