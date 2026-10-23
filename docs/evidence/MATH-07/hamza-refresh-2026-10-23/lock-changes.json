@@ -1,0 +1,62 @@
+[
+  {
+    "name": "node_modules/@next/env",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/@next/eslint-plugin-next",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/@next/swc-darwin-arm64",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/@next/swc-darwin-x64",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/@next/swc-linux-arm64-gnu",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/@next/swc-linux-arm64-musl",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/@next/swc-linux-x64-gnu",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/@next/swc-linux-x64-musl",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/@next/swc-win32-arm64-msvc",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/@next/swc-win32-x64-msvc",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/eslint-config-next",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  },
+  {
+    "name": "node_modules/next",
+    "before": "16.3.8",
+    "after": "16.4.3"
+  }
+]

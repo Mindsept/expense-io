@@ -1,0 +1,19 @@
+▲ Next.js 16.3.8 (Turbopack)
+- Local:         http://127.0.0.1:3212
+- Network:       http://127.0.0.1:3212
+✓ Ready in 123ms
+✓ Running next.config.ts took 11ms
+
+ GET /login 200 in 17ms (next.js: 1.0ms, proxy.ts: 4ms, application-code: 12ms)
+⚠ Blocked cross-origin request to Next.js dev resource /_next/mcp from "untrusted.example.test".
+Cross-origin access to Next.js dev resources is blocked by default for safety.
+
+To allow this host in development, add it to "allowedDevOrigins" in next.config.js and restart the dev server:
+
+// next.config.js
+module.exports = {
+  allowedDevOrigins: ['untrusted.example.test'],
+}
+
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[?25h

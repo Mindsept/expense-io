@@ -1,0 +1,14 @@
+
+> expense-io-version-b@0.1.0 test:e2e
+> playwright test --config playwright.config.ts --project=e2e --reporter=list,json
+
+
+Running 3 tests using 1 worker
+
+(node:57266) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [e2e] › tests/e2e/mathis/MATH-01/roles.smoke.spec.ts:16:7 › employee signs in through the form and opens the authorized screen (593ms)
+  ✓  2 [e2e] › tests/e2e/mathis/MATH-01/roles.smoke.spec.ts:16:7 › manager signs in through the form and opens the authorized screen (440ms)
+  ✓  3 [e2e] › tests/e2e/mathis/MATH-01/roles.smoke.spec.ts:16:7 › hr signs in through the form and opens the authorized screen (435ms)
+
+  3 passed (1.9s)

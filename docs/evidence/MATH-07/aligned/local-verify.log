@@ -1,0 +1,44 @@
+
+> expense-io-version-b@0.1.0 verify
+> npm run lint && npm run typecheck && npm run test:unit
+
+
+> expense-io-version-b@0.1.0 lint
+> eslint
+
+
+> expense-io-version-b@0.1.0 typecheck
+> tsc --noEmit
+
+
+> expense-io-version-b@0.1.0 test:unit
+> vitest run
+
+
+ RUN  v5.0.5 /Users/mathisgalliano/Documents/Travail/ARLA/expense-io
+
+ ❯ tests/unit/hamza/HA-01/owned-node-process.test.ts (1 test | 1 failed) 49ms
+   × stops its own process tree while leaving another Node process running 48ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/hamza/HA-01/owned-node-process.test.ts > stops its own process tree while leaving another Node process running
+Error: kill EPERM
+ ❯ signalGroup tests/support/process-tree.mjs:66:13
+     64| function signalGroup(pid, signal) {
+     65|   try {
+     66|     process.kill(-pid, signal)
+       |             ^
+     67|   } catch (error) {
+     68|     // ESRCH means the private group is already gone, not a reason to …
+ ❯ stopOwnedNodeProcess tests/support/process-tree.mjs:100:5
+ ❯ tests/unit/hamza/HA-01/owned-node-process.test.ts:33:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 12 passed (13)
+      Tests  1 failed | 278 passed (279)
+   Start at  14:59:31
+   Duration  806ms (tests 43%, transform 40%, import 14%, worker 2%)
+

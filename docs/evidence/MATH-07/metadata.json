@@ -1,0 +1,16 @@
+{
+  "baseSha": "4b42382a2ea76292cfb8e8a1dc6c2bebd865b137",
+  "node": "24.22.1",
+  "npm": "11.19.1",
+  "platform": "darwin-arm64",
+  "installExit": 0,
+  "lockAfterInstallSha256": "f6f138f316d08eb120f77c5d732437d11085ac89162beeb6c419a27331766fd8",
+  "auditsExit": {
+    "beforeAll": 1,
+    "beforeProduction": 1,
+    "afterAll": 1,
+    "afterProduction": 0
+  },
+  "testCiExit": 0,
+  "testRun": "3e1d9c24"
+}

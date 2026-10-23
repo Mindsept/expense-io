@@ -1,0 +1,48 @@
+{
+  "next": "16.3.8",
+  "at": "2026-10-22T12:50:34.049Z",
+  "observations": [
+    {
+      "mode": "start",
+      "method": "POST",
+      "path": "/_next/mcp",
+      "origin": "https://untrusted.example.test",
+      "status": 404,
+      "containsInitializeResult": false,
+      "body": "<!DOCTYPE html><html lang=\"fr\" class=\"geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/1ws09p_6cprnx.css\" data-precedence=\"next\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/310vm2bl3xxpt.js\"/><script src=\"/_next/static/chunks/3o27dzsjtfwwk.js\" async=\"\"></script><script src=\"/_next/static/chunks/1rj7ns8rte9vc.js\" async=\"\"></script><script src=\"/_next/static/chunks/2mosny5sv4cdo.js\" async=\"\"></script><script src=\"/_next/static/chunks/turbopack-0uc0lbx13skwt.js\" async=\"\"></script><script src=\"/_next/static/chunks/3xmhcihi7h_8j.js\" async=\"\"></script><meta name=\"robots\" content"
+    },
+    {
+      "mode": "start",
+      "method": "POST",
+      "path": "/_next/mcp",
+      "origin": "http://127.0.0.1:3210",
+      "status": 404,
+      "containsInitializeResult": false,
+      "body": "<!DOCTYPE html><html lang=\"fr\" class=\"geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/1ws09p_6cprnx.css\" data-precedence=\"next\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/310vm2bl3xxpt.js\"/><script src=\"/_next/static/chunks/3o27dzsjtfwwk.js\" async=\"\"></script><script src=\"/_next/static/chunks/1rj7ns8rte9vc.js\" async=\"\"></script><script src=\"/_next/static/chunks/2mosny5sv4cdo.js\" async=\"\"></script><script src=\"/_next/static/chunks/turbopack-0uc0lbx13skwt.js\" async=\"\"></script><script src=\"/_next/static/chunks/3xmhcihi7h_8j.js\" async=\"\"></script><meta name=\"robots\" content"
+    },
+    {
+      "mode": "start",
+      "path": "/_next/static/chunks/1ws09p_6cprnx.css",
+      "status": 200,
+      "cssBytes": 23858
+    },
+    {
+      "mode": "dev",
+      "method": "POST",
+      "path": "/_next/mcp",
+      "origin": "https://untrusted.example.test",
+      "status": 403,
+      "containsInitializeResult": false,
+      "body": "Unauthorized"
+    },
+    {
+      "mode": "dev",
+      "method": "POST",
+      "path": "/_next/mcp",
+      "origin": "http://127.0.0.1:3212",
+      "status": 200,
+      "containsInitializeResult": true,
+      "body": "event: message\ndata: {\"result\":{\"protocolVersion\":\"2025-03-26\",\"capabilities\":{\"tools\":{\"listChanged\":true}},\"serverInfo\":{\"name\":\"Next.js MCP Server\",\"version\":\"0.2.0\"}},\"jsonrpc\":\"2.0\",\"id\":1}\n\n"
+    }
+  ]
+}

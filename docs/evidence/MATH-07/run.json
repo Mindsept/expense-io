@@ -1,0 +1,11 @@
+{
+  "sha": "4b42382a2ea76292cfb8e8a1dc6c2bebd865b137",
+  "workingTree": "M package-lock.json\n M package.json\n?? docs/evidence/MATH-07/",
+  "node": "v24.22.1",
+  "npm": "npm/11.19.1 node/v24.22.1 darwin arm64 workspaces/false",
+  "platform": "darwin",
+  "arch": "arm64",
+  "at": "2026-10-22T12:49:14.580Z",
+  "timezone": "Europe/Paris",
+  "lockSha256": "f6f138f316d08eb120f77c5d732437d11085ac89162beeb6c419a27331766fd8"
+}

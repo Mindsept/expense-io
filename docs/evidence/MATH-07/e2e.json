@@ -1,0 +1,234 @@
+{
+  "config": {
+    "argv": [
+      "/private/tmp/arla-node-runtime/node-v24.22.1-darwin-arm64/bin/node",
+      "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "playwright.config.ts",
+      "--project=e2e",
+      "--reporter=list,json"
+    ],
+    "configFile": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/playwright.config.ts",
+    "rootDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "api",
+        "name": "api",
+        "testDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/api",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "e2e",
+        "name": "e2e",
+        "testDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "e2e",
+        "testDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/e2e",
+        "snapshotDir": "/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.spec.ts",
+        "timeout": 30000,
+        "use": {
+          "trace": "off",
+          "screenshot": "off",
+          "video": "off",
+          "storageState": {
+            "cookies": [],
+            "origins": []
+          },
+          "browserName": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "e2e"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "tests/e2e/mathis/MATH-01/roles.smoke.spec.ts",
+      "file": "tests/e2e/mathis/MATH-01/roles.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "employee signs in through the form and opens the authorized screen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 593,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:37.991Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5771673ab77ebf0749e7-06a9fbc0f642ee7160f9",
+          "file": "tests/e2e/mathis/MATH-01/roles.smoke.spec.ts",
+          "line": 16,
+          "column": 7
+        },
+        {
+          "title": "manager signs in through the form and opens the authorized screen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 440,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:38.850Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5771673ab77ebf0749e7-361f7563589e98aa650e",
+          "file": "tests/e2e/mathis/MATH-01/roles.smoke.spec.ts",
+          "line": 16,
+          "column": 7
+        },
+        {
+          "title": "hr signs in through the form and opens the authorized screen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 435,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T12:49:39.294Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5771673ab77ebf0749e7-f146c8af118f51a96d2e",
+          "file": "tests/e2e/mathis/MATH-01/roles.smoke.spec.ts",
+          "line": 16,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-22T12:49:37.834Z",
+    "duration": 1915.8700000000001,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

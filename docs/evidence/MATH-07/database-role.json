@@ -1,0 +1,6 @@
+{
+  "database": "expense_3e1d9c24_test",
+  "role": "expense_test",
+  "rolsuper": true,
+  "rolbypassrls": true
+}

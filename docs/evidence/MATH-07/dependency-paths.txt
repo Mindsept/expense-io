@@ -1,0 +1,22 @@
+expense-io-version-b@0.1.0 /Users/mathisgalliano/Documents/Travail/ARLA/expense-io
+├─┬ @tailwindcss/postcss@4.3.3
+│ ├─┬ @tailwindcss/node@4.3.3
+│ │ └── source-map-js@1.2.2 overridden
+│ └─┬ postcss@8.5.28
+│   └── source-map-js@1.2.2 deduped
+├─┬ eslint-config-next@16.3.8
+│ └─┬ @next/eslint-plugin-next@16.3.8
+│   └─┬ fast-glob@3.3.1
+│     └─┬ micromatch@4.0.8
+│       └── braces@3.0.3
+├─┬ next-auth@5.0.0-beta.32
+│ └── next@16.3.8 deduped
+├─┬ next@16.3.8
+│ ├─┬ postcss@8.5.23
+│ │ └── source-map-js@1.2.2 deduped
+│ └── sharp@0.35.5 overridden
+└─┬ vitest@5.0.5
+  └─┬ vite@8.3.5
+    └─┬ postcss@8.5.31
+      └── source-map-js@1.2.2 deduped
+
