@@ -1,0 +1,9 @@
+
+> expense-io-version-b@0.1.0 bench:prepare
+> node scripts/bench.mjs prepare 1000
+
+(node:95086) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/mathisgalliano/Documents/Travail/ARLA/expense-io/src/lib/runtime-database.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/mathisgalliano/Documents/Travail/ARLA/expense-io/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Conflicting external test target refused before writes.

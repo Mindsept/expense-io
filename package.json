@@ -19,7 +19,10 @@
     "test:collect": "node tests/support/check-collection.mjs",
     "verify": "npm run lint && npm run typecheck && npm run test:unit",
     "test:prepare": "node tests/support/prepare.mjs",
-    "test:ci": "node tests/support/ci.mjs"
+    "test:ci": "node tests/support/ci.mjs",
+    "bench:prepare": "node scripts/bench.mjs prepare",
+    "bench:run": "node scripts/bench.mjs run",
+    "bench:down": "node scripts/bench.mjs down"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",

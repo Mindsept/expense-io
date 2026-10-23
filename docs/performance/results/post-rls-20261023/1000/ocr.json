@@ -1,0 +1,584 @@
+[
+  {
+    "kind": "worker-init",
+    "pass": 1,
+    "ms": 100.49254199999996,
+    "cpuMicros": {
+      "user": 161927,
+      "system": 11815
+    },
+    "maxRssKiB": 264208
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 1,
+    "id": "large-total",
+    "bytes": 20484,
+    "sha256": "fb902eaac27563b682f619b0eecc50ce61375d588f620a4fadecf9af9c2bee09",
+    "worker": "first-recognition-after-init",
+    "ms": 66.91966700000012,
+    "parserMs": 0.7211669999996957,
+    "cpuMicros": {
+      "user": 136714,
+      "system": 3094
+    },
+    "maxRssKiB": 279664,
+    "text": "RECU SYNTHETIQUE\n21/10/2026\nTOTAL 1234,56 EUR\n",
+    "result": {
+      "amount": 1234.56,
+      "expenseDate": "2026-10-21"
+    },
+    "expected": {
+      "amount": 1234.56,
+      "expenseDate": "2026-10-21"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 1,
+    "id": "tax",
+    "bytes": 22203,
+    "sha256": "f156488eefc89626257ccb6bf0a1b6c53b85543cad3725321a500736aeed291b",
+    "worker": "reused-worker",
+    "ms": 37.91645800000015,
+    "parserMs": 0.06783400000040274,
+    "cpuMicros": {
+      "user": 46209,
+      "system": 797
+    },
+    "maxRssKiB": 282464,
+    "text": "RECU SYNTHETIQUE\n21/10/2026\n\nHT 100,00\n\nTTC 120,00\n",
+    "result": {
+      "amount": 120,
+      "expenseDate": "2026-10-21"
+    },
+    "expected": {
+      "amount": 120,
+      "expenseDate": "2026-10-21"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 1,
+    "id": "discount",
+    "bytes": 30549,
+    "sha256": "cb65adc767535248cb8801505f7360c9e089cb3308ed568111d9b08e1cea4de8",
+    "worker": "reused-worker",
+    "ms": 46.92608400000017,
+    "parserMs": 0.0571669999999358,
+    "cpuMicros": {
+      "user": 52360,
+      "system": 712
+    },
+    "maxRssKiB": 283424,
+    "text": "RECU SYNTHETIQUE\n21/10/2026\nSOUS-TOTAL 40,00\nREMISE 5,00\n\nTOTAL 35,00\n",
+    "result": {
+      "amount": 35,
+      "expenseDate": "2026-10-21"
+    },
+    "expected": {
+      "amount": 35,
+      "expenseDate": "2026-10-21"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 1,
+    "id": "leap-day",
+    "bytes": 19008,
+    "sha256": "ceeb3d92a961c4ba4bba550d06c2b16de06b1cd7a9c156c2b4345e2dab503388",
+    "worker": "reused-worker",
+    "ms": 33.50599999999986,
+    "parserMs": 0.06891700000005585,
+    "cpuMicros": {
+      "user": 37664,
+      "system": 745
+    },
+    "maxRssKiB": 285904,
+    "text": "RECU SYNTHETIQUE\n29/02/2024\nTOTAL 12,50\n",
+    "result": {
+      "amount": 12.5,
+      "expenseDate": "2024-02-29"
+    },
+    "expected": {
+      "amount": 12.5,
+      "expenseDate": "2024-02-29"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 1,
+    "id": "ambiguous",
+    "bytes": 18323,
+    "sha256": "3238c46efacfb4c2bf566bb3507fffbbd4253c1474bf2d612ab5e618acac7c0a",
+    "worker": "reused-worker",
+    "ms": 33.21974999999975,
+    "parserMs": 0.05537499999991269,
+    "cpuMicros": {
+      "user": 32849,
+      "system": 765
+    },
+    "maxRssKiB": 286000,
+    "text": "RECU SYNTHETIQUE\nTOTAL 12,00\nTOTAL 18,00\n",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 1,
+    "id": "ht-next-line",
+    "bytes": 16320,
+    "sha256": "35975b84558212fa25a72062d933da5c9f1562e9116f77bf78665d059ea15d25",
+    "worker": "reused-worker",
+    "ms": 32.1840830000001,
+    "parserMs": 0.03866599999992104,
+    "cpuMicros": {
+      "user": 50885,
+      "system": 1344
+    },
+    "maxRssKiB": 292256,
+    "text": "RECU SYNTHETIQUE\nTOTAL HT\n100,00 EUR\n",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 1,
+    "id": "subtotal-next-line",
+    "bytes": 23467,
+    "sha256": "f3141c951b448f5072357b1eb6fce50dfffadbe574087601dd7b96deb9739d18",
+    "worker": "reused-worker",
+    "ms": 40.41083299999991,
+    "parserMs": 0.028291000000081112,
+    "cpuMicros": {
+      "user": 69327,
+      "system": 2468
+    },
+    "maxRssKiB": 305248,
+    "text": "RECU SYNTHETIQUE\nSOUS-TOTAL\n\n40,00 EUR\n\nREMISE 5,00 EUR\n",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 1,
+    "id": "blank",
+    "bytes": 3857,
+    "sha256": "d16128a495566bb8fb44690b9317f5d3551b4b666100d167202b05504823c014",
+    "worker": "reused-worker",
+    "ms": 11.151834000000235,
+    "parserMs": 0.01920799999970768,
+    "cpuMicros": {
+      "user": 10850,
+      "system": 385
+    },
+    "maxRssKiB": 305312,
+    "text": "",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "worker-init",
+    "pass": 2,
+    "ms": 75.01999999999998,
+    "cpuMicros": {
+      "user": 132704,
+      "system": 5998
+    },
+    "maxRssKiB": 307472
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 2,
+    "id": "large-total",
+    "bytes": 20484,
+    "sha256": "fb902eaac27563b682f619b0eecc50ce61375d588f620a4fadecf9af9c2bee09",
+    "worker": "first-recognition-after-init",
+    "ms": 67.80341700000008,
+    "parserMs": 0.09054199999991397,
+    "cpuMicros": {
+      "user": 140403,
+      "system": 2697
+    },
+    "maxRssKiB": 307472,
+    "text": "RECU SYNTHETIQUE\n21/10/2026\nTOTAL 1234,56 EUR\n",
+    "result": {
+      "amount": 1234.56,
+      "expenseDate": "2026-10-21"
+    },
+    "expected": {
+      "amount": 1234.56,
+      "expenseDate": "2026-10-21"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 2,
+    "id": "tax",
+    "bytes": 22203,
+    "sha256": "f156488eefc89626257ccb6bf0a1b6c53b85543cad3725321a500736aeed291b",
+    "worker": "reused-worker",
+    "ms": 38.166167000000314,
+    "parserMs": 0.036749999999756255,
+    "cpuMicros": {
+      "user": 46672,
+      "system": 775
+    },
+    "maxRssKiB": 307472,
+    "text": "RECU SYNTHETIQUE\n21/10/2026\n\nHT 100,00\n\nTTC 120,00\n",
+    "result": {
+      "amount": 120,
+      "expenseDate": "2026-10-21"
+    },
+    "expected": {
+      "amount": 120,
+      "expenseDate": "2026-10-21"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 2,
+    "id": "discount",
+    "bytes": 30549,
+    "sha256": "cb65adc767535248cb8801505f7360c9e089cb3308ed568111d9b08e1cea4de8",
+    "worker": "reused-worker",
+    "ms": 47.79162499999984,
+    "parserMs": 0.03583299999991141,
+    "cpuMicros": {
+      "user": 55812,
+      "system": 808
+    },
+    "maxRssKiB": 307472,
+    "text": "RECU SYNTHETIQUE\n21/10/2026\nSOUS-TOTAL 40,00\nREMISE 5,00\n\nTOTAL 35,00\n",
+    "result": {
+      "amount": 35,
+      "expenseDate": "2026-10-21"
+    },
+    "expected": {
+      "amount": 35,
+      "expenseDate": "2026-10-21"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 2,
+    "id": "leap-day",
+    "bytes": 19008,
+    "sha256": "ceeb3d92a961c4ba4bba550d06c2b16de06b1cd7a9c156c2b4345e2dab503388",
+    "worker": "reused-worker",
+    "ms": 31.757250000000113,
+    "parserMs": 0.03837500000008731,
+    "cpuMicros": {
+      "user": 35943,
+      "system": 538
+    },
+    "maxRssKiB": 307664,
+    "text": "RECU SYNTHETIQUE\n29/02/2024\nTOTAL 12,50\n",
+    "result": {
+      "amount": 12.5,
+      "expenseDate": "2024-02-29"
+    },
+    "expected": {
+      "amount": 12.5,
+      "expenseDate": "2024-02-29"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 2,
+    "id": "ambiguous",
+    "bytes": 18323,
+    "sha256": "3238c46efacfb4c2bf566bb3507fffbbd4253c1474bf2d612ab5e618acac7c0a",
+    "worker": "reused-worker",
+    "ms": 33.61954199999991,
+    "parserMs": 0.0341670000002523,
+    "cpuMicros": {
+      "user": 33415,
+      "system": 435
+    },
+    "maxRssKiB": 307664,
+    "text": "RECU SYNTHETIQUE\nTOTAL 12,00\nTOTAL 18,00\n",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 2,
+    "id": "ht-next-line",
+    "bytes": 16320,
+    "sha256": "35975b84558212fa25a72062d933da5c9f1562e9116f77bf78665d059ea15d25",
+    "worker": "reused-worker",
+    "ms": 31.10912499999995,
+    "parserMs": 0.04266699999971024,
+    "cpuMicros": {
+      "user": 50246,
+      "system": 391
+    },
+    "maxRssKiB": 307712,
+    "text": "RECU SYNTHETIQUE\nTOTAL HT\n100,00 EUR\n",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 2,
+    "id": "subtotal-next-line",
+    "bytes": 23467,
+    "sha256": "f3141c951b448f5072357b1eb6fce50dfffadbe574087601dd7b96deb9739d18",
+    "worker": "reused-worker",
+    "ms": 41.5659999999998,
+    "parserMs": 0.03591600000027029,
+    "cpuMicros": {
+      "user": 72064,
+      "system": 720
+    },
+    "maxRssKiB": 307760,
+    "text": "RECU SYNTHETIQUE\nSOUS-TOTAL\n\n40,00 EUR\n\nREMISE 5,00 EUR\n",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 2,
+    "id": "blank",
+    "bytes": 3857,
+    "sha256": "d16128a495566bb8fb44690b9317f5d3551b4b666100d167202b05504823c014",
+    "worker": "reused-worker",
+    "ms": 10.687374999999975,
+    "parserMs": 0.01587500000005093,
+    "cpuMicros": {
+      "user": 10653,
+      "system": 226
+    },
+    "maxRssKiB": 307760,
+    "text": "",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "worker-init",
+    "pass": 3,
+    "ms": 70.382834,
+    "cpuMicros": {
+      "user": 122443,
+      "system": 4688
+    },
+    "maxRssKiB": 308240
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 3,
+    "id": "large-total",
+    "bytes": 20484,
+    "sha256": "fb902eaac27563b682f619b0eecc50ce61375d588f620a4fadecf9af9c2bee09",
+    "worker": "first-recognition-after-init",
+    "ms": 66.84875000000011,
+    "parserMs": 0.03937499999983629,
+    "cpuMicros": {
+      "user": 137285,
+      "system": 2405
+    },
+    "maxRssKiB": 308240,
+    "text": "RECU SYNTHETIQUE\n21/10/2026\nTOTAL 1234,56 EUR\n",
+    "result": {
+      "amount": 1234.56,
+      "expenseDate": "2026-10-21"
+    },
+    "expected": {
+      "amount": 1234.56,
+      "expenseDate": "2026-10-21"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 3,
+    "id": "tax",
+    "bytes": 22203,
+    "sha256": "f156488eefc89626257ccb6bf0a1b6c53b85543cad3725321a500736aeed291b",
+    "worker": "reused-worker",
+    "ms": 38.961874999999964,
+    "parserMs": 0.03962499999988722,
+    "cpuMicros": {
+      "user": 51100,
+      "system": 794
+    },
+    "maxRssKiB": 308240,
+    "text": "RECU SYNTHETIQUE\n21/10/2026\n\nHT 100,00\n\nTTC 120,00\n",
+    "result": {
+      "amount": 120,
+      "expenseDate": "2026-10-21"
+    },
+    "expected": {
+      "amount": 120,
+      "expenseDate": "2026-10-21"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 3,
+    "id": "discount",
+    "bytes": 30549,
+    "sha256": "cb65adc767535248cb8801505f7360c9e089cb3308ed568111d9b08e1cea4de8",
+    "worker": "reused-worker",
+    "ms": 46.2673749999999,
+    "parserMs": 0.038708000000042375,
+    "cpuMicros": {
+      "user": 51725,
+      "system": 434
+    },
+    "maxRssKiB": 308240,
+    "text": "RECU SYNTHETIQUE\n21/10/2026\nSOUS-TOTAL 40,00\nREMISE 5,00\n\nTOTAL 35,00\n",
+    "result": {
+      "amount": 35,
+      "expenseDate": "2026-10-21"
+    },
+    "expected": {
+      "amount": 35,
+      "expenseDate": "2026-10-21"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 3,
+    "id": "leap-day",
+    "bytes": 19008,
+    "sha256": "ceeb3d92a961c4ba4bba550d06c2b16de06b1cd7a9c156c2b4345e2dab503388",
+    "worker": "reused-worker",
+    "ms": 32.552708000000166,
+    "parserMs": 0.04020799999989322,
+    "cpuMicros": {
+      "user": 36723,
+      "system": 658
+    },
+    "maxRssKiB": 308496,
+    "text": "RECU SYNTHETIQUE\n29/02/2024\nTOTAL 12,50\n",
+    "result": {
+      "amount": 12.5,
+      "expenseDate": "2024-02-29"
+    },
+    "expected": {
+      "amount": 12.5,
+      "expenseDate": "2024-02-29"
+    },
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 3,
+    "id": "ambiguous",
+    "bytes": 18323,
+    "sha256": "3238c46efacfb4c2bf566bb3507fffbbd4253c1474bf2d612ab5e618acac7c0a",
+    "worker": "reused-worker",
+    "ms": 32.41433300000017,
+    "parserMs": 0.029415999999855558,
+    "cpuMicros": {
+      "user": 32098,
+      "system": 537
+    },
+    "maxRssKiB": 308496,
+    "text": "RECU SYNTHETIQUE\nTOTAL 12,00\nTOTAL 18,00\n",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 3,
+    "id": "ht-next-line",
+    "bytes": 16320,
+    "sha256": "35975b84558212fa25a72062d933da5c9f1562e9116f77bf78665d059ea15d25",
+    "worker": "reused-worker",
+    "ms": 30.631667000000107,
+    "parserMs": 0.03133299999990413,
+    "cpuMicros": {
+      "user": 47532,
+      "system": 448
+    },
+    "maxRssKiB": 308560,
+    "text": "RECU SYNTHETIQUE\nTOTAL HT\n100,00 EUR\n",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 3,
+    "id": "subtotal-next-line",
+    "bytes": 23467,
+    "sha256": "f3141c951b448f5072357b1eb6fce50dfffadbe574087601dd7b96deb9739d18",
+    "worker": "reused-worker",
+    "ms": 39.795250000000124,
+    "parserMs": 0.03008399999998801,
+    "cpuMicros": {
+      "user": 70102,
+      "system": 475
+    },
+    "maxRssKiB": 308784,
+    "text": "RECU SYNTHETIQUE\nSOUS-TOTAL\n\n40,00 EUR\n\nREMISE 5,00 EUR\n",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  },
+  {
+    "kind": "real-ocr",
+    "pass": 3,
+    "id": "blank",
+    "bytes": 3857,
+    "sha256": "d16128a495566bb8fb44690b9317f5d3551b4b666100d167202b05504823c014",
+    "worker": "reused-worker",
+    "ms": 10.537624999999935,
+    "parserMs": 0.016417000000728876,
+    "cpuMicros": {
+      "user": 10578,
+      "system": 157
+    },
+    "maxRssKiB": 308848,
+    "text": "",
+    "result": {},
+    "expected": {},
+    "correct": true,
+    "pureTextParserCorrect": true
+  }
+]

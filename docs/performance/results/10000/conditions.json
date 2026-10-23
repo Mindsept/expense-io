@@ -1,0 +1,72 @@
+{
+  "protocol": "math05-v2-main-seed-20261022",
+  "at": "2026-10-22T13:11:18.737Z",
+  "timezone": "Europe/Paris",
+  "sha": "c512b7eb7c889fb21d41b934f57c4cd0a6323d62",
+  "workingTree": "?? docs/performance/",
+  "hashes": {
+    "scripts/bench.mjs": "54f327c5cc51301470851848b94672abddad0f60f43a85c40c5af9fdf5b5639a",
+    "scripts/mathis/MATH-05/metrics.mjs": "e9fd144397f1f2aa7ff75609be8bd1e0a9a3ed3e29c3dffdcb74fceadf649d6b",
+    "src/lib/ocr.ts": "97302dec378b31ad7524293c0a37e2f41dbeedb03f689151a867833a05fd6d74",
+    "src/lib/ocr-parser.ts": "8772d49586b3cdc29c791a9fb8a312e97a8b3118099c53e05717972071d3d771",
+    "package-lock.json": "f6f138f316d08eb120f77c5d732437d11085ac89162beeb6c419a27331766fd8",
+    "src/app/api/expense-notes/route.ts": "b8f05c631369704d47b12f7495db01371385513e9b394688129774335fa6c117",
+    "src/app/api/manager/expense-notes/route.ts": "00aba179f61280df0a8eaaf2ccbd901e6855c2ce37afd594067a222689f5827a",
+    "src/app/api/hr/expense-notes/route.ts": "5dbc9307c3a010e7e35c21de70ae1f636e0512a5be183ac64c05cacd0c34227e"
+  },
+  "node": "v24.22.1",
+  "npm": "npm/11.19.1 node/v24.22.1 darwin arm64 workspaces/false",
+  "os": {
+    "platform": "darwin",
+    "release": "27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M5",
+    "logicalCpus": 10,
+    "totalMemory": 17179869184,
+    "freeMemory": 789053440,
+    "loadAverage": [
+      4.177734375,
+      3.333984375,
+      3.173828125
+    ]
+  },
+  "db": {
+    "database": "expense_io_test",
+    "role": "expense_test",
+    "rolsuper": true,
+    "rolbypassrls": true,
+    "version": "PostgreSQL 16.15 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit"
+  },
+  "fixture": {
+    "protocol": "math05-v2-main-seed-20261022",
+    "volume": 10000,
+    "distribution": [
+      {
+        "status": "approved",
+        "count": 2000
+      },
+      {
+        "status": "pending",
+        "count": 7000
+      },
+      {
+        "status": "rejected",
+        "count": 1000
+      }
+    ],
+    "digest": "07dbe3867abb1eb22143e0b8f5c9eefa",
+    "extraSeedCompanies": 1,
+    "extraSeedUsers": 3,
+    "extraSeedNotes": 2,
+    "benchmarkCompanies": 1,
+    "benchmarkUsers": 3
+  },
+  "passes": 3,
+  "concurrency": 4,
+  "requestsPerPass": 30,
+  "pagination": "none; existing endpoints return the entire matching list",
+  "warmup": "3 GETs per route excluded and preserved separately; OS/DB caches not flushed",
+  "receiptBytesPerListRow": 0,
+  "otherServices": "Colima Docker plus local slide preview; hosted GitHub CI external. No claim of exclusive host.",
+  "limits": "bootstrap superuser/BYPASSRLS; no RLS or production capacity claim"
+}

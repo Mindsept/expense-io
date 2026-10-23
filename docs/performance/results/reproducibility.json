@@ -1,0 +1,21 @@
+{
+  "protocol": "math05-v2-main-seed-20261022",
+  "volume": 1000,
+  "firstDigest": "a778183dbcfafcf9f1d0b7bec17432b8",
+  "regeneratedDigest": "a778183dbcfafcf9f1d0b7bec17432b8",
+  "distribution": [
+    {
+      "status": "approved",
+      "count": 200
+    },
+    {
+      "status": "pending",
+      "count": 700
+    },
+    {
+      "status": "rejected",
+      "count": 100
+    }
+  ],
+  "equal": true
+}
