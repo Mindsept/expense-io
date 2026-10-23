@@ -1,8 +1,8 @@
 # LE-10 — Contrat HTTP livré
 
 Le fichier [expense-io.v2.json](expense-io.v2.json) décrit les réponses réellement
-livrées sur `main` **1bcebdb**, après LE-01, avec le protocole de soumission LE-02 de cette PR (22 octobre 2026). Version du contrat :
-**2.1.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
+livrées après LE-01/02 et avec le protocole durable LE-03 (23 octobre 2026). Version du contrat :
+**2.2.0**, format [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3).
 Ce contrat initial est publiable indépendamment des autres refontes.
 
 Les requêtes utilisent l'origine de l'application. L'authentification est la
@@ -68,7 +68,8 @@ substituer au détail. Voir [HA-07](../api-errors.md).
   Le corps ne distingue pas ces cas. Une URL signée est valable par défaut
   300 secondes ; la présignature ne vérifie pas l'existence de l'objet S3.
 - **409** : note déjà décidée, manager invalide ou affectation occupée par une
-  autre transaction. Aucun retry automatique n'est promis.
+  autre transaction ; intention en cours, expirée ou réutilisée avec un contenu différent.
+  Aucun retry automatique n'est promis.
 - **400** : JSON/affectation invalide ; seul le POST OCR conserve ses validations précoces
   `{error: string}` en JSON normal.
 - **500** : échec technique assaini. Un UUID de chemin malformé atteint encore
@@ -93,9 +94,12 @@ insère une note complète dans une seule transaction scoped, avec nouvel acteur
 courant. Une erreur connue avant COMMIT compense l'objet ; un commit incertain
 le conserve pour réconciliation. Aucune note vide n'est nouvellement insérée.
 Les anciennes lignes partielles ne sont pas inventoriées/réparées par cette
-tranche ; un arrêt brutal ou une réponse perdue peut laisser un orphelin ou un
-retry en doublon. Voir [LE-02](../expense-submission.md). La reprise durable et
-l'idempotence restent LE-03.
+tranche. Sans clé, un arrêt brutal ou une réponse perdue peut laisser un orphelin ou un
+retry en doublon. Avec `Idempotency-Key` UUID, le registre PostgreSQL et les tentatives
+durables coordonnent les processus : 201 initial/rejeu du résultat, en-tête
+`Idempotency-Replayed: false/true`, 409 en cours ou en conflit. La fenêtre de rejeu
+est de sept jours ; une clé expirée reste refusée, jamais silencieusement recyclée.
+Voir [LE-02](../expense-submission.md) et [LE-03](../expense-idempotency.md).
 
 ## Cible approuvée et transitions
 
@@ -120,7 +124,7 @@ actuels décrivent du code ; ils ne constituent pas un nouvel arbitrage produit.
 | Évolution | Contrat courant | Transition future |
 | --- | --- | --- |
 | Pagination LE-07 | Tableau complet, aucun curseur/compte total | Enveloppe et paramètres à publier avec le code, sans inventer leur nom |
-| Idempotence LE-03 | Aucun en-tête ni résultat de rejeu promis | Ajouter clé, portée, expiration et conflits avec l'implémentation livrée |
+| Idempotence LE-03 | Clé UUID facultative, portée acteur+entreprise+opération, rejeu sept jours, conflits 409, réconciliation privée bornée | EL-04 doit adopter la clé ; son obligation finale exige une décision explicite après vérification des clients |
 | OCR LE-05/06 | Réponse synchrone 200 avec champs facultatifs ; PDF et échec peuvent produire `{}` ; pas de limite de taille dans cette route | Bornes/erreurs LE-05 d'abord ; 202/job/polling seulement si variante asynchrone décidée et intégrée |
 | Décision HA-03 | Transition conditionnelle et événement atomiques ; GET historique `{items}` avec auteur figé à la décision | Intégration écran EL-06 ; aucune notification revendiquée |
 
@@ -176,7 +180,9 @@ personnelles à `application/problem+json`. L'extension `error` reste compatible
 avec les écrans existants. [v1](expense-io.v1.json) est une archive de main
 b6bf206, pas le comportement courant ; les tests chargent exclusivement v2. La v2.1
 documente LE-02 : insertion complète après upload et compensation, sans changer
-le DTO de succès ni promettre une transaction distribuée.
+le DTO de succès ni promettre une transaction distribuée. La v2.2 ajoute la clé
+facultative LE-03, les trois conflits et l'en-tête de rejeu ; la forme sans clé
+conserve ses limites.
 Correction documentaire sans changement livré : patch ; ajout compatible : mineur ;
 retrait/changement de type, enveloppe paginée ou suppression d'`error` : majeur avec
 plan client et transition explicite. Les schémas fermés imposent de revoir même un

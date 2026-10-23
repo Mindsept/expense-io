@@ -31,7 +31,7 @@ export class ExpensePersistenceFailure extends Error {
 
 export type ReceiptCleanupNotice = Readonly<{
   operation: 'expense.submit.cleanup'
-  code: 'cleanup_failed' | 'upload_unconfirmed' | 'commit_unconfirmed'
+  code: 'cleanup_failed' | 'upload_unconfirmed' | 'commit_unconfirmed' | 'operation_state_unconfirmed'
   receiptRef: string
   extension: ReceiptExtension
   requestId?: string

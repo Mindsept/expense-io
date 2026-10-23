@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "expense.io — delivered HTTP contract",
-    "version": "2.1.0",
-    "description": "LE-10 current contract with LE-02 upload-first complete submission on main 1bcebdb, 23 October 2026. Known insert failures compensate; uncertain commits retain the receipt for reconciliation. No cross-store transaction, idempotency, pagination or async OCR guarantee. v1 is an archive."
+    "version": "2.2.0",
+    "description": "Current contract with optional LE-03 idempotent creation on LE-02 main aa2720b, 23 October 2026. Key scope user+company+operation, seven-day replay, complete note/cache committed atomically. Private bounded reconciliation has no public endpoint. No pagination or async OCR guarantee."
   },
   "servers": [
     {
@@ -89,7 +89,7 @@
       },
       "post": {
         "operationId": "createExpense",
-        "summary": "Current actor checked before upload and reloaded before one complete scoped INSERT. Upload uses an opaque UUID key; known pre-commit failures compensate the object. Cleanup failure/uncertain COMMIT records an operational reference. Crash/retry recovery and idempotency remain LE-03.",
+        "summary": "Legacy requests without Idempotency-Key retain LE-02 upload-first behavior. With a UUID key, reserve a durable current-user/company intention, fingerprint normalized fields and exact receipt bytes, then atomically commit the complete note and original response cache. Same completed intent returns original 201 without another upload; different content, active processing or expired intent return static 409. Each retry of an incomplete intent has its own fenced attempt/receipt key.",
         "x-source": "src/app/api/expense-notes/route.ts",
         "x-error-contract": "problem-details-v1",
         "responses": {
@@ -110,6 +110,16 @@
                   "type": "string",
                   "format": "uuid"
                 }
+              },
+              "Idempotency-Replayed": {
+                "description": "Present only for keyed requests: true means original stored response; false means this request committed the intention. Body/status remain the same.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
               }
             }
           },
@@ -121,6 +131,12 @@
           },
           "500": {
             "$ref": "#/components/responses/Problem500"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem409"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem404"
           }
         },
         "requestBody": {
@@ -177,6 +193,16 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Client intention UUID, normalized lowercase; scoped to current user+company+expense.create. Seven-day replay from first reservation. Required content fingerprint remains fixed. A processing 409 is replayable later with the same key. An expired key never creates another note; inspect history before a new intention. Header absent remains legacy, without deduplication. Repeated/malformed/empty key is 400."
           }
         ]
       }
@@ -1705,6 +1731,93 @@
               "error": {
                 "enum": [
                   "The operation could not be completed. Try again later."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:idempotency_conflict"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Request key conflict"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This request key was already used with different expense content."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This request key was already used with different expense content."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:idempotency_in_progress"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Submission in progress"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This submission is already being processed. Retry later with the same request key."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This submission is already being processed. Retry later with the same request key."
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "urn:expense-io:problem:idempotency_expired"
+                ]
+              },
+              "title": {
+                "enum": [
+                  "Request key expired"
+                ]
+              },
+              "status": {
+                "enum": [
+                  409
+                ]
+              },
+              "detail": {
+                "enum": [
+                  "This request key has expired. Check your expense history before starting a new submission."
+                ]
+              },
+              "error": {
+                "enum": [
+                  "This request key has expired. Check your expense history before starting a new submission."
                 ]
               }
             }
