@@ -27,7 +27,7 @@ Les suites MATH-03 représentent **17 cas unitaires et 11 cas API**. Les tests A
 
 Le premier contrôle de Ctrl+C a laissé le serveur enfant actif. Le reset a refusé la suppression ; [ce refus](demo-reset-refused-active-server.log) est conservé. Le processus de cette session a été [identifié avant récupération](owned-process-recovery.json) par son répertoire, son groupe privé, les identifiants fictifs générés et ses connexions ; aucun processus choisi seulement par son port n'a été arrêté. Le gestionnaire d'arrêt a été corrigé puis revérifié.
 
-Une campagne intermédiaire a échoué sur le code du diagnostic d'une note ancienne et, après redémarrage du worker, sur l'installation du bucket dépendante du premier test. [Résumé rouge](validation-intermediate-failed.json), [journal API](validation-intermediate-api.log). Le code classe désormais explicitement la note ancienne et la fixture prépare son bucket indépendamment du scénario. Les assertions de refus restent strictes ; aucun skip, retry, test.fail ou continue-on-error ajouté. La campagne finale ci-dessus est verte.
+Une campagne intermédiaire a échoué sur le code du diagnostic d'une note ancienne et, après redémarrage du worker, sur l'installation du bucket dépendante du premier test. [Résumé rouge](validation-intermediate-failed.json), [journal API](validation-intermediate-api.log). Le code classe désormais explicitement la note ancienne et la fixture prépare son bucket indépendamment du scénario. Les assertions de refus restent strictes ; aucun skip, retry, test.fail ou continue-on-error ajouté. La campagne finale locale ci-dessus est verte.
 
 ## Limites et réception attendue
 
@@ -37,4 +37,12 @@ La démo trois rôles et le reset conservent leurs SHA historiques dans les preu
 
 **Encore attendus :** revue Hamza des droits/du script, validation Hugo du parcours et passage du guide par un autre membre sur base vierge. Les commandes PowerShell ont été écrites avec leur syntaxe native mais n'ont pas été exécutées sur Windows ; les validations locales sont sous macOS arm64 / Node 24.22.1 / npm 11.19.1, services sous Colima. Aucune case humaine cochée automatiquement. Le Makefile historique reste à coordonner avec son propriétaire ; la procédure livrée est `demo:*`.
 
-Les anciens reçus de démo sans nouveau marqueur demandent une revue ; aucune donnée personnelle de développement n'est modifiée. Les archives et fichiers de configuration privés ne font pas partie de ces preuves. La CI distante de la tête publiée sera liée dans Jira et dans la PR.
+Les anciens reçus de démo sans nouveau marqueur demandent une revue ; aucune donnée personnelle de développement n'est modifiée. Les archives et fichiers de configuration privés ne font pas partie de ces preuves. La CI distante de la tête publiée est liée dans Jira et dans la PR.
+
+## Première CI Linux publiée
+
+[Run 40035296311, tentative 1](https://github.com/Mindsept/expense-io/actions/runs/40035296311/attempts/1), source publiée `aceedd97d7f24530c325d9334760e10a35083125`, fusion de contrôle `f4ffae388c8000c216170eeb41fff62b320f3e46` : lint, typage, production, **672 unitaires et 234 API passent** ; **24 E2E passent et un échoue**. Les trois smokes MATH-01 passent. Nettoyage réussi.
+
+L'assertion d'Elyes dans `tests/e2e/elyes/EL-04/submission-intent.spec.ts:93` sélectionne tous les rôles `status` ; au moment du contrôle, le message de succès et le chargement de l'historique coexistent. Playwright refuse les deux correspondances. C'est un indice d'instabilité du sélecteur, pas une preuve d'absence de régression. Aucun code métier ni test d'Elyes n'a été modifié ; un seul rejeu de la même source a été effectué. Les deux échecs restent consignés ; la fiabilisation reste à examiner avec Elyes.
+
+[Rejeu de la même source, tentative 2](https://github.com/Mindsept/expense-io/actions/runs/40035296311/attempts/2) : **672 unitaires / 234 API / 24 E2E passent**, un autre scénario EL-04 échoue avec le même sélecteur ambigu, cette fois à la ligne 63 du même fichier. Le scénario de la ligne 93 passe. Les trois smokes Mathis passent et le nettoyage réussit. La CI reste **rouge** ; aucun nouvel essai manuel pour chercher un résultat vert. [Relevé initial](ci-linux-attempt-1.json), [relevé du rejeu](ci-linux-attempt-2.json). Ces constats ne remplacent pas la campagne locale finale verte et ne sont pas présentés comme une validation Linux complète.
