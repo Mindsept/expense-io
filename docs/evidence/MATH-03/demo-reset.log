@@ -1,0 +1,7 @@
+
+> expense-io-version-b@0.1.0 demo:reset
+> node scripts/mathis/MATH-03/demo.mjs reset --confirm-disposable
+
+Only the explicitly owned disposable demo stack and its private configuration were removed.
+Disposable test migrations, bucket and three-role baseline are ready; privileged bootstrap is not RLS evidence.
+{"ready":true,"project":"arla-ci-demo-5ddcc01883d3","url":"http://127.0.0.1:3215","privateSeedConfiguration":"/Users/mathisgalliano/Documents/Travail/ARLA/expense-io/.ci-output/demo/seed.json","guide":"docs/demo.md"}

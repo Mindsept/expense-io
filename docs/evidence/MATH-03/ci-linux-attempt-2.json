@@ -1,0 +1,28 @@
+{
+  "run_id": 40035296311,
+  "attempt": 2,
+  "source_head": "aceedd97d7f24530c325d9334760e10a35083125",
+  "tested_merge": "f4ffae388c8000c216170eeb41fff62b320f3e46",
+  "runner": "ubuntu-24.04",
+  "node": "24.22.1",
+  "npm": "11.19.1",
+  "unit_passed": 672,
+  "api_passed": 234,
+  "e2e_passed": 24,
+  "e2e_failed": 1,
+  "failure": {
+    "file": "tests/e2e/elyes/EL-04/submission-intent.spec.ts",
+    "line": 63,
+    "error": "strict mode violation: getByRole(status) resolved to 2 elements",
+    "visible_statuses": [
+      "Note de frais enregistrée.",
+      "Chargement…"
+    ]
+  },
+  "mathis_role_smokes_passed": 3,
+  "cleanup": "success",
+  "test_or_application_changes": "none",
+  "url": "https://github.com/Mindsept/expense-io/actions/runs/40035296311/attempts/2",
+  "previously_failing_line_93": "passed on attempt 2",
+  "manual_reruns": 1
+}

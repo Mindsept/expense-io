@@ -1,0 +1,5 @@
+
+> expense-io-version-b@0.1.0 demo:down
+> node scripts/mathis/MATH-03/demo.mjs down --confirm-disposable
+
+Only the explicitly owned disposable demo stack and its private configuration were removed.

@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-23T22:34:21.006Z",
+  "ownedPid": 98226,
+  "checks": [
+    "matching repository cwd",
+    "private owned process group",
+    "successful authentication with generated demo-only password",
+    "expected application listener and database connection"
+  ],
+  "action": "SIGTERM to this verified owned group only",
+  "appPortReleased": true
+}

@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-23T22:35:30.337Z",
+  "timezone": "Europe/Paris",
+  "source": "35864e07d405e30bdeb93dffe1a0b5398816a34f",
+  "resetWithoutConfirmationExit": 1,
+  "confirmedResetExit": 0,
+  "oldProject": "arla-ci-demo-7dc8d5ec78c0",
+  "newProject": "arla-ci-demo-5ddcc01883d3",
+  "oldContainersRemoved": true,
+  "counts": {
+    "users": 3,
+    "notes": 2,
+    "objects": 2
+  }
+}

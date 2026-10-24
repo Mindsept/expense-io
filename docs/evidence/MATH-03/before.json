@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-23T22:14:36.066Z",
+  "timezone": "Europe/Paris",
+  "source": "529c35e6fc62b7e0c77877ff7efa115dbb080dd9",
+  "seedSha256": "4409222f038155f82a2ab137cbfc76d346fe9e61ce2ffe769293c4d1c2238dcf",
+  "services": "Real isolated PostgreSQL and LocalStack",
+  "before": {
+    "users": 3,
+    "notes": 2,
+    "objects": 2
+  },
+  "after": {
+    "users": 3,
+    "notes": 2,
+    "objects": 2
+  },
+  "modifiedManagerWasOverwritten": true,
+  "modifiedNameWasOverwritten": true,
+  "commands": [
+    "isolated prepare",
+    "modify synthetic employee manager/name",
+    "isolated prepare again"
+  ],
+  "exitCode": 0
+}

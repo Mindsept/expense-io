@@ -33,7 +33,7 @@ async function prepareEmptyRlsDatabase(env) {
 }
 
 function seedEnvironment(env) {
-  const clean = { AWS_EC2_METADATA_DISABLED: 'true' }
+  const clean = { AWS_EC2_METADATA_DISABLED: 'true', SEED_DEMO_ENV: 'local-test', SEED_CONFIRM_DATABASE: 'expense_io_test', SEED_ADMIN_DATABASE_URL: env.DATABASE_URL }
   const names = [
     'PATH', 'Path', 'SYSTEMROOT', 'SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'HOME', 'USERPROFILE',
     'DATABASE_URL', 'S3_ENDPOINT', 'S3_BUCKET', 'S3_REGION', 'S3_FORCE_PATH_STYLE',
@@ -45,8 +45,8 @@ function seedEnvironment(env) {
 }
 
 async function seed(env) {
-  // The existing seed loads dotenv and prints credentials. Run it outside the
-  // repository with only validated settings, and never forward its output.
+  // Run the explicit maintenance seed with only the guarded synthetic settings.
+  // Keep its child output contained and never load development dotenv settings.
   const cwd = await mkdtemp(path.join(os.tmpdir(), 'arla-ci-seed-'))
   try {
     await new Promise((resolve, reject) => {
