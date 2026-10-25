@@ -7,7 +7,8 @@ import { assertResponse, assertSchema, contract, methods } from '../../../contra
 const merged = contract.paths
 function routeFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
-    const name = path.join(directory, entry.name)
+    // OpenAPI x-source uses repository paths on every host, including Windows.
+    const name = path.posix.join(directory, entry.name)
     return entry.isDirectory() ? routeFiles(name) : entry.name === 'route.ts' ? [name] : []
   })
 }
