@@ -1,0 +1,41 @@
+{
+  "createdAt": "2026-10-25T15:11:08.842Z",
+  "status": "exported-unverified",
+  "applicationSha": "0b2cf21e9e5fc5993d785cfe55b3b05535585cd1",
+  "schemaSha": "6e6e5b97ee4d425dfb548af9d299141f22213c205c6aa499c78bd411da66b090",
+  "toolingSha": "12629c27d826f457bb2e2ea7d6efdc7379d5a80921ba2512c29c2e67ceb6632e",
+  "accounts": 3,
+  "rows": {
+    "assignment_inbox": 0,
+    "assignment_notification_outbox": 0,
+    "companies": 1,
+    "decision_inbox": 0,
+    "decision_notification_outbox": 0,
+    "enrollment_invitations": 0,
+    "expense_decision_history": 0,
+    "expense_notes": 2,
+    "expense_notification_routes": 0,
+    "expense_submission_attempts": 0,
+    "expense_submission_operations": 0,
+    "management_changes": 0,
+    "pgmigrations": 8,
+    "users": 3
+  },
+  "databaseBytes": 126878,
+  "objectTypes": [
+    {
+      "contentType": "image/png",
+      "bytes": 68
+    },
+    {
+      "contentType": "image/png",
+      "bytes": 68
+    },
+    {
+      "contentType": "image/webp",
+      "bytes": 68
+    }
+  ],
+  "durationMs": 1290,
+  "archive": "Private local archive intentionally not committed."
+}

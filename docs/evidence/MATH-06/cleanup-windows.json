@@ -1,0 +1,30 @@
+{
+  "observedAt": "2026-10-25T15:14:25.361Z",
+  "cleanup": [
+    {
+      "project": "arla-ci-math06-0ddabf1a3449",
+      "exitCode": 0,
+      "result": {
+        "status": "owned-demo-services-removed",
+        "project": "arla-ci-math06-0ddabf1a3449",
+        "localFiles": "Retained; no directory or archive was deleted."
+      },
+      "noOwnedDockerResourcesRemain": true
+    },
+    {
+      "project": "arla-ci-math06-b867e5cbcc93",
+      "exitCode": 0,
+      "result": {
+        "status": "owned-demo-services-removed",
+        "project": "arla-ci-math06-b867e5cbcc93",
+        "localFiles": "Retained; no directory or archive was deleted."
+      },
+      "noOwnedDockerResourcesRemain": true
+    }
+  ],
+  "earlierSource": {
+    "project": "arla-ci-math06-fcd2c3a2041c",
+    "cleanupExitCode": 0
+  },
+  "notes": "Only the three new fixture projects created for this campaign were removed. Private archives/configurations remain ignored locally."
+}
