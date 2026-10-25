@@ -3,8 +3,10 @@
 Ticket : ARLA-37. Base : `a653a002` (EL-05, PR #29 du fork Mindsept/expense-io).
 La correction portable des inventaires OpenAPI de Mathis (`5b7c992`, reprise
 locale `c754530`) est une dépendance distincte, sans modification de ses assertions.
-Périmètre : trois écrans, pagination si nécessaire et tests E2E d’Elyes ; aucune
-modification du backend, des dépendances ou de la configuration des tests.
+Périmètre initial : trois écrans, pagination si nécessaire et tests E2E d’Elyes.
+Le passage sur l'application complète ajoute la correction de l'en-tête partagé
+décrite plus bas ; aucune modification du backend, des dépendances ou de la
+configuration des tests.
 
 ## Observations avant modification
 
@@ -71,7 +73,7 @@ Les scénarios EL-07 versionnés utilisent une vraie connexion de test puis des
 réponses API contrôlées pour reproduire chargements, erreurs et latences. Le
 passage sur l’aperçu exerce les composants réels avec leurs styles, mais ne
 démontre ni la connexion, ni les règles métier backend, ni le layout partagé.
-La campagne sur l’application complète reste à exécuter après intégration EL-08.
+Il ne remplace pas la campagne sur l'application complète consignée ci-dessous.
 
 Après les corrections CSS ciblées, Chromium mesure une largeur de document de
 320 pixels pour les trois composants à une largeur de 320 ; les tableaux
@@ -81,6 +83,39 @@ revient à la ligne sans couper « 1 / 1 ». Les contrastes ciblés deviennent
 Rejeter/fond sombre. Aucun thème ni dépendance ajouté ; seuls des utilitaires
 existants sont employés. Les contrôles hors de cet aperçu, dont l’en-tête global,
 et le zoom navigateur natif à 200 % ne sont pas validés par ce passage.
+
+## Application complète et en-tête partagé — 25 octobre 2026
+
+Le premier `npm run test:ci` sur l'application complète obtient **37/40 E2E
+réussis**. Les trois échecs concernent `small viewport keeps the table in a
+keyboard scroll region` pour employé, manager et RH : l'en-tête global déborde
+à petite largeur. L'aperçu précédent ne montait pas cet en-tête et ne pouvait
+pas valider ce point. Les [échecs](EL-08/windows-initial/e2e.log) et leur
+[résumé](EL-08/windows-initial/summary.json) restent conservés, avec l'étape
+E2E code 1 et le nettoyage code 0.
+
+Le commit **`02ec22e2392eb92458b63089da683da59dc1560e`** autorise le retour à la
+ligne dans le conteneur global et le formulaire de navigation, ajoute leur
+espacement et borne la largeur de la navigation. Les assertions de petite
+largeur sont conservées. Après restauration d'un contrôle négatif EL-04/EL-08
+distinct, la campagne complète de ce SHA passe : **673 unitaires, 239 API,
+40/40 E2E**, dont **10/10 EL-07**, préparation/build/nettoyage code 0.
+Les trois cas de petite largeur passent désormais avec l'en-tête applicatif
+réel et la connexion Auth.js. [Résumé positif](EL-08/windows-positive/summary.json),
+[journal E2E](EL-08/windows-positive/e2e.log), [contexte et limites](EL-08/README.md).
+
+Environnement : Windows, Node 24.22.1 / npm 11.19.1, Docker Desktop 4.96.3,
+moteur 29.9.2, fuseau Europe/Paris. Lint sans erreur avec un avertissement
+HA-09 préexistant, typage et collecte réussis. La
+[CI distante 40205740218](https://github.com/Mindsept/expense-io/actions/runs/40205740218)
+est également `success` sur `02ec22e` ; les comptes détaillés cités ici viennent
+des journaux locaux. La sauvegarde des preuves et cette actualisation sont
+documentaires, sans changement ultérieur du code testé.
+
+Les réponses métier des scénarios Elyes restent contrôlées par Playwright :
+le passage ne transforme pas ces tests en preuves DB/S3 ou de droits serveur.
+Il ne constitue pas un audit complet d'accessibilité, un usage réel de lecteur
+d'écran, une preuve de zoom navigateur natif à 200 %, ni une réception humaine.
 
 ## Recette à réaliser par Elyes et relire par Leandro
 

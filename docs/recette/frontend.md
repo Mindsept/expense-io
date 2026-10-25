@@ -88,16 +88,45 @@ requêtes utiles dans le contexte navigateur de chaque test.
 
 ## Résultats et limites
 
-État de préparation au 25/10/2026 : les suites EL-01 à EL-06 sont livrées dans
-les branches existantes ; EL-05 est la PR #29, base de cette consolidation.
-Les résultats locaux et la référence du commit validé sont ajoutés après
-exécution. La recette finale sur le SHA de remise et la relecture Leandro ne
-sont pas acquises par la rédaction de cette page.
+Campagnes du 25/10/2026 sous Windows, Node **24.22.1**, npm **11.19.1**,
+Docker Desktop **4.96.3**, moteur **29.9.2**, fuseau **Europe/Paris**. Le
+dossier [EL-08](../evidence/EL-08/README.md) conserve les étapes rouges et le
+passage positif séparément. Chaque ligne ci-dessous provient d'une exécution
+de `npm run test:ci`, avec préparation et nettoyage des services jetables.
 
-Le contrôle négatif ponctuel doit réintroduire un défaut dans une copie de
-test, obtenir un échec de l'assertion concernée, restaurer le fichier puis
-rejouer le cas. Cette mutation n'est jamais committée. Un import cassé ou
-« aucun test trouvé » ne prouve pas que le scénario détecte une régression.
+| Campagne | Résultat observé | Interprétation et preuve |
+| --- | --- | --- |
+| Application complète avant correction de l'en-tête | **37/40 E2E passent**, 3 échouent ; étape E2E code 1, nettoyage code 0 | Les trois cas EL-07 à petite largeur détectent le débordement de l'en-tête partagé, absent de l'aperçu des composants. [Résumé](../evidence/EL-08/windows-initial/summary.json), [échecs conservés](../evidence/EL-08/windows-initial/e2e.log). |
+| Contrôle négatif volontaire, après correction de l'en-tête | **38/40 E2E passent**, 2 échouent exactement sur l'égalité de la clé de reprise EL-04 et EL-08 ; étape E2E code 1, nettoyage code 0 | Une nouvelle clé était temporairement générée à la reprise. Les tests atteignent l'assertion métier attendue ; ni erreur d'import ni absence de tests. [Résumé](../evidence/EL-08/negative-control/summary.json), [assertions rouges](../evidence/EL-08/negative-control/e2e.log), [portée de la mutation](../evidence/EL-08/negative-control/metadata.json). |
+| Source restaurée, application complète | **673 unitaires, 239 API et 40/40 E2E passent**, sortie globale 0 et nettoyage code 0 ; E2E affichés en **41,7 s** | Source `02ec22e2392eb92458b63089da683da59dc1560e`. Les 28 scénarios Elyes passent, dont les 10 EL-07 et le scénario EL-08. [Résumé](../evidence/EL-08/windows-positive/summary.json), [E2E](../evidence/EL-08/windows-positive/e2e.log), [métadonnées et autres rapports](../evidence/EL-08/README.md). |
+
+La correction `02ec22e` permet le retour à la ligne du conteneur d'en-tête et
+de sa navigation, avec une largeur bornée. La mutation négative a ensuite été
+retirée et le fichier restauré octet pour octet avant la campagne positive ;
+aucune mutation n'est committée. Le checkout ne présentait alors aucun écart
+applicatif ou de tests, seulement le dossier non suivi des preuves négatives.
+Le contrôle négatif prouve la détection de cette régression précise, pas celle
+de tous les défauts possibles.
+
+La [collecte positive](../evidence/EL-08/windows-positive/collect.log) retrouve
+45 fichiers unitaires (quatre propriétaires), 21 fichiers API (Hamza, Leandro,
+Mathis) et 15 fichiers E2E (quatre propriétaires). Ces nombres de fichiers sont
+distincts des nombres de cas exécutés. Lint et typage passent ; l'unique
+avertissement lint HA-09 préexistant reste visible dans
+[verify.log](../evidence/EL-08/windows-positive/verify.log).
+
+La [CI GitHub 40205740218](https://github.com/Mindsept/expense-io/actions/runs/40205740218)
+est également terminée avec `success` sur **le même SHA `02ec22e`**. Son statut
+public a été relu ; les comptes de tests ci-dessus sont ceux de la campagne
+Windows locale, sans les attribuer aux journaux distants non recopiés.
+
+Le serveur commun reste la baseline bootstrap privilégiée ; les suites
+HA-04/HA-09 ont leurs fixtures de véritables rôles limités. La réussite globale
+ne démontre pas à elle seule une isolation exhaustive. Les cas Elyes utilisent
+une connexion Auth.js réelle et des réponses métier contrôlées ; ils ne
+remplacent pas les preuves PostgreSQL/S3 des auteurs serveur. La recette finale
+MATH-04 sur le SHA de remise, la répétition personnelle d'Elyes, la relecture
+Leandro, le lecteur d'écran et le zoom navigateur natif à 200 % restent séparés.
 
 ## Trame orale de 90 secondes
 
