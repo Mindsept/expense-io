@@ -35,7 +35,7 @@ test('the support reference visible after a real S3 failure retrieves its intern
   const reference = response.headers()['x-request-id']
   expect(reference).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
   expect(response.headers()['content-type']).toBe('application/problem+json')
-  const alert = page.getByRole('main').getByRole('alert')
+  const alert = page.locator('main > p[role="alert"]')
   await expect(alert).toHaveText(`Une erreur serveur est survenue. Réessaie plus tard. Référence : ${reference}.`)
   const shown = (await alert.innerText()).match(/Référence : ([0-9a-f-]{36})\./)?.[1]
   expect(shown).toBe(reference)

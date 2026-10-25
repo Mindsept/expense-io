@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type Fo
 import { formatCivilDate } from '@/utils/civil-date'
 import { formatRequestFailure, getClientErrorMessage } from '@/utils/client-errors'
 import { selectOcrSuggestions } from '@/utils/ocr-suggestion'
+import { parsePagedList, type PageInfo, type PageTotals } from '@/utils/paged-list'
+import { PaginationControls } from '@/components/PaginationControls'
 import { createSubmissionIntent, matchesSubmissionIntent, type SubmissionIntent, type SubmissionIntentPayload } from '@/utils/submission-intent'
 
 interface ExpenseNote {
@@ -103,6 +105,8 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function ExpensesPage() {
   const [notes, setNotes] = useState<ExpenseNote[]>([])
+  const [notesPage, setNotesPage] = useState<PageInfo>({ page: 1, pageSize: 20, totalItems: 0 })
+  const [notesTotals, setNotesTotals] = useState<PageTotals>({ count: 0, amount: 0, scope: 'filtered' })
   const [loading, setLoading] = useState(true)
   const [historyError, setHistoryError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -129,25 +133,31 @@ export default function ExpensesPage() {
   const mounted = useRef(true)
   const submissionIntent = useRef<SubmissionIntent | null>(null)
   const submittingLock = useRef(false)
+  const notesRequestGeneration = useRef(0)
 
   const loadNotes = useCallback(async () => {
+    const generation = ++notesRequestGeneration.current
     setLoading(true)
     try {
-      const response = await fetch('/api/expense-notes')
+      const response = await fetch(`/api/expense-notes?page=${notesPage.page}&pageSize=${notesPage.pageSize}`)
       if (!response.ok) {
         setHistoryError(await getClientErrorMessage(response, 'Impossible de charger les notes de frais.'))
         return
       }
       const result: unknown = await response.json()
-      if (!Array.isArray(result)) throw new Error('Invalid note list')
-      setNotes(result as ExpenseNote[])
+      const pageResult = parsePagedList<ExpenseNote>(result, true)
+      if (generation !== notesRequestGeneration.current) return
+      setNotes(pageResult.items)
+      setNotesPage(pageResult.pagination)
+      setNotesTotals(pageResult.totals)
       setHistoryError(null)
     } catch {
+      if (generation !== notesRequestGeneration.current) return
       setHistoryError('Impossible de charger les notes de frais. Vérifie ta connexion puis réessaie.')
     } finally {
-      setLoading(false)
+      if (generation === notesRequestGeneration.current) setLoading(false)
     }
-  }, [])
+  }, [notesPage.page, notesPage.pageSize])
 
   useEffect(() => {
     mounted.current = true
@@ -235,6 +245,7 @@ export default function ExpensesPage() {
       suggestionGeneration.current += 1
       setExtracting(false)
       setSubmissionNotice('Note de frais enregistrée.')
+      setNotesPage((current) => ({ ...current, page: 1 }))
       await loadNotes()
     } catch (failure) {
       setSubmissionUncertain(true)
@@ -384,7 +395,7 @@ export default function ExpensesPage() {
     }
   }
 
-  const total = notes.reduce((sum, note) => sum + note.amount, 0)
+  const total = notesTotals.amount ?? 0
   const visibleError = reloadNeedsHistoryCheck
     ? 'Une tentative précédente a peut-être été enregistrée avant le rechargement. Son reçu ne peut pas être restauré ici : vérifie l’historique avant de recommencer.'
     : error
@@ -398,8 +409,8 @@ export default function ExpensesPage() {
             ? 'Chargement de l’historique…'
             : historyError
             ? 'Historique indisponible — utilise le bouton Réessayer dans la section Historique.'
-            : notes.length > 0
-            ? `${notes.length} note${notes.length > 1 ? 's' : ''} · ${currencyFormatter.format(total)} au total`
+            : notesPage.totalItems > 0
+            ? `${notesPage.totalItems} note${notesPage.totalItems > 1 ? 's' : ''} au total · ${currencyFormatter.format(total)} sur l’ensemble`
             : 'Soumets ta première note de frais ci-dessous.'}
         </p>
       </div>
@@ -620,6 +631,10 @@ export default function ExpensesPage() {
               </tbody>
             </table>
           </div>
+        )}
+        {notesPage.totalItems > 0 && (
+          <PaginationControls page={notesPage.page} pageSize={notesPage.pageSize} totalItems={notesPage.totalItems}
+            disabled={loading} label="Pagination de l’historique" onPageChange={(page) => setNotesPage((current) => ({ ...current, page }))} />
         )}
       </section>
     </main>

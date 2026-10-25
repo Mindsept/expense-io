@@ -34,7 +34,7 @@ beforeEach(() => {
     if (!session?.user) throw new ApiError('unauthenticated')
     return mocks.scoped(session.user.id, (client: unknown) => operation(client, { id: session.user.id, companyId: 'company', role: session.user.role }))
   })
-  mocks.query.mockImplementation(async (sql: string, values: unknown[]) => ({ rows: [sql.includes('INSERT INTO expense_notes') ? { ...row, receipt_key: values[4] } : row] }))
+  mocks.query.mockImplementation(async (sql: string, values: unknown[]) => ({ rows: [sql.includes('WITH filtered') ? { items: [row], total_count: '1', total_cents: '1234' } : sql.includes('INSERT INTO expense_notes') ? { ...row, receipt_key: values[4] } : row] }))
   vi.spyOn(console, 'info').mockImplementation(() => {})
   vi.spyOn(console, 'warn').mockImplementation(() => {})
   vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -89,7 +89,7 @@ it('preserves a valid multipart POST with a real PNG', async () => {
 it.each(['created_at DESC', 'created_at ASC', 'amount DESC', 'amount ASC', 'expense_date DESC', 'expense_date ASC'])('preserves the historical safe sort %s', async sort => {
   const response = await GET(new NextRequest(`http://localhost/api/expense-notes?sort=${encodeURIComponent(sort)}`))
   expect(response.status).toBe(200)
-  expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining(`ORDER BY ${sort}`), ['owner'])
+  expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining(`ORDER BY ${sort}`), ['owner', 20, 0])
 })
 
 it.each([GET, POST])('requires authentication before parsing or DB access', async handler => {

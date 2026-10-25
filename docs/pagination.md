@@ -1,11 +1,11 @@
-# LE-07 — Pages et totaux sur le périmètre autorisé
+# Listes bornées — LE-07 puis retrait legacy LE-11
 
 [ARLA-25](https://mindsept.atlassian.net/browse/ARLA-25), après HA-06 intégré
 `6cfc605`, base main `eceb158`. Les quatre GET ci-dessous sont transférés
 séquentiellement à Leandro. Les décisions, affectations, autorisations et helpers
 DB restent ceux de Hamza ; aucun index, rôle, grant ou migration ajouté.
 
-## Contrat livré et transition EL-05
+## Contrat courant LE-11 — OpenAPI 5.0.0
 
 | Liste | GET | Défaut de tri |
 | --- | --- | --- |
@@ -14,8 +14,8 @@ DB restent ceux de Hamza ; aucun index, rôle, grant ou migration ajouté.
 | Notes RH actuellement éligibles et pending | /api/hr/expense-notes | created_at ASC, id ASC |
 | Annuaire RH de la même entreprise, employés/managers, inactifs inclus | /api/hr/users | name ASC, id ASC |
 
-La présence de **page ou pageSize** active la pagination, avec défauts respectifs
-1 et20, taille maximale100. Chaque valeur fournie doit être un entier décimal
+**Toutes les requêtes sont paginées**, y compris sans paramètres, avec défauts
+page 1 et pageSize 20, taille maximale 100. Chaque valeur fournie doit être un entier décimal
 positif canonique, sans zéro initial, espace, signe, fraction, suffixe ou exposant.
 Valeur vide, doublon, entier non représentable ou produit offset non représentable :
 400 Problem Details. Une page au-delà de la fin reste200 avec items vide et les
@@ -35,13 +35,13 @@ montant monétaire**. Le DTO de chaque note/personne reste celui déjà livré ;
 notes manager/RH gardent author `{id,displayName}`. Ne pas inférer le nom d'un
 auteur à partir de la page courante d'annuaire.
 
-Sans page ni pageSize, la réponse reste un **tableau complet**, sans plafond caché.
-Le header X-Pagination-Mode indique legacy/paged ; Cache-Control est no-store.
-Les écrans actuels restent fonctionnels. Cette compatibilité est une dette
-volontaire jusqu'à EL-05 puis LE-11, pas une borne mémoire de production. Un appel
-legacy continue de charger toutes les lignes autorisées ; aucun retrait, date de
-suppression ou migration UI n'est prétendu livré par LE-07. La preuve indique le
-poids observé des 45 lignes versus une page20, sans extrapoler un SLO.
+Depuis LE-11, l'appel sans paramètres renvoie également `{items,pagination,totals}`
+avec page 1 et 20 éléments au maximum. `X-Pagination-Mode` vaut toujours `paged` ;
+`Cache-Control` reste `no-store`. L'ancien tableau complet a été retiré après
+[EL-05 / PR29](https://github.com/Mindsept/expense-io/pull/29). C'est une rupture
+explicite du contrat, version majeure **5.0.0**, sans option de retour au chemin
+non borné. Les versions OpenAPI1–4 restent des archives, pas des endpoints de
+compatibilité. Voir [le guide de migration](runbooks/LE-11-list-migration.md).
 
 Les trois listes de notes acceptent les six tris exacts `created_at`, `amount`,
 `expense_date` avec ASC/DESC majuscules. L'annuaire accepte name ASC/name DESC.
@@ -64,11 +64,10 @@ managers **actifs** de l'entreprise actuelle de l'acteur RH. Sans role, l'annuai
 conserve employés/managers inactifs compris. `q` recherche dans nom/email sur tout
 cet ensemble, pas seulement la page affichée. Terme trimé, maximum120 unités
 UTF-16, contrôles C0/DEL interdits ; `%`, `_` et `\` sont des caractères littéraux,
-pas des jokers SQL. Rôle/terme répétés ou invalides :400. q/role sans pagination
-restent un tableau filtré complet ; le frontend doit transmettre page/pageSize
-pour obtenir la borne serveur.
+pas des jokers SQL. Rôle/terme répétés ou invalides :400. q/role sans pagination explicite
+utilisent la page par défaut et restent bornés.
 
-`selectedManagerId`, UUID unique et valide, exige un opt-in paginé. La réponse
+`selectedManagerId`, UUID unique et valide, fonctionne aussi avec la pagination par défaut. La réponse
 ajoute selectedManager :
 
 ```json
@@ -100,7 +99,7 @@ Fixtures exécutables pour Elyes :
 `tests/fixtures/leandro/LE-07/responses.json` : première page20/45, dernière5/45,
 page hors borne vide/45, recherche de manager avec sélection hors résultats et
 recherche vide avec sélection nulle. Les unitaires les valident contre
-**OpenAPI4.1.0**, fichier courant expense-io.v4.json. Aucun endpoint futur ajouté.
+**OpenAPI 5.0.0**, fichier courant expense-io.v5.json. Aucun endpoint futur ajouté.
 
 ## Exactitude, isolation et limites
 
@@ -130,6 +129,7 @@ sur les mesures MATH-05 et ce contrat intégré.
 
 Décision (C3/C1–2) : pagination opt-in et agrégats d'un même ensemble permettent
 l'intégration backend avant les écrans, sans tronquer les anciens consommateurs.
-Le retrait immédiat du tableau créerait un cycle LE-07/EL-05 ; sommer les seules
+LE-07 conservait temporairement le tableau pour éviter un cycle LE-07/EL-05 ;
+LE-11 le retire après intégration des consommateurs. Sommer les seules
 lignes de la page afficherait un faux total. Le mécanisme d'identité sélectionnée
 évite de déduire les managers possibles d'un annuaire partiel.
