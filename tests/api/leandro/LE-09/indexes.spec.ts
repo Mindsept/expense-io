@@ -8,6 +8,7 @@ import { runtimeFixture } from '../../../contracts/hamza/HA-04/runtime-fixture'
 import { readTestTarget, readTestIdentity } from '../../../support/test-target'
 import { assertRuntimeDatabase } from '../../../../src/lib/runtime-database'
 import { queryPage } from '../../../../src/lib/pagination'
+import { expenseValidatorSql } from '../../../../src/lib/expense-access'
 import { pendingExpenseSource } from '../../../../src/lib/pending-expense-source'
 
 // MATH-05 geometry/protocol, received from published commit24ab0c1.
@@ -19,6 +20,9 @@ const migration = readFileSync(migrationFile, 'utf8')
 const up = migration.split('-- Down Migration')[0].replace('-- Up Migration', '')
 const down = migration.split('-- Down Migration')[1]
 const protocol = 'math05-v3-limited-runtime-20261023'
+if (process.env.LE09_MEASURE && process.env.LE09_MEASURE !== '1') throw new Error('LE09_MEASURE must be absent or 1')
+const measuring = process.env.LE09_MEASURE === '1'
+const passes = measuring ? 3 : 1, requestsPerPass = measuring ? 30 : 1, concurrency = measuring ? 4 : 1
 const output = '.ci-output/le09'
 type Sample = { pass: number; index: number; ms: number; status: number | null; bytes: number; ok: boolean; error: string | null }
 let fixture: Awaited<ReturnType<typeof runtimeFixture>>
@@ -26,11 +30,13 @@ test.beforeAll(async () => { test.setTimeout(60_000); fixture = await runtimeFix
 test.afterAll(async () => { await fixture?.close() })
 const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex')
 function summary(samples: Sample[]) {
+  const median = (values: number[]) => { const v = [...values].sort((a,b)=>a-b); return (v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2 }
   const values = samples.map(value => value.ms).sort((a,b) => a-b)
   return { attempts: samples.length, errors: samples.filter(value => !value.ok).length,
-    medianMs: (values[44] + values[45]) / 2, p95Ms: values[Math.ceil(values.length * .95)-1],
-    passMediansMs: [1,2,3].map(pass => { const v = samples.filter(value => value.pass === pass).map(value => value.ms).sort((a,b)=>a-b); return (v[14]+v[15])/2 }) }
+    medianMs: median(values), p95Ms: values.length >= 30 ? values[Math.ceil(values.length * .95)-1] : null,
+    passMediansMs: Array.from({ length: passes }, (_,index) => median(samples.filter(value => value.pass === index+1).map(value => value.ms))) }
 }
+
 async function fingerprint() {
   const data = (await fixture.admin.query(`SELECT count(*)::int AS count,
     md5(string_agg(concat(id,'|',user_id,'|',amount,'|',expense_date,'|',description,'|',receipt_key,'|',status,'|',created_at),E'\n' ORDER BY id)) AS digest FROM expense_notes`)).rows[0]
@@ -49,7 +55,7 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
     hashes: Object.fromEntries([migrationFile,'src/lib/pagination.ts','src/lib/expense-access.ts','src/lib/pending-expense-source.ts','package-lock.json','tests/api/leandro/LE-09/indexes.spec.ts',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(p => `src/app/api/${p}/route.ts`)].map(file => [file,createHash('sha256').update(readFileSync(file)).digest('hex')])),
     node: process.version, platform: os.platform(), release: os.release(), arch: os.arch(), cpu: os.cpus()[0]?.model,
     memoryBytes: os.totalmem(), load: os.loadavg(), caches: 'warm/uncontrolled; 3 warmups per route and phase; shared machine, no production SLO',
-    volume, concurrency: 4, passes: 3, requestsPerPass: 30, page: 1, pageSize: 20 }
+    volume, mode: measuring ? 'repeated measurement' : 'functional regression (no latency conclusion)', concurrency, passes, requestsPerPass, page: 1, pageSize: 20 }
   mkdirSync(output, { recursive: true })
   try {
     const storedHash = await bcrypt.hash(password, 4)
@@ -106,10 +112,10 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
           try { await response?.dispose() } catch { ok = false; error = 'response-cleanup-error' }
           return { pass,index,ms,status,bytes,ok,error }
         }
-        for (let i=0;i<3;i++) warmups.push(await measure(0,i))
-        for (let pass=1;pass<=3;pass++) {
+        for (let i=0;i<(measuring ? 3 : 0);i++) warmups.push(await measure(0,i))
+        for (let pass=1;pass<=passes;pass++) {
           let next = 0
-          await Promise.all(Array.from({ length: 4 }, async () => { while (next<30) { const index = next++; samples.push(await measure(pass,index)) } }))
+          await Promise.all(Array.from({ length: concurrency }, async () => { while (next<requestsPerPass) { const index = next++; samples.push(await measure(pass,index)) } }))
         }
         // Capture the SQL built by the actual pagination helper, not a simplified query.
         let plan: unknown
@@ -121,7 +127,30 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
             return { rows: [{ items: [], total_count: '0', total_cents: '0' }] }
           }) as never }, { sourceSql: definition.sourceSql, values: definition.values, page: { page: 1, pageSize: 20, offset: 0 }, order: { column: 'created_at', direction: definition.direction }, monetary: true })
         } finally { await fixture.runtime.query('ROLLBACK') }
-        scenarios.push({ name: definition.name, ...summary(samples), samples, warmups, plan })
+        const paired: { variant: string; repeat: number; ms: number; plan: unknown }[] = []
+        if (definition.name !== 'employee') {
+          const reference = `SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id=en.user_id WHERE ${expenseValidatorSql(definition.name === 'hr' ? 'hr_admin' : 'manager',1,2)} AND en.status='pending'`
+          for (let repeat=0;repeat<(measuring ? 3 : 1);repeat++) {
+            let referenceBody: unknown, candidateBody: unknown
+            for (const variant of repeat%2 ? ['candidate','reference'] : ['reference','candidate']) {
+              await fixture.runtime.query('BEGIN')
+              try {
+                await fixture.runtime.query("SELECT set_config('app.current_user_id',$1,true)", [users[definition.name as keyof typeof users]])
+                const input = { sourceSql: variant === 'reference' ? reference : definition.sourceSql, values: definition.values, page: { page: 1, pageSize: 20, offset: 0 }, order: { column: 'created_at' as const, direction: definition.direction }, monetary: true }
+                let pairedPlan: unknown
+                await queryPage({ query: (async (sql: string, values: unknown[]) => {
+                  pairedPlan = (await fixture.runtime.query('EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) '+sql,values)).rows[0]['QUERY PLAN']
+                  return { rows: [{ items: [], total_count: '0', total_cents: '0' }] }
+                }) as never }, input)
+                const result = await queryPage(fixture.runtime, input)
+                if (variant === 'reference') referenceBody = result; else candidateBody = result
+                paired.push({ variant,repeat,ms:(pairedPlan as { 'Execution Time': number }[])[0]['Execution Time'],plan:pairedPlan })
+              } finally { await fixture.runtime.query('ROLLBACK') }
+            }
+            expect(candidateBody).toEqual(referenceBody)
+          }
+        }
+        scenarios.push({ name: definition.name, ...summary(samples), samples, warmups, plan, paired })
         expect(samples.filter(sample => !sample.ok)).toEqual([]); expect(warmups.every(sample => sample.ok)).toBe(true)
       }
       phases.push({ phase, scenarios, fingerprint: unchanged, indexBytes: Number((await fixture.admin.query("SELECT coalesce(pg_relation_size(to_regclass('public.leandro_expense_owner_status_idx')),0) AS size")).rows[0].size) })
