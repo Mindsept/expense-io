@@ -26,92 +26,64 @@
 </head>
 <body>
 <main class="shell">
-  <header class="topline"><div class="brand">expense<span>.io</span> / ARLA</div><div class="edition">Mathis Galliano · ARLA-43 actualisé le 24 octobre 2026</div></header>
+  <header class="topline"><div class="brand">expense<span>.io</span> / ARLA</div><div class="edition">Mathis Galliano · Jira et dépôt vérifiés le 25 octobre 2026</div></header>
   <div class="deck" role="region" aria-roledescription="diaporama" aria-label="Restitution des tickets de Mathis">
     <section class="slide active" aria-roledescription="diapositive" aria-label="1 sur 8" data-title="ARLA-39 · Socle de tests">
-      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-39">ARLA-39 / MATH-01</a><span class="state">Intégré</span></div>
-      <h1 tabindex="-1" data-reveal>Un socle de tests commun</h1>
-      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Fiabiliser les vérifications avant de poursuivre les corrections.</p>
-      <div class="body brief" data-reveal="3">
-        <div class="done"><h3>Réalisé</h3><ul><li>Configuration des tests unitaires, API et navigateur ; collecte des tests de tous les auteurs.</li><li>Trois connexions réelles : employé, manager et RH. Refus des accès anonymes vérifié.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Intégré dans main</p><p class="status-detail">Travail initial repris dans la PR #14.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Relecture et appropriation du socle.</li><li>Isolation entre entreprises (RLS) encore à prouver avec Hamza.</li></ul></div></div>
-      </div>
-      <p class="takeaway"><strong>Suite :</strong> Faire relire le socle et compléter le futur contrat RLS.</p>
-      <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="evidence/MATH-01-validation.md">Preuves initiales ↗</a></footer>
+      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-39">ARLA-39 / MATH-01</a><span class="state">Terminé</span></div>
+      <h2 tabindex="-1" data-reveal>Un socle commun pour tester les trois rôles</h2>
+      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Collecter les tests de tous les auteurs et vérifier les connexions.</p>
+      <div class="body brief" data-reveal="3"><div class="done"><h3>Réalisé</h3><ul><li>Vitest, API et Chromium : conventions et collecte communes.</li><li>Trois connexions employé, manager et RH ; contrôles négatifs et garde-cibles.</li></ul></div><div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Intégré · Jira terminé</p><p class="status-detail">PR #13 fusionnée ; socle utilisé par les CI actuelles.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Aucun blocage de livraison du ticket.</li><li>Une connexion réussie ne prouve pas toute la matrice RLS.</li></ul></div></div></div>
+      <p class="takeaway">Chaque test conserve son propriétaire ; collecte et exécution restent distinctes.</p><footer class="source"><span>Mathis Galliano · état vérifié le 25 octobre 2026</span><a href="https://github.com/Mindsept/expense-io/pull/13">Preuves et suivi ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="2 sur 8" data-title="ARLA-40 · Stack isolée et CI">
-      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-40">ARLA-40 / MATH-02</a><span class="state">Intégré</span></div>
-      <h2 tabindex="-1" data-reveal>Des tests reproductibles et jetables</h2>
-      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Rejouer la chaîne sans toucher aux données de développement.</p>
-      <div class="body brief" data-reveal="3">
-        <div class="done"><h3>Réalisé</h3><ul><li>Stack DB/S3 protégée, build de production, tests, rapports expurgés et nettoyage.</li><li>Vrai contrôle rouge puis vert. Version intégrée par Hugo conservée ; PR parallèle #15 fermée.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Intégré dans main</p><p class="status-detail">Une commande commune : npm run test:ci.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Rôle applicatif limité et fixtures finales à fournir par Hamza.</li><li>Le rôle bootstrap actuel ne démontre pas la RLS.</li></ul></div></div>
-      </div>
-      <p class="takeaway"><strong>Suite :</strong> Valider humainement la chaîne et intégrer le contrat HA-04.</p>
-      <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="ci.md">Guide et preuves ↗</a></footer>
+      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-40">ARLA-40 / MATH-02</a><span class="state">Terminé</span></div>
+      <h2 tabindex="-1" data-reveal>Tester puis nettoyer une stack jetable</h2>
+      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Rendre les vérifications reproductibles en local et dans GitHub Actions.</p>
+      <div class="body brief" data-reveal="3"><div class="done"><h3>Réalisé</h3><ul><li>PostgreSQL/S3 isolés, production, rapports expurgés et nettoyage ciblé.</li><li>Lint, typage, collecte, unitaires, API et navigateur dans une chaîne commune.</li></ul></div><div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Intégré · Jira terminé</p><p class="status-detail">La dernière CI de main est verte ; chaîne réutilisée par les livrables.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Aucun blocage de livraison du ticket.</li><li>Baseline bootstrap distincte des preuves du rôle limité HA-04.</li></ul></div></div></div>
+      <p class="takeaway">Les anciens runs rouges restent historiques ; retenir la dernière exécution du SHA.</p><footer class="source"><span>Mathis Galliano · état vérifié le 25 octobre 2026</span><a href="https://github.com/Mindsept/expense-io/actions/runs/40217509555">Preuves et suivi ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="3 sur 8" data-title="ARLA-41 · Seed et reprise">
-      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-41">ARLA-41 / MATH-03</a><span class="state wait">Diagnostic seulement</span></div>
+      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-41">ARLA-41 / MATH-03</a><span class="state">En revue</span></div>
       <h2 tabindex="-1" data-reveal>Relancer la démo sans écraser l’existant</h2>
-      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Préserver les comptes et réparer les reçus de démonstration incomplets.</p>
-      <div class="body brief" data-reveal="3">
-        <div class="done"><h3>Réalisé</h3><ul><li>Diagnostic du seed et cadrage des réparations.</li><li>Approche : créer le manquant, préserver les réglages et tester la reprise DB/S3.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead pending">Non implémenté</p><p class="status-detail">Aucune modification du seed ni réparation effectuée.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hamza : stabiliser rôles, schéma et fixtures HA-04 / ARLA-13.</li><li>Mathis : valider l’approche avant de coder.</li></ul></div></div>
-      </div>
-      <p class="takeaway"><strong>Suite :</strong> Stabiliser le contrat, puis faire approuver la réparation.</p>
-      <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="https://mindsept.atlassian.net/browse/ARLA-41">Suivi Jira ↗</a></footer>
+      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Préserver les comptes et reprendre une préparation DB/S3 interrompue.</p>
+      <div class="body brief" data-reveal="3"><div class="done"><h3>Réalisé</h3><ul><li>Initialisation et réparation séparées ; comptes, notes et reçus identifiés.</li><li>Reprises DB/S3 et démo à trois rôles sous expense_web ; reset explicite.</li></ul></div><div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Livré · PR #27</p><p class="status-detail">CI verte : 695 unitaires, 253 API, 29 E2E ; seed et guide disponibles.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hamza : droits et script ; Hugo : parcours ; guide par un autre membre.</li><li>EL-04 corrigé par Elyes et fusionné : ancien blocage CI levé.</li></ul></div></div></div>
+      <p class="takeaway">Deux relances vérifiées : 3 comptes · 2 notes · 2 PNG, sans doublon ni réécriture.</p><footer class="source"><span>Mathis Galliano · état vérifié le 25 octobre 2026</span><a href="https://github.com/Mindsept/expense-io/actions/runs/40238564482">Preuves et suivi ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="4 sur 8" data-title="ARLA-42 · Recette finale">
-      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-42">ARLA-42 / MATH-04</a><span class="state wait">À exécuter</span></div>
-      <h2 tabindex="-1" data-reveal>Prouver la version réellement remise</h2>
-      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Relier les parcours, résultats et limites au même commit de livraison.</p>
-      <div class="body brief" data-reveal="3">
-        <div class="done"><h3>Réalisé</h3><ul><li>Structure de restitution et preuves à reprendre identifiées.</li><li>Tests navigateur d’Elyes disponibles dans main.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead pending">Recette non exécutée</p><p class="status-detail">Les campagnes de branches ne remplacent pas la recette finale.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hugo : choisir le commit final et les travaux à intégrer.</li><li>Hamza : fournir le contrat de sécurité et la matrice RLS.</li></ul></div></div>
-      </div>
-      <p class="takeaway"><strong>Suite :</strong> Rejouer les preuves des auteurs sur la version retenue.</p>
-      <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="https://mindsept.atlassian.net/browse/ARLA-42">Suivi Jira ↗</a></footer>
+      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-42">ARLA-42 / MATH-04</a><span class="state">En cours</span></div>
+      <h2 tabindex="-1" data-reveal>Préparer la preuve de la version remise</h2>
+      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Relier scénarios, résultats et limites au même commit de livraison.</p>
+      <div class="body brief" data-reveal="3"><div class="done"><h3>Réalisé</h3><ul><li>Dossier de recette, matrice des auteurs, checklist et gabarit de campagne livrés.</li><li>Inventaires Windows traités séparément dans la PR #30.</li></ul></div><div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Préparé · PR #32</p><p class="status-detail">CI verte du dossier ; campagne finale non exécutée.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hugo : choisir le SHA de remise et les PR retenues.</li><li>Sur ce SHA : rôle web/worker réel, matrice RLS et parcours commun.</li></ul></div></div></div>
+      <p class="takeaway">Une CI de branche ne remplace ni la recette finale ni une réception humaine.</p><footer class="source"><span>Mathis Galliano · état vérifié le 25 octobre 2026</span><a href="https://github.com/Mindsept/expense-io/pull/32">Preuves et suivi ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="5 sur 8" data-title="ARLA-43 · Référence sous rôle limité">
       <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-43">ARLA-43 / MATH-05</a><span class="state">En revue</span></div>
-      <h2 tabindex="-1" data-reveal>Une référence avec la sécurité active</h2>
-      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Mesurer le runtime actuel pour guider les optimisations de Leandro.</p>
-      <div class="body brief" data-reveal="3">
-        <div class="done"><h3>Réalisé</h3><ul><li>1 000 et 10 000 notes ; serveur et plans SQL sous le vrai rôle limité expense_web.</li><li>540 requêtes sans erreur, 18 plans SQL et 48 OCR conformes ; régénération identique.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Publié · PR #17 → main</p><p class="status-detail">Local et CI Linux verts : 665 unitaires, 223 API, 25 tests navigateur.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Leandro : réception et relecture avant clôture.</li><li>Listes legacy complètes, poste partagé ; OCR de diagnostic hors HTTP.</li></ul></div></div>
-      </div>
-      <p class="takeaway"><strong>À 10 000 notes :</strong> médianes employé 51 ms · manager 175 ms · RH 280 ms. Aucun gain d’optimisation revendiqué.</p>
-      <footer class="source"><span>Mesures du 23 octobre 2026 · code a48fb9c · anciennes mesures conservées</span><a href="performance/results/post-rls-20261023/reference.md">Résultats et preuves ↗</a></footer>
+      <h2 tabindex="-1" data-reveal>Conserver une référence mesurée et traçable</h2>
+      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Fournir à Leandro des mesures reproductibles et leurs limites.</p>
+      <div class="body brief" data-reveal="3"><div class="done"><h3>Réalisé</h3><ul><li>Référence 1 000/10 000 notes : rôle limité, HTTP, SQL et diagnostic OCR.</li><li>Nouvelle série paginée : 540 mesures sans erreur, 18 plans SQL, 48 OCR corrects.</li></ul></div><div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Publié · PR #17</p><p class="status-detail">Pagination actuelle qualifiée ; résultats et protocole v4 publiés.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Leandro : réception et lecture des résultats.</li><li>Poste partagé et première page de 100 ; aucune promesse de capacité.</li></ul></div></div></div>
+      <p class="takeaway">À 10 000 notes : médianes employé 10 ms · manager 197 ms · RH 129 ms.</p><footer class="source"><span>Mathis Galliano · état vérifié le 25 octobre 2026</span><a href="performance/results/paged-20261025/README.md">Preuves et suivi ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="6 sur 8" data-title="ARLA-44 · Diagnostic et restauration">
-      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-44">ARLA-44 / MATH-06</a><span class="state wait">Cadrage seulement</span></div>
+      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-44">ARLA-44 / MATH-06</a><span class="state">En revue</span></div>
       <h2 tabindex="-1" data-reveal>Restaurer la base et les reçus ensemble</h2>
-      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Prouver qu’une sauvegarde permet une restauration complète.</p>
-      <div class="body brief" data-reveal="3">
-        <div class="done"><h3>Réalisé</h3><ul><li>Périmètre cadré : diagnostic sans écriture, sauvegarde DB + objets + manifeste.</li><li>Restauration prévue dans une nouvelle cible protégée.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead pending">Non réalisé</p><p class="status-detail">Aucun outillage, export ou test de restauration livré.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hamza : valider connexion de maintenance et rôle HA-04.</li><li>Mathis : faire approuver l’approche ; coordonner le Compose principal.</li></ul></div></div>
-      </div>
-      <p class="takeaway"><strong>Suite :</strong> Valider le contrat et le plan avant toute implémentation.</p>
-      <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="https://mindsept.atlassian.net/browse/ARLA-44">Suivi Jira ↗</a></footer>
+      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Prouver la récupération complète d’une démonstration fictive.</p>
+      <div class="body brief" data-reveal="3"><div class="done"><h3>Réalisé</h3><ul><li>Diagnostic sans écriture, ports locaux, capture DB + objets + manifeste.</li><li>Restauration vérifiée dans une cible neuve ; propriétaires et droits conservés.</li></ul></div><div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Livré · PR #33</p><p class="status-detail">Sur main actuel : 701 unitaires, 242 API, 29 E2E ; restauration macOS réussie.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Hamza : droits, rôles, propriétaires et procédure froide.</li><li>Hugo ou un autre membre : parcours navigateur humain de la cible restaurée.</li></ul></div></div></div>
+      <p class="takeaway">3 comptes · 2 notes · 2 PNG ; trois sessions HTTP et deux vrais reçus vérifiés.</p><footer class="source"><span>Mathis Galliano · état vérifié le 25 octobre 2026</span><a href="exploitation-locale.md">Preuves et suivi ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="7 sur 8" data-title="ARLA-45 · Dépendances ciblées">
-      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-45">ARLA-45 / MATH-07</a><span class="state">En revue</span></div>
-      <h2 tabindex="-1" data-reveal>Appliquer les correctifs qualifiés</h2>
-      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Corriger les dépendances sans introduire de régression métier.</p>
-      <div class="body brief" data-reveal="3">
-        <div class="done"><h3>Réalisé</h3><ul><li>Next/config 16.3.8 ; sharp 0.35.5 ; source-map-js 1.2.2. Installation propre et runtime épinglé.</li><li>Audit de production : 3 paquets signalés → 0. Vérifications natives, MCP et CI Linux réussies.</li></ul></div>
-        <div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Livré · PR #16</p><p class="status-detail">Patchs testés ; requalification Hamza et acceptation Hugo attendues.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>braces : avis ouvert, exception non acceptée ; OS de livraison à vérifier.</li><li>macOS : test Hamza en échec EPERM ; le même test passe sur Linux.</li></ul></div></div>
-      </div>
-      <p class="takeaway"><strong>Suite :</strong> Faire valider la qualification finale et traiter les limites restantes.</p>
-      <footer class="source"><span>Mathis Galliano · situation au 22 octobre 2026</span><a href="evidence/MATH-07-validation.md">Audits et vérifications ↗</a></footer>
+      <div class="eyebrow"><a class="ticket" href="https://mindsept.atlassian.net/browse/ARLA-45">ARLA-45 / MATH-07</a><span class="state">Terminé</span></div>
+      <h2 tabindex="-1" data-reveal>Intégrer les dépendances qualifiées</h2>
+      <p class="subtitle" data-reveal="2"><strong>Enjeu</strong> Appliquer les correctifs retenus sans régression métier.</p>
+      <div class="body brief" data-reveal="3"><div class="done"><h3>Réalisé</h3><ul><li>Next / config 16.4.3 ; sharp 0.35.5 ; source-map-js 1.2.2.</li><li>Installation verrouillée, runtime épinglé et CI Linux de la PR #16.</li></ul></div><div class="tracking"><div><h3>Avancement</h3><p class="status-lead">Fusionné · Jira terminé</p><p class="status-detail">Versions présentes dans main ; pas de mise à jour supplémentaire improvisée.</p></div><div class="blocking"><h3>Blocages / validations</h3><ul><li>Aucun blocage de livraison du ticket.</li><li>Avis résiduels et limites de qualification conservés avec Hamza.</li></ul></div></div></div>
+      <p class="takeaway">Les preuves 16.3.8 restent historiques ; la version intégrée est 16.4.3.</p><footer class="source"><span>Mathis Galliano · état vérifié le 25 octobre 2026</span><a href="https://github.com/Mindsept/expense-io/pull/16">Preuves et suivi ↗</a></footer>
     </section>
     <section class="slide" hidden inert aria-roledescription="diapositive" aria-label="8 sur 8" data-title="Synthèse · Blocages et validations">
-      <div class="eyebrow"><span class="ticket">SYNTHÈSE</span><span class="state wait">Points encore ouverts</span></div>
-      <h2 tabindex="-1" data-reveal>Ce qui reste à débloquer</h2>
-      <p class="subtitle" data-reveal="2">ARLA-39, 40 et 45 terminés · ARLA-43 en revue · ARLA-41, 42 et 44 à poursuivre.</p>
-      <div class="body" data-reveal="3"><table class="blockers"><thead><tr><th>Attendu</th><th>Responsable</th><th>Impact</th></tr></thead><tbody><tr><td>Contrat HA-04 livré</td><td>Mathis</td><td>Seed et exploitation désormais démarrables ; ARLA-41 validé par Mathis.</td></tr><tr><td>Relectures et décisions</td><td>Leandro · Hamza · Hugo</td><td>Réception du benchmark par Leandro ; contrôles humains des prochains livrables.</td></tr><tr><td>Portabilité</td><td>Hamza</td><td>Ancien EPERM non reproduit dans la nouvelle campagne macOS ; OS de remise à confirmer.</td></tr><tr><td>Version de remise</td><td>Hugo + Mathis</td><td>Choisir le commit final, approuver les approches restantes et exécuter la recette.</td></tr></tbody></table></div>
-      <p class="takeaway"><strong>Dernière CI intégrée :</strong> 665 unitaires · 223 API · 25 tests navigateur réussis (ARLA-43). La recette finale reste à faire.</p>
-      <footer class="source"><a href="defauts-ouverts.md">Registre des défauts ↗</a><a href="https://github.com/Mindsept/expense-io/actions/runs/40030381666">Preuve CI Linux ↗</a></footer>
+      <div class="eyebrow"><span class="ticket">SYNTHÈSE</span><span class="state wait">Réception encore attendue</span></div>
+      <h2 tabindex="-1" data-reveal>Ce qui est livré et ce qui reste à valider</h2>
+      <p class="subtitle" data-reveal="2">39, 40 et 45 terminés · 41, 43 et 44 en revue · 42 en cours.</p>
+      <div class="body" data-reveal="3"><table class="blockers"><thead><tr><th>Point</th><th>Responsable</th><th>État vérifié</th></tr></thead><tbody><tr><td>Ancien échec EL-04</td><td>Elyes</td><td>Corrigé et fusionné dans main ; historique rouge conservé.</td></tr><tr><td>Livrables et relectures</td><td>Hamza · Hugo · Leandro</td><td>Seed, restauration et benchmark livrés ; réception humaine à recueillir.</td></tr><tr><td>Mesures paginées</td><td>Mathis · Leandro</td><td>Protocole paginé livré et mesuré ; réception de Leandro attendue.</td></tr><tr><td>Recette finale</td><td>Hugo + Mathis</td><td>Choisir le SHA et les PR retenues, puis rejouer la campagne commune.</td></tr></tbody></table></div>
+      <p class="takeaway"><strong>ARLA-44 sur main actuel :</strong> 701 unitaires · 242 API · 29 E2E réussis. Recette finale distincte.</p>
+      <footer class="source"><a href="https://github.com/Mindsept/expense-io/pull/33">Livraison et preuves ARLA-44 ↗</a><a href="https://github.com/Mindsept/expense-io/actions/runs/40217509555">Dernière CI de main ↗</a></footer>
     </section>
     <div class="progress" aria-hidden="true"></div>
   </div>

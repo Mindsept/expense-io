@@ -1,0 +1,55 @@
+{
+  "outcome": "passed",
+  "node": "v24.22.1",
+  "baseline": "Privileged bootstrap role; this run does not prove RLS isolation.",
+  "suites": [
+    {
+      "name": "verify",
+      "exitCode": 0,
+      "durationMs": 7340
+    },
+    {
+      "name": "collect",
+      "exitCode": 0,
+      "durationMs": 1023
+    },
+    {
+      "name": "services",
+      "exitCode": 0,
+      "durationMs": 6846
+    },
+    {
+      "name": "prepare",
+      "exitCode": 0,
+      "durationMs": 1104
+    },
+    {
+      "name": "build",
+      "exitCode": 0,
+      "durationMs": 2327
+    },
+    {
+      "name": "api",
+      "exitCode": 0,
+      "durationMs": 46427
+    },
+    {
+      "name": "e2e",
+      "exitCode": 0,
+      "durationMs": 21144
+    },
+    {
+      "name": "cleanup",
+      "exitCode": 0,
+      "durationMs": 2400
+    }
+  ],
+  "ticket": "ARLA-43",
+  "sourceSha": "ad51a01445765e47a6e914dbbe7ecddf9b108e79",
+  "counts": {
+    "unit": 708,
+    "api": 242,
+    "e2e": 29
+  },
+  "scope": "Local macOS common CI; distinct from limited-role benchmark and final delivery campaign"
+}

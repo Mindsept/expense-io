@@ -1,0 +1,305 @@
+{
+  "ticket": "ARLA-43",
+  "protocol": "math05-v4-paged-runtime-20261025",
+  "sourceSha": "ad51a01445765e47a6e914dbbe7ecddf9b108e79",
+  "timezone": "Europe/Paris",
+  "volumes": [
+    {
+      "volume": 1000,
+      "runtimeRole": "expense_web",
+      "superuser": false,
+      "bypassrls": false,
+      "dataDigest": "629a1dbc6f949792594fcff20b758d3b",
+      "measuredRequests": 270,
+      "measuredErrors": 0,
+      "expectedAnonymous401": true,
+      "plans": 9,
+      "ocrRecognitions": 24,
+      "ocrCorrect": 24,
+      "lists": [
+        {
+          "scenario": "employee",
+          "all": {
+            "attempts": 90,
+            "errors": 0,
+            "errorRate": 0,
+            "medianMs": 7.75,
+            "p95Ms": 12.004,
+            "minMs": 5.054,
+            "maxMs": 30.188
+          },
+          "passes": [
+            {
+              "pass": 1,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 9.857,
+              "p95Ms": 28.11,
+              "minMs": 6.386,
+              "maxMs": 30.188
+            },
+            {
+              "pass": 2,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 7.6385,
+              "p95Ms": 11.164,
+              "minMs": 5.538,
+              "maxMs": 11.239
+            },
+            {
+              "pass": 3,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 7.1195,
+              "p95Ms": 8.295,
+              "minMs": 5.054,
+              "maxMs": 9.304
+            }
+          ]
+        },
+        {
+          "scenario": "manager",
+          "all": {
+            "attempts": 90,
+            "errors": 0,
+            "errorRate": 0,
+            "medianMs": 21.963,
+            "p95Ms": 29.477,
+            "minMs": 19.303,
+            "maxMs": 32.464
+          },
+          "passes": [
+            {
+              "pass": 1,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 21.8975,
+              "p95Ms": 28.948,
+              "minMs": 19.52,
+              "maxMs": 32.464
+            },
+            {
+              "pass": 2,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 21.893,
+              "p95Ms": 24.82,
+              "minMs": 19.303,
+              "maxMs": 24.865
+            },
+            {
+              "pass": 3,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 22.7935,
+              "p95Ms": 30.485,
+              "minMs": 20.032,
+              "maxMs": 30.666
+            }
+          ]
+        },
+        {
+          "scenario": "hr",
+          "all": {
+            "attempts": 90,
+            "errors": 0,
+            "errorRate": 0,
+            "medianMs": 19.3945,
+            "p95Ms": 32.969,
+            "minMs": 16.624,
+            "maxMs": 39.957
+          },
+          "passes": [
+            {
+              "pass": 1,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 18.5985,
+              "p95Ms": 23.188,
+              "minMs": 16.624,
+              "maxMs": 24.015
+            },
+            {
+              "pass": 2,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 19.110500000000002,
+              "p95Ms": 27.61,
+              "minMs": 17.897,
+              "maxMs": 32.969
+            },
+            {
+              "pass": 3,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 22.5455,
+              "p95Ms": 38.263,
+              "minMs": 18.743,
+              "maxMs": 39.957
+            }
+          ]
+        }
+      ],
+      "rawDirectory": "docs/performance/results/runs/2026-10-25T22-09-58-576Z-YV6YRM/1000"
+    },
+    {
+      "volume": 10000,
+      "runtimeRole": "expense_web",
+      "superuser": false,
+      "bypassrls": false,
+      "dataDigest": "67f54b7940a5cdf97e6d8d6060e45cac",
+      "measuredRequests": 270,
+      "measuredErrors": 0,
+      "expectedAnonymous401": true,
+      "plans": 9,
+      "ocrRecognitions": 24,
+      "ocrCorrect": 24,
+      "lists": [
+        {
+          "scenario": "employee",
+          "all": {
+            "attempts": 90,
+            "errors": 0,
+            "errorRate": 0,
+            "medianMs": 9.9805,
+            "p95Ms": 15.684,
+            "minMs": 7.289,
+            "maxMs": 34.748
+          },
+          "passes": [
+            {
+              "pass": 1,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 11.758,
+              "p95Ms": 34.302,
+              "minMs": 7.289,
+              "maxMs": 34.748
+            },
+            {
+              "pass": 2,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 9.8885,
+              "p95Ms": 11.168,
+              "minMs": 7.78,
+              "maxMs": 11.932
+            },
+            {
+              "pass": 3,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 9.052,
+              "p95Ms": 11.063,
+              "minMs": 7.295,
+              "maxMs": 11.166
+            }
+          ]
+        },
+        {
+          "scenario": "manager",
+          "all": {
+            "attempts": 90,
+            "errors": 0,
+            "errorRate": 0,
+            "medianMs": 196.861,
+            "p95Ms": 383.343,
+            "minMs": 147.583,
+            "maxMs": 458.126
+          },
+          "passes": [
+            {
+              "pass": 1,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 165.98000000000002,
+              "p95Ms": 334.081,
+              "minMs": 147.583,
+              "maxMs": 334.675
+            },
+            {
+              "pass": 2,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 274.92600000000004,
+              "p95Ms": 440.794,
+              "minMs": 217.592,
+              "maxMs": 458.126
+            },
+            {
+              "pass": 3,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 162.9425,
+              "p95Ms": 252.685,
+              "minMs": 147.722,
+              "maxMs": 332.884
+            }
+          ]
+        },
+        {
+          "scenario": "hr",
+          "all": {
+            "attempts": 90,
+            "errors": 0,
+            "errorRate": 0,
+            "medianMs": 128.608,
+            "p95Ms": 175.896,
+            "minMs": 114.023,
+            "maxMs": 199.55
+          },
+          "passes": [
+            {
+              "pass": 1,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 124.353,
+              "p95Ms": 193.089,
+              "minMs": 114.023,
+              "maxMs": 199.55
+            },
+            {
+              "pass": 2,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 134.586,
+              "p95Ms": 167.951,
+              "minMs": 118.84,
+              "maxMs": 168.165
+            },
+            {
+              "pass": 3,
+              "attempts": 30,
+              "errors": 0,
+              "errorRate": 0,
+              "medianMs": 131.257,
+              "p95Ms": 194.271,
+              "minMs": 116.209,
+              "maxMs": 198.944
+            }
+          ]
+        }
+      ],
+      "rawDirectory": "docs/performance/results/runs/2026-10-25T22-11-03-929Z-Yz7yg8/10000"
+    }
+  ],
+  "comparability": "Separate bounded-page reference; no improvement ratio against the historical full-list series."
+}
