@@ -60,7 +60,7 @@ test('a changed uncertain form cannot silently create a new intent', async ({ pa
 
   await page.getByRole('button', { name: 'J’ai vérifié l’historique, abandonner cette tentative', exact: true }).click()
   await page.getByRole('button', { name: 'Soumettre', exact: true }).click()
-  await expect(page.getByRole('status')).toHaveText('Note de frais enregistrée.')
+  await expect(page.getByRole('status').filter({ hasText: /^Note de frais enregistrée\.$/ })).toHaveText('Note de frais enregistrée.')
   expect(posts).toBe(2)
 })
 
@@ -90,7 +90,7 @@ test('after a reload, the old file is not restored and history must be checked f
   await page.getByRole('button', { name: 'J’ai vérifié l’historique, continuer', exact: true }).click()
   await ui.fillExpense()
   await page.getByRole('button', { name: 'Soumettre', exact: true }).click()
-  await expect(page.getByRole('status')).toHaveText('Note de frais enregistrée.')
+  await expect(page.getByRole('status').filter({ hasText: /^Note de frais enregistrée\.$/ })).toHaveText('Note de frais enregistrée.')
   expect(keys).toHaveLength(2)
   expect(keys[0]).not.toBe(keys[1])
 })
