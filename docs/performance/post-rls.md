@@ -1,6 +1,10 @@
 # ARLA-43 — référence sur le runtime limité
 
-Actualisation validée le 23 octobre 2026. Responsable : Mathis ; relecture attendue : Leandro. Les [mesures du 22 octobre](reference.md) et leurs fichiers bruts restent historiques et inchangés. Les résultats de cette campagne sont écrits dans `results/post-rls-20261023/{1000,10000}/`, sans écrasement des anciens dossiers.
+Actualisation validée le 23 octobre 2026. Responsable : Mathis ; relecture attendue : Leandro. Les [mesures du 22 octobre](reference.md) et les [mesures du 23 octobre](results/post-rls-20261023/reference.md) restent historiques et inchangées. Les fichiers publiés de cette dernière campagne sont dans `results/post-rls-20261023/{1000,10000}/`.
+
+Le runner corrigé le 25 octobre écrit chaque relance dans un nouveau dossier `results/runs/<horodatage-UTC>-<suffixe-unique>/<volume>/`, dont il affiche le chemin. Deux relances, même simultanées, ne partagent aucun fichier de sortie ; un échec ne remplace pas une référence publiée. Chaque réponse HTTP est libérée après lecture et mesure, puis chaque contexte est fermé à la fin de son scénario, avant les diagnostics OCR. Aucune nouvelle mesure n'est revendiquée pour ce changement. La réduction de mémoire conservée par le client est un changement du runner à déclarer dans toute comparaison avec les anciennes campagnes ; elle ne prouve aucun gain applicatif.
+
+Validation de cette correction sur Windows, Node 24.22.1 / npm 11.19.1 : installation verrouillée, `npm run test:unit -- tests/unit/mathis/MATH-05` (**23 tests**, dont libération d'une vraie réponse Playwright sur un serveur loopback temporaire), lint ciblé et `npm run typecheck` réussis. Les tests couvrent aussi les erreurs de réponse, le timeout, la fermeture de contexte après échec et deux campagnes simultanées préservant la référence. Aucune campagne Docker, mesure HTTP applicative ou reconnaissance OCR n'a été relancée pour cette correction ; le support natif Windows du benchmark complet n'est pas revendiqué.
 
 ## Protocole
 
@@ -31,6 +35,6 @@ Les secrets générés restent dans `.ci-output/benchmark`, ignoré par Git, et 
 
 ## Lecture des résultats
 
-Le SHA, l'état du dossier, les empreintes du code et du lockfile, Node/npm, PostgreSQL, OS et charge sont enregistrés par volume. Le poste est partagé et les caches ne sont pas vidés. Les résultats déjà générés peuvent apparaître dans l'état Git du second volume : ils ne changent pas le code, dont les empreintes doivent rester identiques.
+Le SHA, l'état du dossier, les empreintes du code et du lockfile, Node/npm, PostgreSQL, OS, fuseau observé et charge sont enregistrés par volume. Les autres activités du poste sont indiquées comme inconnues par défaut. L'opérateur peut les préciser avec `ARLA_BENCH_OTHER_SERVICES` ; cette description est alors marquée `operator-supplied`, sans être présentée comme un inventaire automatique. Le poste n'est pas présumé exclusif et les caches ne sont pas vidés. Les résultats déjà générés peuvent apparaître dans l'état Git du second volume : ils ne changent pas le code, dont les empreintes doivent rester identiques.
 
 Cette série constitue une **nouvelle référence** avec RLS, autorisations et code actuels. Une différence avec le 22 octobre ne peut pas être attribuée à un index ou à la seule RLS : plusieurs contrats ont changé. Les métriques ne prouvent ni la capacité de production ni l'exhaustivité de la sécurité. La matrice de refus appartient à HA-04 ; la recette finale appartient à ARLA-42. Aucun résultat ni réception humaine annoncé avant exécution/relecture.

@@ -15,6 +15,8 @@ import { preflight } from '../tests/support/preflight.mjs'
 import { prepare as prepareMain } from '../tests/support/prepare.mjs'
 import { summarize } from './mathis/MATH-05/metrics.mjs'
 import { benchmarkWebEnvironment } from './mathis/MATH-05/runtime.mjs'
+import { measureListRequest, withRequestContext } from './mathis/MATH-05/http.mjs'
+import { createCampaignOutput, benchmarkHostMetadata } from './mathis/MATH-05/campaign.mjs'
 import { provisionRuntime } from './rls/provision-runtime.mjs'
 import { assertRuntimeDatabase } from '../src/lib/runtime-database.ts'
 import { expenseValidatorSql } from '../src/lib/expense-access.ts'
@@ -23,7 +25,7 @@ const root=process.cwd(), action=process.argv[2], volume=Number(process.argv[3])
 const runtime=path.join(root,'.ci-output/benchmark'), privateDir=path.join(runtime,'private'), marker=path.join(privateDir,'benchmark.json'), state=path.join(runtime,'active.json')
 const protocol='math05-v3-limited-runtime-20261023', passes=3, concurrency=4, requestsPerPass=30
 let config, pool, runtimePool, server, serverOutput='', expired=false, failed=false
-const contexts=[], observations=[], sqlPlans=[], ocr=[]
+const observations=[], sqlPlans=[], ocr=[]
 const json=(file,data)=>writeFileSync(file,JSON.stringify(data,null,2)+'\n',{mode:0o600})
 function command(args) {
   if(!process.env.npm_execpath)throw Error('Use the documented npm scripts.')
@@ -131,42 +133,41 @@ function stop(){try{if(server&&server.exitCode===null)process.kill(-server.pid,'
 for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>{expired=true;stop()})
 async function measured(client,scenario,pass,index,phase='measured') {
   if(expired)throw Error('Benchmark duration limit reached.')
-  const t=performance.now();let status=null,bytes=0,ok=false,error=null
-  try {
-    const r=await client.get(scenario.route,{timeout:10000});status=r.status();const body=await r.body();bytes=body.length
-    if(status===200){const rows=JSON.parse(body.toString());ok=Array.isArray(rows)&&rows.length===scenario.expected;if(!ok)error='unexpected-row-count'}else error='http-error'
-  }catch(e){error=e.name==='TimeoutError'?'timeout':'request-error'}
-  observations.push({scenario:scenario.name,pass,index,phase,status,bytes,ms:Number((performance.now()-t).toFixed(3)),ok,error})
+  observations.push({scenario:scenario.name,pass,index,phase,...await measureListRequest(client,scenario)})
 }
 async function run() {
   readConfig(); const preparationDb=await identity(), db=await limitedRuntime(), fixture=JSON.parse(readFileSync(marker,'utf8'))
   if(fixture.protocol!==protocol||fixture.runId!==config.id||![1000,10000].includes(fixture.volume))throw Error('Benchmark fixture marker does not match owned target.')
   const actual=Number((await pool.query('SELECT count(*) AS count FROM expense_notes WHERE description LIKE $1',[protocol+':%'])).rows[0].count)
   if(actual!==fixture.volume)throw Error('Dataset volume differs from the prepared fixture.')
-  const volume=fixture.volume, out=path.join(root,'docs/performance/results/post-rls-20261023',String(volume));mkdirSync(out,{recursive:true});let outcome='failed'
-  for(const file of ['summary.json','http.json','sql-plans.json','ocr.json','outcome.json'])rmSync(path.join(out,file),{force:true})
+  const volume=fixture.volume, out=await createCampaignOutput(path.join(root,'docs/performance/results/runs'),volume);let outcome='failed'
+  console.log(`Benchmark results: ${path.relative(root,out)}`)
   const git=args=>{const r=spawnSync('git',args,{encoding:'utf8',timeout:5000});if(r.status!==0)throw Error('Source metadata unavailable');return r.stdout.trim()}
-  const hashes=Object.fromEntries(['scripts/bench.mjs','scripts/mathis/MATH-05/metrics.mjs','scripts/mathis/MATH-05/runtime.mjs','src/lib/runtime-database.ts','src/lib/expense-access.ts','src/lib/pagination.ts','src/lib/ocr.ts','src/lib/ocr-parser.ts','package-lock.json',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(x=>`src/app/api/${x}/route.ts`)].map(f=>[f,createHash('sha256').update(readFileSync(f)).digest('hex')]))
-  json(path.join(out,'conditions.json'),{protocol,at:new Date().toISOString(),timezone:'Europe/Paris',sha:git(['rev-parse','HEAD']),workingTree:git(['status','--porcelain'])||'clean',hashes,node:process.version,npm:process.env.npm_config_user_agent,os:{platform:os.platform(),release:os.release(),arch:os.arch(),cpu:os.cpus()[0]?.model,logicalCpus:os.cpus().length,totalMemory:os.totalmem(),freeMemory:os.freemem(),loadAverage:os.loadavg()},db,preparationDb,webEnvironment:{maintenanceCredentials:false,bootstrapException:false},fixture:{protocol:fixture.protocol,volume:fixture.volume,distribution:fixture.distribution,digest:fixture.digest,extraSeedCompanies:1,extraSeedUsers:3,extraSeedNotes:2,benchmarkCompanies:1,benchmarkUsers:3},passes,concurrency,requestsPerPass,pagination:'legacy full lists intentionally retained; opt-in page/pageSize available on measured main but not mixed into this workload',warmup:'3 GETs per route excluded and preserved separately; OS/DB caches not flushed',receiptBytesPerListRow:0,otherServices:'Colima Docker plus local slide preview; hosted GitHub CI external. No claim of exclusive host.',limits:'actual expense_web runtime with HA-04 startup check; SQL plans under the same restricted role; this benchmark is not the exhaustive security matrix or a production capacity test; OCR below is a standalone diagnostic, not the bounded HTTP OCR pool'})
+  const hashes=Object.fromEntries(['scripts/bench.mjs','scripts/mathis/MATH-05/metrics.mjs','scripts/mathis/MATH-05/runtime.mjs','scripts/mathis/MATH-05/http.mjs','scripts/mathis/MATH-05/campaign.mjs','src/lib/runtime-database.ts','src/lib/expense-access.ts','src/lib/pagination.ts','src/lib/ocr.ts','src/lib/ocr-parser.ts','package-lock.json',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(x=>`src/app/api/${x}/route.ts`)].map(f=>[f,createHash('sha256').update(readFileSync(f)).digest('hex')]))
+  json(path.join(out,'conditions.json'),{protocol,at:new Date().toISOString(),...benchmarkHostMetadata(),sha:git(['rev-parse','HEAD']),workingTree:git(['status','--porcelain'])||'clean',hashes,node:process.version,npm:process.env.npm_config_user_agent,os:{platform:os.platform(),release:os.release(),arch:os.arch(),cpu:os.cpus()[0]?.model,logicalCpus:os.cpus().length,totalMemory:os.totalmem(),freeMemory:os.freemem(),loadAverage:os.loadavg()},db,preparationDb,webEnvironment:{maintenanceCredentials:false,bootstrapException:false},fixture:{protocol:fixture.protocol,volume:fixture.volume,distribution:fixture.distribution,digest:fixture.digest,extraSeedCompanies:1,extraSeedUsers:3,extraSeedNotes:2,benchmarkCompanies:1,benchmarkUsers:3},passes,concurrency,requestsPerPass,pagination:'legacy full lists intentionally retained; opt-in page/pageSize available on measured main but not mixed into this workload',warmup:'3 GETs per route excluded and preserved separately; OS/DB caches not flushed',receiptBytesPerListRow:0,limits:'actual expense_web runtime with HA-04 startup check; SQL plans under the same restricted role; this benchmark is not the exhaustive security matrix or a production capacity test; OCR below is a standalone diagnostic, not the bounded HTTP OCR pool'})
   const timer=setTimeout(()=>{expired=true;stop();const hard=setTimeout(()=>{console.error('Benchmark exceeded its global duration limit.');process.exit(1)},10000);hard.unref()},480000)
   try {
     await start()
-    const anonymous=await request.newContext({baseURL:config.baseURL});contexts.push(anonymous);await measured(anonymous,{name:'negative-control-anonymous',route:'/api/expense-notes',expected:0},0,0,'diagnostic');if(observations.at(-1).status!==401)throw Error('Anonymous control did not yield 401.')
+    await withRequestContext(()=>request.newContext({baseURL:config.baseURL}),async anonymous=>{
+      await measured(anonymous,{name:'negative-control-anonymous',route:'/api/expense-notes',expected:0},0,0,'diagnostic')
+      if(observations.at(-1).status!==401)throw Error('Anonymous control did not yield 401.')
+    })
     const definitions=[{name:'employee',key:'EMPLOYEE',route:'/api/expense-notes',expected:volume/2,sql:'SELECT * FROM expense_notes WHERE user_id = $1 ORDER BY created_at DESC, id DESC'},
       {name:'manager',key:'MANAGER',route:'/api/manager/expense-notes',expected:volume*.4,sql:`SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id = en.user_id WHERE ${expenseValidatorSql('manager',1,2)} AND en.status = 'pending' ORDER BY created_at ASC, id ASC`},
       {name:'hr',key:'HR',route:'/api/hr/expense-notes',expected:volume*.3,sql:`SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id = en.user_id WHERE ${expenseValidatorSql('hr_admin',1,2)} AND en.status = 'pending' ORDER BY created_at ASC, id ASC`}]
     for(const scenario of definitions){
-      const client=await request.newContext({baseURL:config.baseURL,timeout:10000});contexts.push(client);scenario.client=client
-      const csrf=await(await client.get('/api/auth/csrf')).json()
-      const login=await client.post('/api/auth/callback/credentials',{form:{csrfToken:csrf.csrfToken,email:`${scenario.key.toLowerCase()}@${fixture.domain}`,password:config.fixturePassword,callbackUrl:config.baseURL+'/expenses'},maxRedirects:0})
-      const session=await(await client.get('/api/auth/session')).json()
-      if(login.status()!==302||session.user?.id!==fixture.users[scenario.key])throw Error('Synthetic benchmark authentication failed.')
-      for(let i=0;i<3;i++)await measured(client,scenario,0,i,'warmup')
-      for(let pass=1;pass<=passes;pass++){
-        let next=0;await Promise.all(Array.from({length:concurrency},async()=>{while(next<requestsPerPass){const index=next++;await measured(client,scenario,pass,index)}}))
-        const values=scenario.key==='EMPLOYEE'?[fixture.users[scenario.key]]:[fixture.users[scenario.key],fixture.company]
-        await runtimePool.query('BEGIN');try{await runtimePool.query("SELECT set_config('app.current_user_id',$1,true)",[fixture.users[scenario.key]]);const plan=(await runtimePool.query('EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) '+scenario.sql,values)).rows[0]['QUERY PLAN'];sqlPlans.push({scenario:scenario.name,pass,role:db.role,sql:scenario.sql,plan})}finally{await runtimePool.query('ROLLBACK')}
-      }
+      await withRequestContext(()=>request.newContext({baseURL:config.baseURL,timeout:10000}),async client=>{
+        const csrf=await(await client.get('/api/auth/csrf')).json()
+        const login=await client.post('/api/auth/callback/credentials',{form:{csrfToken:csrf.csrfToken,email:`${scenario.key.toLowerCase()}@${fixture.domain}`,password:config.fixturePassword,callbackUrl:config.baseURL+'/expenses'},maxRedirects:0})
+        const session=await(await client.get('/api/auth/session')).json()
+        if(login.status()!==302||session.user?.id!==fixture.users[scenario.key])throw Error('Synthetic benchmark authentication failed.')
+        for(let i=0;i<3;i++)await measured(client,scenario,0,i,'warmup')
+        for(let pass=1;pass<=passes;pass++){
+          let next=0;await Promise.all(Array.from({length:concurrency},async()=>{while(next<requestsPerPass){const index=next++;await measured(client,scenario,pass,index)}}))
+          const values=scenario.key==='EMPLOYEE'?[fixture.users[scenario.key]]:[fixture.users[scenario.key],fixture.company]
+          await runtimePool.query('BEGIN');try{await runtimePool.query("SELECT set_config('app.current_user_id',$1,true)",[fixture.users[scenario.key]]);const plan=(await runtimePool.query('EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) '+scenario.sql,values)).rows[0]['QUERY PLAN'];sqlPlans.push({scenario:scenario.name,pass,role:db.role,sql:scenario.sql,plan})}finally{await runtimePool.query('ROLLBACK')}
+        }
+      })
     }
     // Load the existing parser unchanged, using Node's native TypeScript stripping.
     const hooks=registerHooks({resolve(specifier,context,next){return next(specifier==='@/utils/validators'?pathToFileURL(path.join(root,'src/utils/validators.ts')).href:specifier,context)}})
@@ -188,6 +189,6 @@ async function run() {
     console.log(`Measured ${volume} notes: ${observations.length} HTTP attempts (including 9 explicit warmups), ${sqlPlans.length} SELECT plans, ${ocr.filter(r=>r.kind==='real-ocr').length} real OCR recognitions.`)
     if(observations.some(r=>r.phase!=='diagnostic'&&!r.ok)||ocr.some(r=>r.kind==='real-ocr'&&(!r.correct||!r.pureTextParserCorrect)))throw Error('Measured errors retained; inspect the raw results.')
     outcome='passed'
-  }finally{clearTimeout(timer);json(path.join(out,'outcome.json'),{outcome,expired,httpAttempts:observations.length,sqlPlans:sqlPlans.length,realOcrRecognitions:ocr.filter(r=>r.kind==='real-ocr').length});stop();await delay(500);try{if(server&&server.exitCode===null)process.kill(-server.pid,'SIGKILL')}catch{}for(const c of contexts)await c.dispose();json(path.join(out,'http.json'),observations);json(path.join(out,'sql-plans.json'),sqlPlans);json(path.join(out,'ocr.json'),ocr);writeFileSync(path.join(out,'server.log'),redactTestOutput(serverOutput,config))}
+  }finally{clearTimeout(timer);json(path.join(out,'outcome.json'),{outcome,expired,httpAttempts:observations.length,sqlPlans:sqlPlans.length,realOcrRecognitions:ocr.filter(r=>r.kind==='real-ocr').length});stop();await delay(500);try{if(server&&server.exitCode===null)process.kill(-server.pid,'SIGKILL')}catch{}json(path.join(out,'http.json'),observations);json(path.join(out,'sql-plans.json'),sqlPlans);json(path.join(out,'ocr.json'),ocr);writeFileSync(path.join(out,'server.log'),redactTestOutput(serverOutput,config))}
 }
 try{if(action==='prepare')await prepare();else if(action==='run')await run();else if(action==='down'){config=JSON.parse(readFileSync(state,'utf8'));down()}else throw Error('Choose bench:prepare -- 1000|10000, bench:run or bench:down.')}catch(error){failed=true;console.error(redactTestOutput(error.message));process.exitCode=1}finally{await runtimePool?.end();await pool?.end();if(config&&existsSync(state)&&(action==='run'||(action==='prepare'&&failed))){try{down()}catch{console.error('Owned cleanup failed; use bench:down with the retained private configuration.');process.exitCode=1}}}
