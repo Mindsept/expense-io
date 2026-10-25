@@ -66,7 +66,7 @@ test('real form preserves fields after a spoofed receipt rejection and accepts a
   const details = page.getByLabel('Description', { exact: true })
   const receipt = page.getByLabel('Reçu (image ou PDF)', { exact: true })
   const submit = page.getByRole('button', { name: 'Soumettre', exact: true })
-  const alert = page.getByRole('main').getByRole('alert')
+  const alert = page.locator('main > p[role="alert"]')
   await amount.fill('12.34')
   await date.fill('2024-02-29')
   await details.fill(description)

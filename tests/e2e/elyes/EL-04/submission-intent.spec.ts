@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test'
 import { readTestTarget } from '../../../support/test-target'
-import { employeeNote, ExpenseUi } from '../expense-ui'
+import { employeeNote, ExpenseUi, pagedNotes } from '../expense-ui'
 
 test.use({ baseURL: readTestTarget() })
 
 test('a retry after a lost response reuses the same key, fields and receipt', async ({ page }) => {
   const posts: Array<{ key: string | undefined; body: string }> = []
   let historyReads = 0
-  await page.route('**/api/expense-notes', async route => {
+  await page.route('**/api/expense-notes*', async route => {
     const request = route.request()
     if (request.method() === 'POST') {
       posts.push({ key: request.headers()['idempotency-key'], body: request.postData() ?? '' })
@@ -15,7 +15,7 @@ test('a retry after a lost response reuses the same key, fields and receipt', as
       return route.fulfill({ status: 201, json: employeeNote, headers: { 'Idempotency-Replayed': 'true' } })
     }
     historyReads += 1
-    return route.fulfill({ json: historyReads === 1 ? [] : [employeeNote] })
+    return route.fulfill({ json: pagedNotes(historyReads === 1 ? [] : [employeeNote]) })
   })
 
   const ui = new ExpenseUi(page)
@@ -39,13 +39,13 @@ test('a retry after a lost response reuses the same key, fields and receipt', as
 
 test('a changed uncertain form cannot silently create a new intent', async ({ page }) => {
   let posts = 0
-  await page.route('**/api/expense-notes', async route => {
+  await page.route('**/api/expense-notes*', async route => {
     if (route.request().method() === 'POST') {
       posts += 1
       if (posts === 1) return route.abort('failed')
       return route.fulfill({ status: 201, json: employeeNote })
     }
-    return route.fulfill({ json: [] })
+    return route.fulfill({ json: pagedNotes([]) })
   })
 
   const ui = new ExpenseUi(page)
@@ -67,14 +67,14 @@ test('a changed uncertain form cannot silently create a new intent', async ({ pa
 test('after a reload, the old file is not restored and history must be checked first', async ({ page }) => {
   const keys: string[] = []
   let posts = 0
-  await page.route('**/api/expense-notes', async route => {
+  await page.route('**/api/expense-notes*', async route => {
     if (route.request().method() === 'POST') {
       posts += 1
       keys.push(route.request().headers()['idempotency-key'])
       if (posts === 1) return route.abort('failed')
       return route.fulfill({ status: 201, json: employeeNote })
     }
-    return route.fulfill({ json: [] })
+    return route.fulfill({ json: pagedNotes([]) })
   })
 
   const ui = new ExpenseUi(page)

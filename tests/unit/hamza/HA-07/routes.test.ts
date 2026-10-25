@@ -139,13 +139,13 @@ describe('real route and withUserScope asynchronous boundaries', () => {
   })
 
   it('preserves the successful list representation', async () => {
-    queryWithActor(async (sql: string) => ({ rows: sql.startsWith('SELECT en.*') ? [{
+    queryWithActor(async (sql: string) => ({ rows: sql.includes('WITH filtered') ? [{ items: [{
       id: resourceId, user_id: 'owner', amount: '42.50', expense_date: '2026-10-21',
       description: 'Taxi', receipt_key: 'opaque-key', status: 'pending', created_at: '2026-10-21T10:00:00Z', author_name: 'Taylor',
-    }] : [] }))
+    }], total_count: '1', total_cents: '4250' }] : [] }))
     const response = await managerList(request())
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual([{
+    expect((await response.json()).items).toEqual([{
       id: resourceId, userId: 'owner', amount: 42.5, expenseDate: '2026-10-21', description: 'Taxi',
       receiptKey: 'opaque-key', status: 'pending', createdAt: '2026-10-21T10:00:00.000Z', author: { id: 'owner', displayName: 'Taylor' },
     }])

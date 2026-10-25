@@ -17,6 +17,22 @@ export const companyUsers = [
   { id: '00000000-0000-4000-8000-000000000203', name: 'Manager Test', email: 'manager@example.test', role: 'manager', managerId: null },
 ]
 
+export function pagedNotes<T extends { amount?: number }>(items: T[]) {
+  return {
+    items,
+    pagination: { page: 1, pageSize: 20, totalItems: items.length },
+    totals: { amount: items.reduce((sum, item) => sum + (item.amount ?? 0), 0), count: items.length, scope: 'filtered' as const },
+  }
+}
+
+export function pagedDirectory<T>(items: T[]) {
+  return {
+    items,
+    pagination: { page: 1, pageSize: 20, totalItems: items.length },
+    totals: { count: items.length, scope: 'filtered' as const },
+  }
+}
+
 export function deferred() {
   let release!: () => void
   const promise = new Promise<void>(resolve => { release = resolve })

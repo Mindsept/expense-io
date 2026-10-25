@@ -21,7 +21,7 @@ const ajv = new Ajv({ allErrors: true, jsonPointers: true, nullable: true, forma
 ajv.addFormat('binary', /^[\s\S]*$/)
 ajv.addFormat('password', /^[\s\S]*$/)
 
-export const contract = JSON.parse(readFileSync(resolve('docs/openapi/expense-io.v4.json'), 'utf8')) as {
+export const contract = JSON.parse(readFileSync(resolve('docs/openapi/expense-io.v5.json'), 'utf8')) as {
   openapi: string
   info: { version: string }
   paths: Record<string, Record<string, unknown>>

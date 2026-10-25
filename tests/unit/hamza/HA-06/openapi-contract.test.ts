@@ -39,11 +39,12 @@ describe('HA-06 delivered OpenAPI lifecycle contract', () => {
 
   it('documents shared approval-list author metadata while refusing private author fields', () => {
     const note = contract.components.schemas.ExpenseNote.example as Record<string, unknown>
-    const body = [{ ...note, author: { id: note.userId, displayName: 'Synthetic author' } }]
+    const items = [{ ...note, author: { id: note.userId, displayName: 'Synthetic author' } }]
     const headers = { 'content-type': 'application/json', 'x-request-id': '33333333-3333-4333-8333-333333333333' }
+    const body = { items, pagination: { page: 1, pageSize: 20, totalItems: 1 }, totals: { amount: note.amount, count: 1, scope: 'filtered' } }
     assertResponse('/api/manager/expense-notes', 'get', 200, headers, body)
     expect(() => assertResponse('/api/manager/expense-notes', 'get', 200, headers,
-      [{ ...body[0], author: { ...body[0].author, email: 'private@example.test' } }])).toThrow()
+      { ...body, items: [{ ...items[0], author: { ...items[0].author, email: 'private@example.test' } }] })).toThrow()
   })
 
   it('documents both actual static 409 problems without accepting private error details', async () => {
