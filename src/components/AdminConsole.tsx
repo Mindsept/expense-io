@@ -35,7 +35,7 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
 export function AdminConsole() {
   const [users, setUsers] = useState<CompanyUser[]>([])
   const [usersPage, setUsersPage] = useState<PageInfo>({ page: 1, pageSize: 20, totalItems: 0 })
-  const [usersTotals, setUsersTotals] = useState<PageTotals>({ count: 0, scope: 'filtered' })
+  const [usersTotals, setUsersTotals] = useState<PageTotals | null>(null)
   const [managerSearch, setManagerSearch] = useState('')
   const [managerPage, setManagerPage] = useState<PageInfo>({ page: 1, pageSize: 20, totalItems: 0 })
   const [managerCandidates, setManagerCandidates] = useState<CompanyUser[]>([])
@@ -49,7 +49,7 @@ export function AdminConsole() {
 
   const [notes, setNotes] = useState<ExpenseNote[]>([])
   const [notesPage, setNotesPage] = useState<PageInfo>({ page: 1, pageSize: 20, totalItems: 0 })
-  const [notesTotals, setNotesTotals] = useState<PageTotals>({ count: 0, amount: 0, scope: 'filtered' })
+  const [notesTotals, setNotesTotals] = useState<PageTotals | null>(null)
   const [notesLoading, setNotesLoading] = useState(true)
   const [notesError, setNotesError] = useState<string | null>(null)
   const [notesNotice, setNotesNotice] = useState<string | null>(null)
@@ -166,13 +166,15 @@ export function AdminConsole() {
   }, [users])
 
   async function retryUsers() {
+    const source = document.activeElement
     await loadUsers()
-    usersHeadingRef.current?.focus()
+    if (document.activeElement === source || document.activeElement === document.body) usersHeadingRef.current?.focus()
   }
 
   async function retryNotes() {
+    const source = document.activeElement
     await loadNotes()
-    notesHeadingRef.current?.focus()
+    if (document.activeElement === source || document.activeElement === document.body) notesHeadingRef.current?.focus()
   }
 
   async function handleManagerChange(userId: string, managerId: string) {
@@ -222,6 +224,7 @@ export function AdminConsole() {
   }
 
   async function handleDecide(id: string, decision: 'approve' | 'reject') {
+    const source = document.activeElement
     setDecidingId(id)
     setNotesError(null)
     setNotesNotice(null)
@@ -230,7 +233,7 @@ export function AdminConsole() {
       if (response.ok) {
         setNotesNotice(decision === 'approve' ? 'Note de frais approuvée.' : 'Note de frais rejetée.')
         await loadNotes()
-        notesHeadingRef.current?.focus()
+        if (document.activeElement === source || document.activeElement === document.body) notesHeadingRef.current?.focus()
       } else if (isConflict(response)) {
         setNotesError('Cette note a été modifiée depuis son affichage. Actualise la liste avant de décider.')
       } else {
@@ -262,15 +265,15 @@ export function AdminConsole() {
           {managerSearchError && <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">{managerSearchError}</p>}
         </div>
         <h2 ref={usersHeadingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
-          Organigramme ({usersPage.totalItems})
+          Organigramme{usersTotals ? ` (${usersPage.totalItems})` : ''}
         </h2>
-        <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">{usersTotals.count} personnes dans l’annuaire.</p>
+        {usersTotals && <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">{usersTotals.count} personnes dans l’annuaire.</p>}
         {usersError && (
           <div className="mx-6 mt-4">
             <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
               {usersError}
             </p>
-            <button type="button" onClick={retryUsers} disabled={usersLoading || savingId !== null} className="mt-2 text-sm font-medium text-brand-600 hover:underline disabled:opacity-60">
+            <button type="button" onClick={retryUsers} disabled={usersLoading || savingId !== null} className="mt-2 text-sm font-medium text-brand-600 hover:underline dark:text-brand-200 disabled:opacity-60">
               {usersLoading ? 'Actualisation…' : 'Réessayer l’annuaire'}
             </button>
           </div>
@@ -291,7 +294,7 @@ export function AdminConsole() {
           </p>
           )
         ) : (
-          <div className="overflow-x-auto" tabIndex={0} aria-label="Annuaire de l’entreprise, tableau défilant">
+          <div role="region" className="relative overflow-x-auto" tabIndex={0} aria-label="Annuaire de l’entreprise, tableau défilant">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -310,7 +313,7 @@ export function AdminConsole() {
                     <td className="px-6 py-3 capitalize">{user.role}</td>
                     <td className="px-6 py-3">
                       <label className="sr-only" htmlFor={`manager-${user.id}`}>
-                        Manager de {user.name}
+                        Manager de {user.name} ({user.email})
                       </label>
                       <select
                         id={`manager-${user.id}`}
@@ -356,17 +359,17 @@ export function AdminConsole() {
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <h2 ref={notesHeadingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
-          Notes des managers racine en attente ({notesPage.totalItems})
+          Notes des managers racine en attente{notesTotals ? ` (${notesPage.totalItems})` : ''}
         </h2>
-        <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">
+        {notesTotals && <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">
           Total des notes en attente : {notesTotals.count} · {currencyFormatter.format(notesTotals.amount ?? 0)}
-        </p>
+        </p>}
         {notesError && (
           <div className="mx-6 mt-4">
             <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
               {notesError}
             </p>
-            <button type="button" onClick={retryNotes} disabled={notesLoading || decidingId !== null} className="mt-2 text-sm font-medium text-brand-600 hover:underline disabled:opacity-60">
+            <button type="button" onClick={retryNotes} disabled={notesLoading || decidingId !== null} className="mt-2 text-sm font-medium text-brand-600 hover:underline dark:text-brand-200 disabled:opacity-60">
               {notesLoading ? 'Actualisation…' : 'Réessayer les notes'}
             </button>
           </div>
@@ -385,7 +388,7 @@ export function AdminConsole() {
             Aucune note en attente.
           </p>
         ) : (
-          <div className="overflow-x-auto" tabIndex={0} aria-label="Notes des managers en attente, tableau défilant">
+          <div role="region" className="relative overflow-x-auto" tabIndex={0} aria-label="Notes des managers en attente, tableau défilant">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -393,7 +396,7 @@ export function AdminConsole() {
                   <th className="px-6 py-3 font-medium">Date</th>
                   <th className="px-6 py-3 font-medium">Description</th>
                   <th className="px-6 py-3 text-right font-medium">Montant</th>
-                  <th className="px-6 py-3" />
+                  <th className="px-6 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -412,27 +415,27 @@ export function AdminConsole() {
                       <td className="px-6 py-3 text-right whitespace-nowrap">
                         <button
                           type="button"
-                          aria-label={`Voir le reçu de ${authorName}, ${note.description}`}
+                          aria-label={`Voir le reçu de ${authorName}, ${note.description}, ${formatCivilDate(note.expenseDate)}`}
                           onClick={() => handleViewReceipt(note.id)}
-                          className="mr-3 text-sm font-medium text-brand-600 hover:underline"
+                          className="mr-3 text-sm font-medium text-brand-600 hover:underline dark:text-brand-200"
                         >
                           Voir le reçu
                         </button>
                         <button
                           type="button"
                           disabled={decidingId !== null}
-                          aria-label={`Approuver la note de ${authorName}, ${note.description}`}
+                          aria-label={`Approuver la note de ${authorName}, ${note.description}, ${formatCivilDate(note.expenseDate)}`}
                           onClick={() => handleDecide(note.id, 'approve')}
-                          className="mr-3 text-sm font-medium text-green-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                          className="mr-3 text-sm font-medium text-green-700 hover:underline dark:text-green-400 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Approuver
                         </button>
                         <button
                           type="button"
                           disabled={decidingId !== null}
-                          aria-label={`Rejeter la note de ${authorName}, ${note.description}`}
+                          aria-label={`Rejeter la note de ${authorName}, ${note.description}, ${formatCivilDate(note.expenseDate)}`}
                           onClick={() => handleDecide(note.id, 'reject')}
-                          className="text-sm font-medium text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                          className="text-sm font-medium text-red-600 hover:underline dark:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Rejeter
                         </button>
