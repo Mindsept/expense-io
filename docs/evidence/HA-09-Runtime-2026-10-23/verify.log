@@ -1,0 +1,16 @@
+npm notice run expense-io-version-b@0.1.0 verify
+npm notice run npm run lint && npm run typecheck && npm run test:unit
+npm notice run expense-io-version-b@0.1.0 lint
+npm notice run eslint
+npm notice run expense-io-version-b@0.1.0 typecheck
+npm notice run tsc --noEmit
+npm notice run expense-io-version-b@0.1.0 test:unit
+npm notice run vitest run
+
+ RUN  v5.0.5 /Users/hamza/.codex/worktrees/arla-18-notification-readiness/expense-io
+
+
+ Test Files  41 passed (41)
+      Tests  627 passed (627)
+   Start at  17:26:10
+   Duration  3.68s (tests 86%, import 9%, transform 4%, worker 1%)
