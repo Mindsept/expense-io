@@ -46,6 +46,10 @@ describe('shared expense representation', () => {
     expect(dto.author).toEqual({ id: 'owner', displayName: 'Demo' })
     expect(toExpenseNote({ ...row, decided_at: null })).not.toHaveProperty('decidedAt')
   })
+  it('normalizes PostgreSQL JSON timestamps with microsecond precision', () => {
+    const dto = toExpenseNote({ ...row, created_at: '2026-10-21T14:00:00.123456+02:00' })
+    expect(dto.createdAt).toBe('2026-10-21T12:00:00.123Z')
+  })
   it.each(['2023-02-29', '2026-04-31', '0000-01-01', '2026-13-01', '2026-01-00', '2026-1-1', new Date('2026-01-01')])('rejects invalid civil date %s', (expense_date) => {
     expect(() => toExpenseNote({ ...row, expense_date })).toThrow('civil date')
   })

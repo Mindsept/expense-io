@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { formatCivilDate } from '@/utils/civil-date'
 import { getClientErrorMessage, isConflict } from '@/utils/client-errors'
+import { parsePagedList, type PageInfo, type PageTotals } from '@/utils/paged-list'
+import { PaginationControls } from '@/components/PaginationControls'
 
 interface ExpenseNote {
   id: string
@@ -21,30 +23,43 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
 
 export function PendingApprovalsPanel() {
   const [notes, setNotes] = useState<ExpenseNote[]>([])
+  const [notesPage, setNotesPage] = useState<PageInfo>({ page: 1, pageSize: 20, totalItems: 0 })
+  const [notesTotals, setNotesTotals] = useState<PageTotals>({ count: 0, amount: 0, scope: 'filtered' })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [decidingId, setDecidingId] = useState<string | null>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const requestGeneration = useRef(0)
 
   const loadPending = useCallback(async () => {
+    const generation = ++requestGeneration.current
     setLoading(true)
     try {
-      const response = await fetch('/api/manager/expense-notes')
+      const response = await fetch(`/api/manager/expense-notes?page=${notesPage.page}&pageSize=${notesPage.pageSize}`)
       if (!response.ok) {
         setError(await getClientErrorMessage(response, 'Impossible de charger les notes en attente.'))
         return
       }
       const result: unknown = await response.json()
-      if (!Array.isArray(result)) throw new Error('Invalid pending list')
-      setNotes(result as ExpenseNote[])
+      const pageResult = parsePagedList<ExpenseNote>(result, true)
+      if (generation !== requestGeneration.current) return
+      if (pageResult.items.length === 0 && pageResult.pagination.page > 1 &&
+          pageResult.pagination.totalItems <= (pageResult.pagination.page - 1) * pageResult.pagination.pageSize) {
+        setNotesPage((current) => ({ ...current, page: current.page - 1 }))
+        return
+      }
+      setNotes(pageResult.items)
+      setNotesPage(pageResult.pagination)
+      setNotesTotals(pageResult.totals)
       setError(null)
     } catch {
+      if (generation !== requestGeneration.current) return
       setError('Impossible de charger les notes en attente. Vérifie ta connexion puis réessaie.')
     } finally {
-      setLoading(false)
+      if (generation === requestGeneration.current) setLoading(false)
     }
-  }, [])
+  }, [notesPage.page, notesPage.pageSize])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -118,8 +133,11 @@ export function PendingApprovalsPanel() {
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <h2 ref={headingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
-          En attente ({notes.length})
+          En attente ({notesPage.totalItems})
         </h2>
+        <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">
+          Total des notes en attente : {notesTotals.count} · {currencyFormatter.format(notesTotals.amount ?? 0)}
+        </p>
         {loading && notes.length === 0 ? (
           <p role="status" className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
@@ -190,6 +208,11 @@ export function PendingApprovalsPanel() {
               </tbody>
             </table>
           </div>
+        )}
+        {notesPage.totalItems > 0 && (
+          <PaginationControls page={notesPage.page} pageSize={notesPage.pageSize} totalItems={notesPage.totalItems}
+            disabled={loading || decidingId !== null} label="Pagination des notes en attente"
+            onPageChange={(page) => setNotesPage((current) => ({ ...current, page }))} />
         )}
       </section>
     </main>
