@@ -101,7 +101,7 @@ for (const sort of sorts) {
   test(`HTTP preserves safe ordering ${sort} and the personal filter`, async () => {
     const response = await client.get('/api/expense-notes', { params: { sort } })
     expect(response.status()).toBe(200)
-    const notes = await response.json()
+    const notes = (await response.json()).items
     const orderedIds = sort.endsWith('ASC') ? seededIds : [...seededIds].reverse()
     expect(notes.map((note: { id: string }) => note.id)).toEqual(orderedIds)
     expect(notes.every((note: { userId: string }) => note.userId === userId)).toBe(true)
@@ -183,7 +183,7 @@ test('HA-02: role/company change refreshes the old signed session while permitte
     await pool.query("UPDATE users SET role='employee', company_id=$1 WHERE id=$2", [otherCompanyId, actorIds.changed])
     const initialRead = await oldReader.get('/api/expense-notes', { params: { userId: otherUserId, companyId } })
     expect(initialRead.status()).toBe(200)
-    expect(await initialRead.json()).toEqual([])
+    expect((await initialRead.json()).items).toEqual([])
     const refreshed = await (await context.get('/api/auth/session')).json()
     expect(refreshed.user).toMatchObject({ id: actorIds.changed, role: 'employee' })
     await problem(await oldReader.get('/api/hr/users', { headers: { 'X-Request-Id': requestId } }), 403)
@@ -198,6 +198,6 @@ test('HA-02: role/company change refreshes the old signed session while permitte
     expect(row.rows).toEqual([{ user_id: actorIds.changed, company_id: otherCompanyId, role: 'employee' }])
     const own = await context.get('/api/expense-notes', { params: { userId: otherUserId, companyId } })
     expect(own.status()).toBe(200)
-    expect(await own.json()).toEqual([note])
+    expect((await own.json()).items).toEqual([note])
   } finally { await oldReader.dispose(); await oldWriter.dispose() }
 })

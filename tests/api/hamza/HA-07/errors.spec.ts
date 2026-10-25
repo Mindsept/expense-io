@@ -119,7 +119,7 @@ test('a real PostgreSQL rejection after await becomes a sanitized 500', async ()
 test('the authorized list retains its success representation', async () => {
   const response = await manager.get('/api/manager/expense-notes')
   expect(response.status()).toBe(200)
-  const notes = await response.json()
+  const notes = (await response.json()).items
   expect(notes).toContainEqual({
     id: pendingId, userId: employeeId, amount: 42.5, expenseDate: '2026-10-21', description: 'HA-07 fixture',
     receiptKey: 'test/receipt.png', status: 'pending', createdAt: expect.any(String),

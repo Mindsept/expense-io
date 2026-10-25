@@ -111,7 +111,7 @@ test('personal, manager, HR and directory lists validate real field types and st
   ]) {
     const response = await clients[name].get(path)
     await checked(response, path, 'get', 200)
-    const rows = await response.json() as Array<{ id: string }>
+    const rows = (await response.json()).items as Array<{ id: string }>
     expect(rows.map(row => row.id)).toContain(expectedId)
     expect(rows.map(row => row.id)).not.toContain(path.endsWith('/users') ? ids.foreign : notes.foreign)
   }
@@ -125,7 +125,7 @@ test('real multipart submission validates numeric success; a mutated real respon
   expect(() => assertResponse('/api/expense-notes', 'post', 201, response.headers(), { ...body, amount: '12.50' })).toThrow('OpenAPI schema mismatch:')
   const list = await clients.employee.get('/api/expense-notes?sort=created_at%20DESC')
   await checked(list, '/api/expense-notes', 'get', 200)
-  expect((await list.json() as Array<{ id: string }>).some(note => note.id === body.id)).toBe(true)
+  expect(((await list.json()).items as Array<{ id: string }>).some(note => note.id === body.id)).toBe(true)
 })
 
 test('invalid multipart, explicit unsupported OCR and malformed-ID technical failure match documented statuses', async () => {

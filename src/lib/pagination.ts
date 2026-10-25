@@ -14,10 +14,9 @@ function positiveInteger(value: string | null, fallback: number): number {
   if (!/^[1-9]\d*$/.test(value) || !Number.isSafeInteger(Number(value))) throw new ApiError('validation')
   return Number(value)
 }
-/** Explicit opt-in only; unpaginated legacy calls must never be silently truncated. */
-export function readPagination(parameters: URLSearchParams): PageRequest | undefined {
+/** Every list is bounded, including requests without pagination parameters. */
+export function readPagination(parameters: URLSearchParams): PageRequest {
   const rawPage = singleParameter(parameters, 'page'), rawSize = singleParameter(parameters, 'pageSize')
-  if (rawPage === null && rawSize === null) return undefined
   const page = positiveInteger(rawPage, 1), pageSize = positiveInteger(rawSize, 20)
   const offset = (page - 1) * pageSize
   if (pageSize > 100 || !Number.isSafeInteger(offset)) throw new ApiError('validation')
@@ -89,6 +88,6 @@ export async function queryPage(client: Pick<PoolClient, 'query'>, input: {
   }
 }
 
-export function listResponse(body: unknown, paged: boolean): Response {
-  return Response.json(body, { headers: { 'Cache-Control': 'no-store', 'X-Pagination-Mode': paged ? 'paged' : 'legacy' } })
+export function listResponse(body: unknown): Response {
+  return Response.json(body, { headers: { 'Cache-Control': 'no-store', 'X-Pagination-Mode': 'paged' } })
 }
