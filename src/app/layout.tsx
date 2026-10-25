@@ -38,6 +38,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             </Link>
             {session?.user && (
               <form action={logout} className="flex items-center gap-3">
+                <NavItem href="/notifications" label="Notifications" />
                 {session.user.role === 'manager' && (
                   <NavItem href="/manager" label="Manager" />
                 )}

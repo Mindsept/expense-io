@@ -3,7 +3,7 @@ import type { Pool } from 'pg'
 import { assertRuntimeDatabase } from '@/lib/runtime-database'
 
 const web = {current_role:'expense_web',login_role:'expense_web',rolsuper:false,rolbypassrls:false,rolcreatedb:false,rolcreaterole:false,rolreplication:false,rolinherit:false,memberships:0}
-const rights = {database_create:false,schema_create:false,owned:0,protected:8,bad_functions:0,unsafe_grants:false}
+const rights = {database_create:false,schema_create:false,owned:0,protected:13,bad_functions:0,unsafe_grants:false}
 function fixture(identity = web, privileges = rights) {
   const release = vi.fn(), query = vi.fn().mockResolvedValueOnce({rows:[identity]}).mockResolvedValueOnce({rows:[privileges]})
   const connect = vi.fn().mockResolvedValue({query,release})

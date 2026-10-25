@@ -22,7 +22,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (row.status !== 'pending') validation = { kind: 'none', reasonCode: 'already_decided', message: 'Cette note a déjà été traitée.' }
     else if (row.role !== 'hr_admin' && row.has_manager) validation = { kind: 'manager', reasonCode: 'direct_manager', message: 'En attente de validation par votre manager direct.' }
     else if (row.hr_count > 0) validation = { kind: 'hr', reasonCode: row.role === 'hr_admin' ? 'peer_hr' : 'hr_recourse', message: row.role === 'hr_admin' ? 'En attente de validation par un autre RH.' : 'En attente de prise en charge par les RH.' }
-    else validation = { kind: 'none', reasonCode: row.role === 'hr_admin' ? 'no_other_active_hr' : 'routing_policy_pending', message: row.role === 'hr_admin' ? 'Aucun autre RH actif ne peut valider cette note. Elle reste en attente.' : 'Aucun valideur actif disponible. La règle de routage reste à confirmer.' }
+    else validation = { kind: 'none', reasonCode: row.role === 'hr_admin' ? 'no_other_active_hr' : 'routing_policy_pending', message: row.role === 'hr_admin' ? 'Aucun autre RH actif ne peut valider cette note. Elle reste en attente.' : 'Aucun RH actif éligible ne peut valider cette note. Elle reste en attente.' }
     return Response.json({ status: row.status, validation })
   }))
 }
