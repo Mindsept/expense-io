@@ -15,7 +15,7 @@ import { hrPendingExpenseSource } from '../../../../src/lib/pending-expense-sour
 // This new campaign explicitly measures pages, not the historical legacy lists.
 readTestTarget()
 const password = readTestIdentity('EMPLOYEE').password
-const migrationFile = 'proposals/LE-09/1793000000000_leandro_expense_list_index.sql'
+const migrationFile = 'migrations/1793000000000_leandro_expense_list_index.sql'
 const migration = readFileSync(migrationFile, 'utf8')
 const up = migration.split('-- Down Migration')[0].replace('-- Up Migration', '')
 const down = migration.split('-- Down Migration')[1]
@@ -55,7 +55,7 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
     source: execFileSync('git', ['rev-parse','HEAD'], { encoding: 'utf8' }).trim(),
     hashes: Object.fromEntries([migrationFile,'src/lib/pagination.ts','src/lib/expense-access.ts','src/lib/pending-expense-source.ts','package-lock.json','tests/api/leandro/LE-09/indexes.spec.ts',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(p => `src/app/api/${p}/route.ts`)].map(file => [file,createHash('sha256').update(readFileSync(file)).digest('hex')])),
     node: process.version, platform: os.platform(), release: os.release(), arch: os.arch(), cpu: os.cpus()[0]?.model,
-    memoryBytes: os.totalmem(), load: os.loadavg(), caches: 'warm/uncontrolled; 3 warmups per route and phase; shared machine, no production SLO',
+    memoryBytes: os.totalmem(), load: os.loadavg(), caches: `warm/uncontrolled; ${measuring ? 3 : 0} warmups per route and phase; shared machine, no production SLO`,
     volume, mode: measuring ? 'repeated measurement' : 'functional regression (no latency conclusion)', concurrency, passes, requestsPerPass, page: 1, pageSize: 20 }
   mkdirSync(output, { recursive: true })
   try {
