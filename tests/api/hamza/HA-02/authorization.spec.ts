@@ -70,16 +70,16 @@ for (const suffix of ['A', 'B']) {
   test(`company ${suffix}: manager lists only current direct reports in its own company`, async () => {
     const response = await contexts[`manager${suffix}`].get('/api/manager/expense-notes')
     expect(response.status()).toBe(200)
-    const notes = await response.json()
+    const notes = (await response.json()).items
     expect(notes.map((note: { id: string }) => note.id)).toContain(noteIds[`employee${suffix}`])
     for (const name of ['unrelatedA', 'corruptB', `employee${suffix === 'A' ? 'B' : 'A'}`]) expect(notes.map((note: { id: string }) => note.id)).not.toContain(noteIds[name])
   })
   test(`company ${suffix}: HR preserves root-manager scope and current tenant directory`, async () => {
     const context = contexts[`hr${suffix}`]
-    const notes = await (await context.get('/api/hr/expense-notes')).json()
+    const notes = (await (await context.get('/api/hr/expense-notes')).json()).items
     expect(notes.map((note: { id: string }) => note.id)).toContain(noteIds[`manager${suffix}`])
     expect(notes.map((note: { id: string }) => note.id)).not.toContain(noteIds[`manager${suffix === 'A' ? 'B' : 'A'}`])
-    const users = await (await context.get('/api/hr/users')).json()
+    const users = (await (await context.get('/api/hr/users')).json()).items
     expect(users.map((user: { id: string }) => user.id)).toContain(ids[`employee${suffix}`])
     expect(users.map((user: { id: string }) => user.id)).not.toContain(ids[`manager${suffix === 'A' ? 'B' : 'A'}`])
   })
@@ -204,7 +204,7 @@ test('an authorized manager decision preserves the expense representation', asyn
 })
 
 test('PO-01: only a peer HR can decide an HR expense, never its own author', async () => {
-  const list = await (await contexts.hrA.get('/api/hr/expense-notes')).json()
+  const list = (await (await contexts.hrA.get('/api/hr/expense-notes')).json()).items
   expect(list.map((note: { id: string }) => note.id)).toContain(noteIds.hrPeerA)
   expect(list.map((note: { id: string }) => note.id)).not.toContain(noteIds.hrA)
   await problem(await contexts.hrA.post(`/api/hr/expense-notes/${noteIds.hrA}/approve`), 404)
@@ -215,7 +215,7 @@ test('PO-01: only a peer HR can decide an HR expense, never its own author', asy
 test('PO-01: an inactive direct manager gives HR recourse without hiding the authors notes', async () => {
   try {
     await pool.query('UPDATE users SET is_active=false WHERE id=$1', [ids.managerA])
-    const notes = await (await contexts.hrA.get('/api/hr/expense-notes')).json()
+    const notes = (await (await contexts.hrA.get('/api/hr/expense-notes')).json()).items
     expect(notes.map((note: { id: string }) => note.id)).toContain(noteIds.fallbackA)
     expect((await contexts.hrA.post(`/api/hr/expense-notes/${noteIds.fallbackA}/reject`)).status()).toBe(200)
   } finally { await pool.query('UPDATE users SET is_active=true WHERE id=$1', [ids.managerA]) }
@@ -232,7 +232,7 @@ test('PO-01: disabled accounts lose retained sessions and cannot log in again; t
   })
   expect(login.status()).toBe(302)
   expect(login.headers().location).toContain('error=CredentialsSignin')
-  const notes = await (await contexts.hrA.get('/api/hr/expense-notes')).json()
+  const notes = (await (await contexts.hrA.get('/api/hr/expense-notes')).json()).items
   expect(notes.map((note: { id: string }) => note.id)).toContain(noteIds.disabledA)
 })
 
