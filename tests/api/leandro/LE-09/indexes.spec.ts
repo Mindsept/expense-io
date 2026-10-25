@@ -8,7 +8,7 @@ import { runtimeFixture } from '../../../contracts/hamza/HA-04/runtime-fixture'
 import { readTestTarget, readTestIdentity } from '../../../support/test-target'
 import { assertRuntimeDatabase } from '../../../../src/lib/runtime-database'
 import { queryPage } from '../../../../src/lib/pagination'
-import { expenseValidatorSql } from '../../../../src/lib/expense-access'
+import { pendingExpenseSource } from '../../../../src/lib/pending-expense-source'
 
 // MATH-05 geometry/protocol, received from published commit24ab0c1.
 // This new campaign explicitly measures pages, not the historical legacy lists.
@@ -46,7 +46,7 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
   let indexed = true, outcome = 'failed'
   const conditions = { protocol, adaptation: 'LE-09 pages20; actual queryPage SQL; private runtimeFixture database; no OCR or S3 receipts in this list experiment',
     source: execFileSync('git', ['rev-parse','HEAD'], { encoding: 'utf8' }).trim(),
-    hashes: Object.fromEntries([migrationFile,'src/lib/pagination.ts','src/lib/expense-access.ts','package-lock.json','tests/api/leandro/LE-09/indexes.spec.ts',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(p => `src/app/api/${p}/route.ts`)].map(file => [file,createHash('sha256').update(readFileSync(file)).digest('hex')])),
+    hashes: Object.fromEntries([migrationFile,'src/lib/pagination.ts','src/lib/expense-access.ts','src/lib/pending-expense-source.ts','package-lock.json','tests/api/leandro/LE-09/indexes.spec.ts',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(p => `src/app/api/${p}/route.ts`)].map(file => [file,createHash('sha256').update(readFileSync(file)).digest('hex')])),
     node: process.version, platform: os.platform(), release: os.release(), arch: os.arch(), cpu: os.cpus()[0]?.model,
     memoryBytes: os.totalmem(), load: os.loadavg(), caches: 'warm/uncontrolled; 3 warmups per route and phase; shared machine, no production SLO',
     volume, concurrency: 4, passes: 3, requestsPerPass: 30, page: 1, pageSize: 20 }
@@ -70,8 +70,8 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
     const unchanged = await fingerprint(), bodies = new Map<string,string>()
     const definitions = [
       { name: 'employee', url: '/api/expense-notes', expected: volume/2, sourceSql: 'SELECT * FROM expense_notes WHERE user_id = $1', values: [users.employee], direction: 'DESC' as const },
-      { name: 'manager', url: '/api/manager/expense-notes', expected: volume*.4, sourceSql: `SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id = en.user_id WHERE ${expenseValidatorSql('manager',1,2)} AND en.status = 'pending'`, values: [users.manager,fixture.company], direction: 'ASC' as const },
-      { name: 'hr', url: '/api/hr/expense-notes', expected: volume*.3, sourceSql: `SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id = en.user_id WHERE ${expenseValidatorSql('hr_admin',1,2)} AND en.status = 'pending'`, values: [users.hr,fixture.company], direction: 'ASC' as const },
+      { name: 'manager', url: '/api/manager/expense-notes', expected: volume*.4, sourceSql: pendingExpenseSource('manager'), values: [users.manager,fixture.company], direction: 'ASC' as const },
+      { name: 'hr', url: '/api/hr/expense-notes', expected: volume*.3, sourceSql: pendingExpenseSource('hr_admin'), values: [users.hr,fixture.company], direction: 'ASC' as const },
     ]
     const anonymous = await playwright.request.newContext({ baseURL: fixture.baseURL }); contexts.push(anonymous)
     const denied = await anonymous.get('/api/expense-notes'); expect(denied.status()).toBe(401); await denied.dispose()
