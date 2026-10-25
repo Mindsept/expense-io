@@ -49,7 +49,8 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
   test.setTimeout(240_000)
   const users = { employee: randomUUID(), manager: randomUUID(), hr: randomUUID() }
   const contexts: APIRequestContext[] = [], phases: Record<string, unknown>[] = []
-  let indexed = false, outcome = 'failed'
+  const initialIndex = (await fixture.admin.query("SELECT to_regclass('public.leandro_expense_owner_status_idx') IS NOT NULL AS present")).rows[0].present as boolean
+  let indexed = initialIndex, outcome = 'failed'
   const conditions = { protocol, adaptation: 'LE-09 pages20; actual queryPage SQL; private runtimeFixture database; no OCR or S3 receipts in this list experiment',
     source: execFileSync('git', ['rev-parse','HEAD'], { encoding: 'utf8' }).trim(),
     hashes: Object.fromEntries([migrationFile,'src/lib/pagination.ts','src/lib/expense-access.ts','src/lib/pending-expense-source.ts','package-lock.json','tests/api/leandro/LE-09/indexes.spec.ts',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(p => `src/app/api/${p}/route.ts`)].map(file => [file,createHash('sha256').update(readFileSync(file)).digest('hex')])),
@@ -159,16 +160,63 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
     await fixture.admin.query(up); indexed = true
     expect(await fingerprint()).toEqual(unchanged)
     await assertRuntimeDatabase(fixture.runtime, { DATABASE_URL: fixture.runtimeURL })
-    await fixture.admin.query(down); indexed = false
+    if (!initialIndex) { await fixture.admin.query(down); indexed = false }
     outcome = 'passed'
   } finally {
     try {
     await Promise.all(contexts.map(context => context.dispose()))
-    if (indexed) await fixture.admin.query(down)
+    if (indexed !== initialIndex) await fixture.admin.query(initialIndex ? up : down)
     await fixture.admin.query('DELETE FROM expense_notes WHERE user_id=ANY($1::uuid[])', [Object.values(users)])
     await fixture.admin.query('UPDATE users SET manager_id=NULL WHERE id=ANY($1::uuid[])', [Object.values(users)])
     await fixture.admin.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [Object.values(users)])
     } catch (error) { outcome = 'cleanup-failed'; throw error }
     finally { writeFileSync(`${output}/${volume}.json`, JSON.stringify({ outcome,conditions,phases },null,2)+'\n') }
+  }
+})
+
+test('fanout: 100 eligible authors preserve results; compare reference and lateral query with and without the candidate index', async () => {
+  test.setTimeout(120_000)
+  const hashValue = await bcrypt.hash(password,4)
+  const authors = (await fixture.admin.query(`INSERT INTO users(id,company_id,name,email,password_hash,role)
+    SELECT gen_random_uuid(),$1,'LE09 fanout',gen_random_uuid()||'@example.test',$2,'manager' FROM generate_series(1,100) RETURNING id`, [fixture.company,hashValue])).rows.map(row=>row.id)
+  const initial = (await fixture.admin.query("SELECT to_regclass('public.leandro_expense_owner_status_idx') IS NOT NULL AS present")).rows[0].present
+  let indexed = initial, outcome = 'failed'
+  const observations: { variant: string; repeat: number; ms: number; plan: unknown }[] = []
+  const reference = `SELECT en.*,u.name AS author_name FROM expense_notes en JOIN users u ON u.id=en.user_id WHERE ${expenseValidatorSql('hr_admin',1,2)} AND en.status='pending'`
+  try {
+    await fixture.admin.query(`INSERT INTO expense_notes(user_id,amount,expense_date,description,receipt_key,status,created_at)
+      SELECT ($1::uuid[])[1+(i%100)],12.50,DATE '2026-01-01','LE09 fanout','benchmark/no-receipt',
+      CASE WHEN i%10<7 THEN 'pending' WHEN i%10<9 THEN 'approved' ELSE 'rejected' END,
+      TIMESTAMPTZ '2026-01-01 12:00:00+00'+i*INTERVAL '1 minute' FROM generate_series(1,10000) i`, [authors])
+    const unchanged = await fingerprint()
+    let expected: unknown
+    for (let repeat=0;repeat<3;repeat++) {
+      for (const variant of repeat%2 ? ['indexed','lateral','reference'] : ['reference','lateral','indexed']) {
+        const wanted = variant === 'indexed'
+        if (wanted !== indexed) { await fixture.admin.query(wanted ? up : down); indexed = wanted }
+        await fixture.admin.query('ANALYZE expense_notes'); await fixture.admin.query('ANALYZE users')
+        await fixture.runtime.query('BEGIN')
+        try {
+          await fixture.runtime.query("SELECT set_config('app.current_user_id',$1,true)",[fixture.hr])
+          const input = { sourceSql: variant === 'reference' ? reference : hrPendingExpenseSource(), values: [fixture.hr,fixture.company], page: { page: 1, pageSize: 20, offset: 0 }, order: { column: 'created_at' as const, direction: 'ASC' as const }, monetary: true }
+          let plan: unknown
+          await queryPage({query:(async (sql: string,values: unknown[])=>{
+            plan=(await fixture.runtime.query('EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) '+sql,values)).rows[0]['QUERY PLAN']
+            return {rows:[{items:[],total_count:'0',total_cents:'0'}]}
+          }) as never},input)
+          const body = await queryPage(fixture.runtime,input)
+          expect(body.pagination.totalItems).toBe(7000); expect(body.rows).toHaveLength(20)
+          if (expected === undefined) expected = body; else expect(body).toEqual(expected)
+          observations.push({variant,repeat,ms:(plan as {'Execution Time':number}[])[0]['Execution Time'],plan})
+        } finally { await fixture.runtime.query('ROLLBACK') }
+        expect(await fingerprint()).toEqual(unchanged)
+      }
+    }
+    outcome = 'passed'
+  } finally {
+    if (indexed !== initial) await fixture.admin.query(initial ? up : down)
+    await fixture.admin.query('DELETE FROM expense_notes WHERE user_id=ANY($1::uuid[])',[authors])
+    await fixture.admin.query('DELETE FROM users WHERE id=ANY($1::uuid[])',[authors])
+    writeFileSync(`${output}/fanout.json`,JSON.stringify({source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),outcome,authors:100,notes:10000,observations},null,2)+'\n')
   }
 })
