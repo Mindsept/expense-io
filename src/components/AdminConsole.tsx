@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { formatCivilDate } from '@/utils/civil-date'
 import { getClientErrorMessage, isConflict } from '@/utils/client-errors'
+import { parsePagedList, type PageInfo, type PageTotals } from '@/utils/paged-list'
+import { PaginationControls } from '@/components/PaginationControls'
 
 interface CompanyUser {
   id: string
@@ -32,12 +34,22 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
 
 export function AdminConsole() {
   const [users, setUsers] = useState<CompanyUser[]>([])
+  const [usersPage, setUsersPage] = useState<PageInfo>({ page: 1, pageSize: 20, totalItems: 0 })
+  const [usersTotals, setUsersTotals] = useState<PageTotals>({ count: 0, scope: 'filtered' })
+  const [managerSearch, setManagerSearch] = useState('')
+  const [managerPage, setManagerPage] = useState<PageInfo>({ page: 1, pageSize: 20, totalItems: 0 })
+  const [managerCandidates, setManagerCandidates] = useState<CompanyUser[]>([])
+  const [selectedManagers, setSelectedManagers] = useState<Record<string, { id: string; name: string; isEligible: boolean }>>({})
+  const [managerSearchLoading, setManagerSearchLoading] = useState(false)
+  const [managerSearchError, setManagerSearchError] = useState<string | null>(null)
   const [usersLoading, setUsersLoading] = useState(true)
   const [usersError, setUsersError] = useState<string | null>(null)
   const [usersNotice, setUsersNotice] = useState<string | null>(null)
   const [savingId, setSavingId] = useState<string | null>(null)
 
   const [notes, setNotes] = useState<ExpenseNote[]>([])
+  const [notesPage, setNotesPage] = useState<PageInfo>({ page: 1, pageSize: 20, totalItems: 0 })
+  const [notesTotals, setNotesTotals] = useState<PageTotals>({ count: 0, amount: 0, scope: 'filtered' })
   const [notesLoading, setNotesLoading] = useState(true)
   const [notesError, setNotesError] = useState<string | null>(null)
   const [notesNotice, setNotesNotice] = useState<string | null>(null)
@@ -45,44 +57,62 @@ export function AdminConsole() {
   const notesHeadingRef = useRef<HTMLHeadingElement>(null)
   const usersHeadingRef = useRef<HTMLHeadingElement>(null)
   const assignmentPending = useRef(false)
+  const usersRequestGeneration = useRef(0)
+  const notesRequestGeneration = useRef(0)
+  const managerSearchGeneration = useRef(0)
 
   const loadUsers = useCallback(async () => {
+    const generation = ++usersRequestGeneration.current
     setUsersLoading(true)
     try {
-      const response = await fetch('/api/hr/users')
+      const response = await fetch(`/api/hr/users?page=${usersPage.page}&pageSize=${usersPage.pageSize}`)
       if (!response.ok) {
         setUsersError(await getClientErrorMessage(response, "Impossible de charger l'annuaire."))
         return
       }
       const result: unknown = await response.json()
-      if (!Array.isArray(result)) throw new Error('Invalid users list')
-      setUsers(result as CompanyUser[])
+      const pageResult = parsePagedList<CompanyUser>(result, false)
+      if (generation !== usersRequestGeneration.current) return
+      setUsers(pageResult.items)
+      setUsersPage(pageResult.pagination)
+      setUsersTotals(pageResult.totals)
       setUsersError(null)
     } catch {
+      if (generation !== usersRequestGeneration.current) return
       setUsersError("Impossible de charger l'annuaire. Vérifie la connexion puis réessaie.")
     } finally {
-      setUsersLoading(false)
+      if (generation === usersRequestGeneration.current) setUsersLoading(false)
     }
-  }, [])
+  }, [usersPage.page, usersPage.pageSize])
 
   const loadNotes = useCallback(async () => {
+    const generation = ++notesRequestGeneration.current
     setNotesLoading(true)
     try {
-      const response = await fetch('/api/hr/expense-notes')
+      const response = await fetch(`/api/hr/expense-notes?page=${notesPage.page}&pageSize=${notesPage.pageSize}`)
       if (!response.ok) {
         setNotesError(await getClientErrorMessage(response, 'Impossible de charger les notes en attente.'))
         return
       }
       const result: unknown = await response.json()
-      if (!Array.isArray(result)) throw new Error('Invalid notes list')
-      setNotes(result as ExpenseNote[])
+      const pageResult = parsePagedList<ExpenseNote>(result, true)
+      if (generation !== notesRequestGeneration.current) return
+      if (pageResult.items.length === 0 && pageResult.pagination.page > 1 &&
+          pageResult.pagination.totalItems <= (pageResult.pagination.page - 1) * pageResult.pagination.pageSize) {
+        setNotesPage((current) => ({ ...current, page: current.page - 1 }))
+        return
+      }
+      setNotes(pageResult.items)
+      setNotesPage(pageResult.pagination)
+      setNotesTotals(pageResult.totals)
       setNotesError(null)
     } catch {
-      setNotesError('Impossible de charger les notes en attente. Vérifie la connexion puis réessaie.')
+      if (generation !== notesRequestGeneration.current) return
+      setNotesError('Impossible de charger les notes en attente. Vérifie ta connexion puis réessaie.')
     } finally {
-      setNotesLoading(false)
+      if (generation === notesRequestGeneration.current) setNotesLoading(false)
     }
-  }, [])
+  }, [notesPage.page, notesPage.pageSize])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -90,7 +120,50 @@ export function AdminConsole() {
     loadNotes()
   }, [loadUsers, loadNotes])
 
-  const managers = users.filter((user) => user.role === 'manager')
+  useEffect(() => {
+    const generation = ++managerSearchGeneration.current
+    const controller = new AbortController()
+    const loadManagers = async () => {
+      setManagerSearchLoading(true)
+      try {
+        const parameters = new URLSearchParams({ page: String(managerPage.page), pageSize: String(managerPage.pageSize), role: 'manager' })
+        if (managerSearch.trim()) parameters.set('q', managerSearch.trim())
+        const response = await fetch(`/api/hr/users?${parameters}`, { signal: controller.signal })
+        if (!response.ok) throw new Error('Manager search failed')
+        const pageResult = parsePagedList<CompanyUser>(await response.json(), false)
+        if (generation !== managerSearchGeneration.current) return
+        setManagerCandidates(pageResult.items)
+        setManagerPage(pageResult.pagination)
+        setManagerSearchError(null)
+      } catch {
+        if (controller.signal.aborted || generation !== managerSearchGeneration.current) return
+        setManagerSearchError('Impossible de rechercher les managers. Vérifie la connexion puis réessaie.')
+      } finally {
+        if (generation === managerSearchGeneration.current) setManagerSearchLoading(false)
+      }
+    }
+    void loadManagers()
+    return () => controller.abort()
+  }, [managerSearch, managerPage.page, managerPage.pageSize])
+
+  useEffect(() => {
+    const ids = [...new Set(users.map((user) => user.managerId).filter((id): id is string => Boolean(id)))]
+    if (ids.length === 0) return
+    let active = true
+    void Promise.all(ids.map(async (id) => {
+      try {
+        const parameters = new URLSearchParams({ page: '1', pageSize: '1', role: 'manager', selectedManagerId: id })
+        const response = await fetch(`/api/hr/users?${parameters}`)
+        if (!response.ok) return null
+        const result = await response.json() as { selectedManager?: { id: string; name: string; isEligible: boolean } | null }
+        return result.selectedManager ?? null
+      } catch { return null }
+    })).then((resolved) => {
+      if (!active) return
+      setSelectedManagers((current) => ({ ...current, ...Object.fromEntries(resolved.filter((value): value is NonNullable<typeof value> => value !== null).map((value) => [value.id, value])) }))
+    })
+    return () => { active = false }
+  }, [users])
 
   async function retryUsers() {
     await loadUsers()
@@ -116,6 +189,10 @@ export function AdminConsole() {
       })
       if (response.ok) {
         setUsersNotice('Affectation enregistrée.')
+        if (managerId) {
+          const selected = managerCandidates.find((manager) => manager.id === managerId)
+          if (selected) setSelectedManagers((current) => ({ ...current, [managerId]: { id: selected.id, name: selected.name, isEligible: true } }))
+        }
         await Promise.all([loadUsers(), loadNotes()])
       } else {
         setUsersError(await getClientErrorMessage(response, "Échec de l'assignation."))
@@ -177,9 +254,17 @@ export function AdminConsole() {
       </div>
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+          <label htmlFor="manager-search" className="block text-sm font-medium">Rechercher parmi les managers actifs de l’entreprise</label>
+          <input id="manager-search" type="search" value={managerSearch}
+            onChange={(event) => { setManagerSearch(event.target.value); setManagerPage((current) => ({ ...current, page: 1 })) }}
+            className={`${selectClass} mt-2 w-full max-w-md`} />
+          {managerSearchError && <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-300">{managerSearchError}</p>}
+        </div>
         <h2 ref={usersHeadingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
-          Organigramme ({users.length})
+          Organigramme ({usersPage.totalItems})
         </h2>
+        <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">{usersTotals.count} personnes dans l’annuaire.</p>
         {usersError && (
           <div className="mx-6 mt-4">
             <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
@@ -230,12 +315,19 @@ export function AdminConsole() {
                       <select
                         id={`manager-${user.id}`}
                         value={user.managerId ?? ''}
-                        disabled={savingId !== null || usersLoading}
+                        disabled={savingId !== null || usersLoading || managerSearchLoading}
                         onChange={(event) => handleManagerChange(user.id, event.target.value)}
                         className={selectClass}
                       >
                         <option value="">— aucun (racine) —</option>
-                        {managers
+                        {user.managerId && !managerCandidates.some((manager) => manager.id === user.managerId) && (
+                          <option value={user.managerId} key={`selected-${user.managerId}`}>
+                            {selectedManagers[user.managerId]
+                              ? `${selectedManagers[user.managerId].name}${selectedManagers[user.managerId].isEligible ? '' : ' (inactif ou rôle modifié)'}`
+                              : 'Manager actuellement affecté'}
+                          </option>
+                        )}
+                        {managerCandidates
                           .filter((manager) => manager.id !== user.id)
                           .map((manager) => (
                             <option key={manager.id} value={manager.id}>
@@ -250,12 +342,25 @@ export function AdminConsole() {
             </table>
           </div>
         )}
+        {usersPage.totalItems > 0 && (
+          <PaginationControls page={usersPage.page} pageSize={usersPage.pageSize} totalItems={usersPage.totalItems}
+            disabled={usersLoading || savingId !== null} label="Pagination de l’annuaire"
+            onPageChange={(page) => setUsersPage((current) => ({ ...current, page }))} />
+        )}
+        {managerPage.totalItems > 0 && (
+          <PaginationControls page={managerPage.page} pageSize={managerPage.pageSize} totalItems={managerPage.totalItems}
+            disabled={managerSearchLoading || savingId !== null} label="Pagination des résultats de recherche de managers"
+            onPageChange={(page) => setManagerPage((current) => ({ ...current, page }))} />
+        )}
       </section>
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <h2 ref={notesHeadingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
-          Notes des managers racine en attente ({notes.length})
+          Notes des managers racine en attente ({notesPage.totalItems})
         </h2>
+        <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">
+          Total des notes en attente : {notesTotals.count} · {currencyFormatter.format(notesTotals.amount ?? 0)}
+        </p>
         {notesError && (
           <div className="mx-6 mt-4">
             <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
@@ -338,6 +443,11 @@ export function AdminConsole() {
               </tbody>
             </table>
           </div>
+        )}
+        {notesPage.totalItems > 0 && (
+          <PaginationControls page={notesPage.page} pageSize={notesPage.pageSize} totalItems={notesPage.totalItems}
+            disabled={notesLoading || decidingId !== null} label="Pagination des notes RH en attente"
+            onPageChange={(page) => setNotesPage((current) => ({ ...current, page }))} />
         )}
       </section>
     </main>

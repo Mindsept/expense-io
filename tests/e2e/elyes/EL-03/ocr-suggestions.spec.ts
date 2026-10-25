@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { readTestTarget } from '../../../support/test-target'
-import { deferred, employeeNote, ExpenseUi } from '../expense-ui'
+import { deferred, employeeNote, ExpenseUi, pagedNotes } from '../expense-ui'
 
 test.use({ baseURL: readTestTarget() })
 
@@ -8,11 +8,11 @@ test('submitting while OCR is pending ends its spinner and ignores the old sugge
   const ocr = deferred()
   const refresh = deferred()
   let submitted = false
-  await page.route('**/api/expense-notes', async route => {
+  await page.route('**/api/expense-notes*', async route => {
     const posting = route.request().method() === 'POST'
     if (posting) submitted = true
     else if (submitted) await refresh.promise
-    await route.fulfill({ status: posting ? 201 : 200, json: posting ? employeeNote : [] })
+    await route.fulfill({ status: posting ? 201 : 200, json: posting ? employeeNote : pagedNotes([]) })
   })
   await page.route('**/api/expense-notes/receipt-suggestion', async route => {
     await ocr.promise
@@ -44,7 +44,7 @@ test('the newer file wins when B finishes before A and manual edits stay intact'
   const first = deferred()
   const second = deferred()
   let requests = 0
-  await page.route('**/api/expense-notes', route => route.fulfill({ json: [] }))
+  await page.route('**/api/expense-notes*', route => route.fulfill({ json: pagedNotes([]) }))
   await page.route('**/api/expense-notes/receipt-suggestion', async route => {
     const sequence = ++requests
     await (sequence === 1 ? first : second).promise
