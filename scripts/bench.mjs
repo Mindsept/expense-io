@@ -20,10 +20,11 @@ import { createCampaignOutput, benchmarkHostMetadata } from './mathis/MATH-05/ca
 import { provisionRuntime } from './rls/provision-runtime.mjs'
 import { assertRuntimeDatabase } from '../src/lib/runtime-database.ts'
 import { expenseValidatorSql } from '../src/lib/expense-access.ts'
+import { benchmarkSql, explainPagedQuery } from './mathis/MATH-05/sql.mjs'
 
 const root=process.cwd(), action=process.argv[2], volume=Number(process.argv[3])
 const runtime=path.join(root,'.ci-output/benchmark'), privateDir=path.join(runtime,'private'), marker=path.join(privateDir,'benchmark.json'), state=path.join(runtime,'active.json')
-const protocol='math05-v3-limited-runtime-20261023', passes=3, concurrency=4, requestsPerPass=30
+const protocol='math05-v4-paged-runtime-20261025', passes=3, concurrency=4, requestsPerPass=30
 let config, pool, runtimePool, server, serverOutput='', expired=false, failed=false
 const observations=[], sqlPlans=[], ocr=[]
 const json=(file,data)=>writeFileSync(file,JSON.stringify(data,null,2)+'\n',{mode:0o600})
@@ -143,8 +144,8 @@ async function run() {
   const volume=fixture.volume, out=await createCampaignOutput(path.join(root,'docs/performance/results/runs'),volume);let outcome='failed'
   console.log(`Benchmark results: ${path.relative(root,out)}`)
   const git=args=>{const r=spawnSync('git',args,{encoding:'utf8',timeout:5000});if(r.status!==0)throw Error('Source metadata unavailable');return r.stdout.trim()}
-  const hashes=Object.fromEntries(['scripts/bench.mjs','scripts/mathis/MATH-05/metrics.mjs','scripts/mathis/MATH-05/runtime.mjs','scripts/mathis/MATH-05/http.mjs','scripts/mathis/MATH-05/campaign.mjs','src/lib/runtime-database.ts','src/lib/expense-access.ts','src/lib/pagination.ts','src/lib/ocr.ts','src/lib/ocr-parser.ts','package-lock.json',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(x=>`src/app/api/${x}/route.ts`)].map(f=>[f,createHash('sha256').update(readFileSync(f)).digest('hex')]))
-  json(path.join(out,'conditions.json'),{protocol,at:new Date().toISOString(),...benchmarkHostMetadata(),sha:git(['rev-parse','HEAD']),workingTree:git(['status','--porcelain'])||'clean',hashes,node:process.version,npm:process.env.npm_config_user_agent,os:{platform:os.platform(),release:os.release(),arch:os.arch(),cpu:os.cpus()[0]?.model,logicalCpus:os.cpus().length,totalMemory:os.totalmem(),freeMemory:os.freemem(),loadAverage:os.loadavg()},db,preparationDb,webEnvironment:{maintenanceCredentials:false,bootstrapException:false},fixture:{protocol:fixture.protocol,volume:fixture.volume,distribution:fixture.distribution,digest:fixture.digest,extraSeedCompanies:1,extraSeedUsers:3,extraSeedNotes:2,benchmarkCompanies:1,benchmarkUsers:3},passes,concurrency,requestsPerPass,pagination:'legacy full lists intentionally retained; opt-in page/pageSize available on measured main but not mixed into this workload',warmup:'3 GETs per route excluded and preserved separately; OS/DB caches not flushed',receiptBytesPerListRow:0,limits:'actual expense_web runtime with HA-04 startup check; SQL plans under the same restricted role; this benchmark is not the exhaustive security matrix or a production capacity test; OCR below is a standalone diagnostic, not the bounded HTTP OCR pool'})
+  const hashes=Object.fromEntries(['scripts/bench.mjs','scripts/mathis/MATH-05/metrics.mjs','scripts/mathis/MATH-05/runtime.mjs','scripts/mathis/MATH-05/http.mjs','scripts/mathis/MATH-05/campaign.mjs','scripts/mathis/MATH-05/sql.mjs','src/lib/pending-expense-source.ts','src/lib/runtime-database.ts','src/lib/expense-access.ts','src/lib/pagination.ts','src/lib/ocr.ts','src/lib/ocr-parser.ts','package-lock.json',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(x=>`src/app/api/${x}/route.ts`)].map(f=>[f,createHash('sha256').update(readFileSync(f)).digest('hex')]))
+  json(path.join(out,'conditions.json'),{protocol,at:new Date().toISOString(),...benchmarkHostMetadata(),sha:git(['rev-parse','HEAD']),workingTree:git(['status','--porcelain'])||'clean',hashes,node:process.version,npm:process.env.npm_config_user_agent,os:{platform:os.platform(),release:os.release(),arch:os.arch(),cpu:os.cpus()[0]?.model,logicalCpus:os.cpus().length,totalMemory:os.totalmem(),freeMemory:os.freemem(),loadAverage:os.loadavg()},db,preparationDb,webEnvironment:{maintenanceCredentials:false,bootstrapException:false},fixture:{protocol:fixture.protocol,volume:fixture.volume,distribution:fixture.distribution,digest:fixture.digest,extraSeedCompanies:1,extraSeedUsers:3,extraSeedNotes:2,benchmarkCompanies:1,benchmarkUsers:3},passes,concurrency,requestsPerPass,pagination:'first page=1&pageSize=100; exact authorized total and filtered totals checked; separate protocol from historical full-list series',warmup:'3 GETs per route excluded and preserved separately; OS/DB caches not flushed',receiptBytesPerListRow:0,limits:'actual expense_web runtime with HA-04 startup check; SQL plans under the same restricted role; this benchmark is not the exhaustive security matrix or a production capacity test; OCR below is a standalone diagnostic, not the bounded HTTP OCR pool'})
   const timer=setTimeout(()=>{expired=true;stop();const hard=setTimeout(()=>{console.error('Benchmark exceeded its global duration limit.');process.exit(1)},10000);hard.unref()},480000)
   try {
     await start()
@@ -152,9 +153,11 @@ async function run() {
       await measured(anonymous,{name:'negative-control-anonymous',route:'/api/expense-notes',expected:0},0,0,'diagnostic')
       if(observations.at(-1).status!==401)throw Error('Anonymous control did not yield 401.')
     })
-    const definitions=[{name:'employee',key:'EMPLOYEE',route:'/api/expense-notes',expected:volume/2,sql:'SELECT * FROM expense_notes WHERE user_id = $1 ORDER BY created_at DESC, id DESC'},
-      {name:'manager',key:'MANAGER',route:'/api/manager/expense-notes',expected:volume*.4,sql:`SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id = en.user_id WHERE ${expenseValidatorSql('manager',1,2)} AND en.status = 'pending' ORDER BY created_at ASC, id ASC`},
-      {name:'hr',key:'HR',route:'/api/hr/expense-notes',expected:volume*.3,sql:`SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id = en.user_id WHERE ${expenseValidatorSql('hr_admin',1,2)} AND en.status = 'pending' ORDER BY created_at ASC, id ASC`}]
+    const {hrPendingExpenseSource}=await benchmarkSql()
+    const pageSize=100
+    const definitions=[{name:'employee',key:'EMPLOYEE',route:'/api/expense-notes?page=1&pageSize=100',pageSize,expected:volume/2,sourceSql:'SELECT * FROM expense_notes WHERE user_id = $1',direction:'DESC'},
+      {name:'manager',key:'MANAGER',route:'/api/manager/expense-notes?page=1&pageSize=100',pageSize,expected:volume*.4,sourceSql:`SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id = en.user_id WHERE ${expenseValidatorSql('manager',1,2)} AND en.status = 'pending'`,direction:'ASC'},
+      {name:'hr',key:'HR',route:'/api/hr/expense-notes?page=1&pageSize=100',pageSize,expected:volume*.3,sourceSql:hrPendingExpenseSource(),direction:'ASC'}]
     for(const scenario of definitions){
       await withRequestContext(()=>request.newContext({baseURL:config.baseURL,timeout:10000}),async client=>{
         const csrf=await(await client.get('/api/auth/csrf')).json()
@@ -165,7 +168,7 @@ async function run() {
         for(let pass=1;pass<=passes;pass++){
           let next=0;await Promise.all(Array.from({length:concurrency},async()=>{while(next<requestsPerPass){const index=next++;await measured(client,scenario,pass,index)}}))
           const values=scenario.key==='EMPLOYEE'?[fixture.users[scenario.key]]:[fixture.users[scenario.key],fixture.company]
-          await runtimePool.query('BEGIN');try{await runtimePool.query("SELECT set_config('app.current_user_id',$1,true)",[fixture.users[scenario.key]]);const plan=(await runtimePool.query('EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) '+scenario.sql,values)).rows[0]['QUERY PLAN'];sqlPlans.push({scenario:scenario.name,pass,role:db.role,sql:scenario.sql,plan})}finally{await runtimePool.query('ROLLBACK')}
+          await runtimePool.query('BEGIN');try{await runtimePool.query("SELECT set_config('app.current_user_id',$1,true)",[fixture.users[scenario.key]]);const explained=await explainPagedQuery(runtimePool,{sourceSql:scenario.sourceSql,values,order:{column:'created_at',direction:scenario.direction},page:{page:1,pageSize,offset:0},monetary:true});sqlPlans.push({scenario:scenario.name,pass,role:db.role,protocol,pageSize,...explained})}finally{await runtimePool.query('ROLLBACK')}
         }
       })
     }

@@ -2,7 +2,7 @@
  * Measure one complete response, then release Playwright's retained body.
  * Cleanup is excluded from the latency; a cleanup failure still fails the attempt.
  * @param {{get(route: string, options: {timeout: number}): Promise<{status(): number, body(): Promise<Buffer>, dispose(): Promise<void>}>}} client
- * @param {{route: string, expected: number}} scenario
+ * @param {{route: string, expected: number, pageSize?: number}} scenario
  */
 export async function measureListRequest(client, scenario) {
   const started = performance.now()
@@ -14,8 +14,15 @@ export async function measureListRequest(client, scenario) {
     bytes = body.length
     if (status === 200) {
       const rows = JSON.parse(body.toString())
-      ok = Array.isArray(rows) && rows.length === scenario.expected
-      if (!ok) error = 'unexpected-row-count'
+      if (scenario.pageSize === undefined) {
+        ok = Array.isArray(rows) && rows.length === scenario.expected
+        if (!ok) error = 'unexpected-row-count'
+      } else {
+        ok = !Array.isArray(rows) && Array.isArray(rows?.items) && rows.items.length === Math.min(scenario.pageSize, scenario.expected) &&
+          rows.pagination?.page === 1 && rows.pagination?.pageSize === scenario.pageSize && rows.pagination?.totalItems === scenario.expected &&
+          rows.totals?.count === scenario.expected && rows.totals?.scope === 'filtered' && Number.isFinite(rows.totals?.amount)
+        if (!ok) error = 'unexpected-pagination'
+      }
     } else error = 'http-error'
   } catch (failure) {
     error = failure?.name === 'TimeoutError' ? 'timeout' : 'request-error'

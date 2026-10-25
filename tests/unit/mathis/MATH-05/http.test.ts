@@ -79,3 +79,17 @@ test('a real Playwright response is already disposed when measurement returns', 
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
   }
 })
+
+const pageBody=(change:Record<string,unknown>={})=>JSON.stringify({items:[{id:'one'}],pagination:{page:1,pageSize:100,totalItems:1},totals:{amount:12.34,count:1,scope:'filtered'},...change})
+test.each([
+ {body:pageBody(),ok:true},
+ {body:'[{"id":"one"}]',ok:false},
+ {body:pageBody({pagination:{page:1,pageSize:100,totalItems:2}}),ok:false},
+ {body:pageBody({pagination:{page:2,pageSize:100,totalItems:1}}),ok:false},
+ {body:pageBody({items:[]}),ok:false},
+ {body:pageBody({totals:{amount:12.34,count:2,scope:'filtered'}}),ok:false},
+])('validates bounded rows and exact authorized totals, accepted=$ok',async({body,ok})=>{
+ const response={status:()=>200,body:async()=>Buffer.from(body),dispose:vi.fn(async()=>{})}
+ expect(await measureListRequest({get:async()=>response},{route:'/list?page=1&pageSize=100',expected:1,pageSize:100})).toMatchObject({ok,error:ok?null:'unexpected-pagination'})
+ expect(response.dispose).toHaveBeenCalledOnce()
+})
