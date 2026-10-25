@@ -31,14 +31,16 @@ paires `ARLA_TEST_<ROLE>_EMAIL/PASSWORD`. Ne pas deviner un mot de passe ou
 remplacer cette cible par le port de développement 3000.
 
 ```sh
-npm run test:collect
+npm run test:e2e -- tests/e2e/elyes --list
 npm run test:unit -- tests/unit/elyes
 npm run test:e2e -- tests/e2e/elyes
 npm run lint
 npm run typecheck
 ```
 
-`test:collect` vérifie les fichiers réellement découverts et les propriétaires.
+Dans la campagne complète, `test:collect` vérifie les fichiers réellement
+découverts et les propriétaires avec toutes les variables API/DB/S3 de MATH-02.
+La collecte ciblée ci-dessus ne nécessite que les variables de la démo UI.
 Une collecte réussie ne signifie pas que les tests ont été exécutés. Il n'y a
 pas de suite API Elyes artificielle : les assertions serveur restent chez
 Hamza et Leandro. Aucun second runner ni nouvelle dépendance n'est ajouté.
@@ -57,7 +59,7 @@ et identifiée, pas de la simple présence d'un fichier.
 | EL-03 / ARLA-33 | OCR B finit avant A ; A n'écrase ni B ni une saisie manuelle | `e2e/elyes/EL-03/ocr-suggestions.spec.ts` | Promesses contrôlées, aucun appel réel à l'OCR |
 | EL-04 / ARLA-34 | Reprise explicite avec même clé/contenu/reçu ; formulaire changé ou page rechargée ne crée pas silencieusement une nouvelle intention | `e2e/elyes/EL-04/submission-intent.spec.ts` | UI ; le serveur est testé par LE-03 |
 | EL-05 / ARLA-35 | Pagination et totaux serveur ; manager RH accessible au-delà de la page courante | `e2e/elyes/EL-05/pagination.spec.ts`, `unit/elyes/EL-05/pagination.test.ts` | UI + parseur de contrat |
-| EL-06 / ARLA-36 | Auteur et circuit explicites ; détail indisponible ne bloque pas la liste | `e2e/elyes/EL-06/workflow-visibility.spec.ts` | UI ; droits serveur hors mock |
+| EL-06 / ARLA-36 | Auteur, circuit et historique de décision explicites | `e2e/elyes/EL-06/workflow-visibility.spec.ts` | UI ; droits serveur hors mock |
 | EL-07 / ARLA-37 | Actions contextualisées, labels, chargement/erreur, focus, clavier et petite largeur | `e2e/elyes/EL-07/accessibility.spec.ts` | Scénarios ciblés, pas certification globale |
 | EL-08 / ARLA-38 | Au clavier : page 2 puis page 1, soumission incertaine, reprise avec même clé, 201 suivi d'un GET500, récupération de l'historique et pagination mise à jour sans POST supplémentaire | `e2e/elyes/EL-08/integrated-flows.spec.ts` | Intégration des comportements UI EL-01/04/05/07 |
 

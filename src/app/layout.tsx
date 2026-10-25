@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="min-h-full bg-gray-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
         <header className="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
+          <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
               <span className="flex size-7 items-center justify-center rounded-md bg-brand-600 text-sm text-white">
                 €
@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               Expense.io
             </Link>
             {session?.user && (
-              <form action={logout} className="flex items-center gap-3">
+              <form action={logout} className="flex max-w-full flex-wrap items-center gap-3">
                 <NavItem href="/notifications" label="Notifications" />
                 {session.user.role === 'manager' && (
                   <NavItem href="/manager" label="Manager" />
