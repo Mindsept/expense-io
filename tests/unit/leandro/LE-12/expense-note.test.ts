@@ -65,15 +65,15 @@ describe('shared expense representation', () => {
   })
   it('is consumed by the real personal-list handler', async () => {
     mocks.auth.mockResolvedValue({ user: { id: 'owner' } })
-    mocks.query.mockResolvedValue({ rows: [row] })
+    mocks.query.mockResolvedValue({ rows: [{ items: [row], total_count: '1', total_cents: '123456' }] })
     const response = await GET(new NextRequest('http://localhost/api/expense-notes'))
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual([toExpenseNote(row)])
-    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('WHERE user_id = $1'), ['owner'])
+    expect((await response.json()).items).toEqual([toExpenseNote(row)])
+    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('WHERE user_id = $1'), ['owner', 20, 0])
   })
   it('keeps a malformed stored value inside the HTTP error boundary', async () => {
     mocks.auth.mockResolvedValue({ user: { id: 'owner' } })
-    mocks.query.mockResolvedValue({ rows: [{ ...row, expense_date: 'invalid-private-value' }] })
+    mocks.query.mockResolvedValue({ rows: [{ items: [{ ...row, expense_date: 'invalid-private-value' }], total_count: '1', total_cents: '123456' }] })
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       const response = await GET(new NextRequest('http://localhost/api/expense-notes'))

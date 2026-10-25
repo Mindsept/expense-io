@@ -1,3 +1,15 @@
+# Contrat courant : OpenAPI 5.0.0 — LE-11
+
+Le fichier courant est [expense-io.v5.json](expense-io.v5.json). Après intégration
+des écrans EL-05, les quatre GET de listes renvoient exclusivement une enveloppe
+`{items,pagination,totals}`, même sans paramètres (page1/pageSize20, max100).
+Le header X-Pagination-Mode vaut toujours paged. Les tableaux legacy sont refusés
+par le schéma courant ; les autres opérations et DTO restent inchangés.
+[Guide de migration et retour de version](../runbooks/LE-11-list-migration.md).
+
+Les sections ci-dessous retracent les versions historiques. Les fichiers v1–v4
+sont conservés comme archives ; ils ne décrivent plus le serveur courant.
+
 # Extension LE-07 — contrat 4.1.0, 23 octobre 2026
 
 Les quatre GET listes ajoutent la pagination opt-in page/pageSize (1/20 par défaut,
@@ -48,7 +60,7 @@ les méthodes exportées aux **17 fichiers** `src/app/api/**/route.ts`.
 | Fichier sous `src/app/api/` | Méthodes | Comportement livré |
 | --- | --- | --- |
 | `auth/[...nextauth]/route.ts` | GET, POST | Délégation Auth.js ; pas d'enveloppe HA-07 |
-| `expense-notes/route.ts` | GET, POST | Notes propres, tableau sans pagination ; création multipart 201 |
+| `expense-notes/route.ts` | GET, POST | Notes propres, enveloppe bornée ; création multipart 201 |
 | `expense-notes/receipt-suggestion/route.ts` | POST | OCR image synchrone borné, erreurs explicites, `{}` après succès vide |
 | `expense-notes/[id]/receipt-url/route.ts` | GET | Reçu du propriétaire actif, même après décision |
 | `expense-notes/[id]/validation-status/route.ts` | GET | Propriétaire actif uniquement ; état réel de validation et raison d’attente |
