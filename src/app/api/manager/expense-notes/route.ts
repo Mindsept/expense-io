@@ -1,4 +1,4 @@
-import { readPagination, readExpenseOrder, orderBy, queryPage, listResponse } from '@/lib/pagination'
+import { readPagination, readExpenseOrder, queryPage, listResponse } from '@/lib/pagination'
 import { expenseValidatorSql } from '@/lib/expense-access'
 import { toExpenseNote } from '@/adapters/expense-note-mapper'
 import { withCurrentActor } from '@/lib/current-actor'
@@ -14,12 +14,8 @@ export async function GET(request: Request) {
          WHERE ${expenseValidatorSql('manager', 1, 2)} AND en.status = 'pending'`
       const values = [actor.id, actor.companyId]
       const map = (row: Record<string, unknown>) => toExpenseNote(row, { id: row.user_id as string, displayName: (row.author_name as string) || 'User' })
-      if (page) {
-        const result = await queryPage(client, { sourceSql, values, order, page, monetary: true })
-        return listResponse({ items: result.rows.map(map), pagination: result.pagination, totals: result.totals }, true)
-      }
-      const result = await client.query(`${sourceSql} ORDER BY ${orderBy(order)}`, values)
-      return listResponse(result.rows.map(map), false)
+      const result = await queryPage(client, { sourceSql, values, order, page, monetary: true })
+      return listResponse({ items: result.rows.map(map), pagination: result.pagination, totals: result.totals })
     })
   })
 }

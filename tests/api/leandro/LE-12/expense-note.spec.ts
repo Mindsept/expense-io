@@ -63,5 +63,5 @@ test('real multipart POST and personal GET share the DTO without exposing anothe
   expect(Buffer.from(await stored.Body!.transformToByteArray())).toEqual(png)
   const list = await client.get('/api/expense-notes')
   expect(list.status()).toBe(200)
-  expect(await list.json()).toEqual([note])
+  expect((await list.json()).items).toEqual([note])
 })

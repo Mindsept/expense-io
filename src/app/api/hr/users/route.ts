@@ -1,13 +1,12 @@
 import { withCurrentActor } from '@/lib/current-actor'
-import { ApiError, withApiHandler } from '@/lib/errors'
-import { readPagination, readDirectoryOrder, directoryFilters, orderBy, queryPage, listResponse } from '@/lib/pagination'
+import { withApiHandler } from '@/lib/errors'
+import { readPagination, readDirectoryOrder, directoryFilters, queryPage, listResponse } from '@/lib/pagination'
 
 export async function GET(request: Request) {
   return withApiHandler(request, 'hr.users.list', async () => {
     return withCurrentActor('hr_admin', async (client, actor) => {
       const parameters = new URL(request.url).searchParams
       const page = readPagination(parameters), order = readDirectoryOrder(parameters), filters = directoryFilters(parameters)
-      if (filters.selectedManagerId && !page) throw new ApiError('validation')
       const values: unknown[] = [actor.companyId]
       let sourceSql = `SELECT id, name, email, role, manager_id FROM users
          WHERE role IN ('employee', 'manager') AND company_id = $1`
@@ -25,13 +24,9 @@ export async function GET(request: Request) {
           'isEligible',role='manager' AND is_active) FROM users WHERE company_id=$1 AND id=$${values.length}`
       }
       const map = (row: Record<string, unknown>) => ({ id: row.id, name: row.name, email: row.email, role: row.role, managerId: row.manager_id })
-      if (page) {
-        const result = await queryPage(client, { sourceSql, values, order, page, selectionSql })
-        return listResponse({ items: result.rows.map(map), pagination: result.pagination, totals: result.totals,
-          ...(filters.selectedManagerId ? { selectedManager: result.selectedManager } : {}) }, true)
-      }
-      const result = await client.query(`${sourceSql} ORDER BY ${orderBy(order)}`, values)
-      return listResponse(result.rows.map(map), false)
+      const result = await queryPage(client, { sourceSql, values, order, page, selectionSql })
+      return listResponse({ items: result.rows.map(map), pagination: result.pagination, totals: result.totals,
+        ...(filters.selectedManagerId ? { selectedManager: result.selectedManager } : {}) })
     })
   })
 }

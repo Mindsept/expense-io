@@ -1,0 +1,46 @@
+{
+  "format": "gzip JSON, lossless; hashes refer to uncompressed bytes",
+  "artifacts": [
+    {
+      "file": "fanout/fanout.json.gz",
+      "source": "fc31efafabab4505dfe12d6b2a96a056652f693f",
+      "sha256Json": "90853e561e2821a0e29ac9c3b486e7898044d9fd57436f32ad3e38ec979ad642",
+      "jsonBytes": 99068,
+      "gzipBytes": 5008
+    },
+    {
+      "file": "index-only/1000.json.gz",
+      "source": "fffff010d7494943788cafa83107050c5ea06684",
+      "sha256Json": "aa027db0200d865c1a185a5ef30f617084830c66b28ba31e9bc96f7336e0842a",
+      "jsonBytes": 162780,
+      "gzipBytes": 17471
+    },
+    {
+      "file": "index-only/10000.json.gz",
+      "source": "fffff010d7494943788cafa83107050c5ea06684",
+      "sha256Json": "d400ce6bb5a449d161b3ac3e2096464e303ca0fca999a239301dee0729f4af74",
+      "jsonBytes": 163237,
+      "gzipBytes": 17961
+    },
+    {
+      "file": "paired/1000.json.gz",
+      "source": "dfdee43f472e6defed9abccfee503130a32e7664",
+      "sha256Json": "47d34730349fd84446dfbb3c15b77c1bfdc7113e66e2e7d19d4cee30b9d0fd33",
+      "jsonBytes": 519881,
+      "gzipBytes": 26853
+    },
+    {
+      "file": "paired/10000.json.gz",
+      "source": "dfdee43f472e6defed9abccfee503130a32e7664",
+      "sha256Json": "f44b0bc755ac85b6d1ff4af01e1200248b82cf0ce0d4c080b993ec832ce1963b",
+      "jsonBytes": 521977,
+      "gzipBytes": 29157
+    }
+  ],
+  "pairedEnvironmentObservation": {
+    "ownedProject": "arla-ci-29bbd6619439",
+    "postgres": "16.15",
+    "image": "sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+    "method": "postgres --version in the owned PostgreSQL container during the paired campaign; no credentials read"
+  }
+}

@@ -29,7 +29,7 @@ async function response(client: APIRequestContext, path: string, status = 200) {
   expect(JSON.stringify(body)).not.toMatch(/password_hash|company_id|manager_id|SELECT |postgres:\/\/|X-Amz-/)
   if (status === 200) {
     expect(result.headers()['cache-control']).toBe('no-store')
-    expect(result.headers()['x-pagination-mode']).toBe(Array.isArray(body) ? 'legacy' : 'paged')
+    expect(result.headers()['x-pagination-mode']).toBe('paged')
   }
   return body
 }
@@ -76,10 +76,8 @@ for (const [index, label] of ['personal','manager','HR'].entries()) {
     const expected = [...(index === 2 ? hrNotes : managerNotes)].sort()
     if (index === 0) expected.reverse()
     const seen: string[] = []
-    let firstPage: Page | undefined
     for (const [page,size] of [[1,20],[2,20],[3,5]]) {
       const body: Page = await response(client, `${paths[index]}?page=${page}&pageSize=20`)
-      if (page === 1) firstPage = body
       expect(body.items).toHaveLength(size)
       expect(body.pagination).toEqual({ page, pageSize: 20, totalItems: 45 })
       expect(body.totals).toEqual({ amount: sum, count: 45, scope: 'filtered' })
@@ -91,13 +89,14 @@ for (const [index, label] of ['personal','manager','HR'].entries()) {
     expect(new Set(seen).size).toBe(45)
     const empty: Page = await response(client, `${paths[index]}?page=4&pageSize=20`)
     expect(empty.items).toEqual([]); expect(empty.totals).toEqual({ amount: sum, count: 45, scope: 'filtered' })
-    const legacy: Note[] = await response(client, paths[index])
-    expect(legacy.map(note => note.id)).toEqual(expected)
-    if (index === 0) console.log(JSON.stringify({ operation: 'le07.compatibility.measure', legacyRows: legacy.length, pagedRows: firstPage!.items.length, legacyBytes: Buffer.byteLength(JSON.stringify(legacy)), pagedBytes: Buffer.byteLength(JSON.stringify(firstPage)) }))
+    const defaultPage: Page = await response(client, paths[index])
+    expect(defaultPage.items.map(note => note.id)).toEqual(expected.slice(0,20))
+    expect(defaultPage.pagination).toEqual({ page: 1, pageSize: 20, totalItems: 45 })
+    expect(defaultPage.totals).toEqual({ amount: sum, count: 45, scope: 'filtered' })
   })
 }
 
-test('all six sorts keep deterministic UUID ties and the opt-in defaults are stable', async () => {
+test('all six sorts keep deterministic UUID ties and the bounded defaults are stable', async () => {
   for (const sort of ['created_at ASC','created_at DESC','amount ASC','amount DESC','expense_date ASC','expense_date DESC']) {
     const body: Page = await response(employeeClient, `/api/expense-notes?pageSize=100&sort=${encodeURIComponent(sort)}`)
     expect(body.items).toHaveLength(45); expect(body.pagination).toEqual({ page: 1, pageSize: 100, totalItems: 45 })
@@ -123,16 +122,17 @@ test('malformed parameters are Problem Details and authorization still takes pre
   await response(employeeClient, '/api/hr/users?page=bad', 403)
   await response(hrClient, '/api/hr/users?page=1&role=hr_admin', 400)
   await response(hrClient, '/api/hr/users?page=1&selectedManagerId=invalid', 400)
-  await response(hrClient, '/api/hr/users?selectedManagerId='+ids.manager, 400)
+  expect((await response(hrClient, '/api/hr/users?selectedManagerId='+ids.manager)).selectedManager.id).toBe(ids.manager)
 })
 
 test('the directory and global manager search are independently paged, scoped and literal', async () => {
-  const legacy = await response(hrClient, '/api/hr/users')
-  expect(legacy.length).toBeGreaterThan(20)
+  const defaultPage = await response(hrClient, '/api/hr/users')
+  expect(defaultPage.items).toHaveLength(20)
+  expect(defaultPage.pagination.totalItems).toBeGreaterThan(20)
   const first: Page = await response(hrClient, '/api/hr/users?page=1&pageSize=3')
   expect(first.items).toHaveLength(3)
-  expect(first.pagination.totalItems).toBe(legacy.length)
-  expect(first.totals).toEqual({ count: legacy.length, scope: 'filtered' })
+  expect(first.pagination.totalItems).toBe(defaultPage.pagination.totalItems)
+  expect(first.totals).toEqual({ count: defaultPage.pagination.totalItems, scope: 'filtered' })
   const search = await response(hrClient, '/api/hr/users?page=1&pageSize=3&role=manager&q=Needle')
   expect(search.items.map((user: {id:string}) => user.id)).toEqual([needle])
   expect(first.items.some(user => user.id === needle)).toBe(false)
