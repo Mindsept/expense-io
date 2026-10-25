@@ -99,6 +99,12 @@ test('HR assignments lock the whole group and each stale section has its own ret
   let noteReads = 0
   let writes = 0
   await page.route('**/api/hr/users*', route => {
+    const url = new URL(route.request().url())
+    // Manager search is a separate paginated request; only the directory
+    // refresh after assignment should receive the simulated stale error.
+    if (url.searchParams.has('role') || url.searchParams.has('selectedManagerId')) {
+      return route.fulfill({ json: pagedDirectory(companyUsers.filter(user => user.role === 'manager')) })
+    }
     userReads += 1
     return userReads === 2
       ? route.fulfill({ status: 500, json: { error: 'private' } })
