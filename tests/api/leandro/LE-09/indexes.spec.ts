@@ -9,13 +9,13 @@ import { readTestTarget, readTestIdentity } from '../../../support/test-target'
 import { assertRuntimeDatabase } from '../../../../src/lib/runtime-database'
 import { queryPage } from '../../../../src/lib/pagination'
 import { expenseValidatorSql } from '../../../../src/lib/expense-access'
-import { pendingExpenseSource } from '../../../../src/lib/pending-expense-source'
+import { hrPendingExpenseSource } from '../../../../src/lib/pending-expense-source'
 
 // MATH-05 geometry/protocol, received from published commit24ab0c1.
 // This new campaign explicitly measures pages, not the historical legacy lists.
 readTestTarget()
 const password = readTestIdentity('EMPLOYEE').password
-const migrationFile = 'migrations/1793000000000_leandro_expense_list_index.sql'
+const migrationFile = 'proposals/LE-09/1793000000000_leandro_expense_list_index.sql'
 const migration = readFileSync(migrationFile, 'utf8')
 const up = migration.split('-- Down Migration')[0].replace('-- Up Migration', '')
 const down = migration.split('-- Down Migration')[1]
@@ -49,7 +49,7 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
   test.setTimeout(240_000)
   const users = { employee: randomUUID(), manager: randomUUID(), hr: randomUUID() }
   const contexts: APIRequestContext[] = [], phases: Record<string, unknown>[] = []
-  let indexed = true, outcome = 'failed'
+  let indexed = false, outcome = 'failed'
   const conditions = { protocol, adaptation: 'LE-09 pages20; actual queryPage SQL; private runtimeFixture database; no OCR or S3 receipts in this list experiment',
     source: execFileSync('git', ['rev-parse','HEAD'], { encoding: 'utf8' }).trim(),
     hashes: Object.fromEntries([migrationFile,'src/lib/pagination.ts','src/lib/expense-access.ts','src/lib/pending-expense-source.ts','package-lock.json','tests/api/leandro/LE-09/indexes.spec.ts',...['expense-notes','manager/expense-notes','hr/expense-notes'].map(p => `src/app/api/${p}/route.ts`)].map(file => [file,createHash('sha256').update(readFileSync(file)).digest('hex')])),
@@ -71,13 +71,14 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
     [users.employee,users.manager,protocol,volume])
     await assertRuntimeDatabase(fixture.runtime, { DATABASE_URL: fixture.runtimeURL })
     const role = (await fixture.runtime.query('SELECT current_user,session_user,rolsuper,rolbypassrls,version() FROM pg_roles WHERE rolname=current_user')).rows[0]
+    Object.assign(conditions, { db: role, fixture: 'one private company, MATH-05 three roles plus fixture HR; generated notes only; fresh UUIDs/passwords' })
     expect(role).toMatchObject({ current_user: 'expense_web', session_user: 'expense_web', rolsuper: false, rolbypassrls: false })
     expect(Number((await fixture.runtime.query('SELECT count(*) FROM expense_notes')).rows[0].count)).toBe(0)
     const unchanged = await fingerprint(), bodies = new Map<string,string>()
     const definitions = [
       { name: 'employee', url: '/api/expense-notes', expected: volume/2, sourceSql: 'SELECT * FROM expense_notes WHERE user_id = $1', values: [users.employee], direction: 'DESC' as const },
-      { name: 'manager', url: '/api/manager/expense-notes', expected: volume*.4, sourceSql: pendingExpenseSource('manager'), values: [users.manager,fixture.company], direction: 'ASC' as const },
-      { name: 'hr', url: '/api/hr/expense-notes', expected: volume*.3, sourceSql: pendingExpenseSource('hr_admin'), values: [users.hr,fixture.company], direction: 'ASC' as const },
+      { name: 'manager', url: '/api/manager/expense-notes', expected: volume*.4, sourceSql: `SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id=en.user_id WHERE ${expenseValidatorSql('manager',1,2)} AND en.status='pending'`, values: [users.manager,fixture.company], direction: 'ASC' as const },
+      { name: 'hr', url: '/api/hr/expense-notes', expected: volume*.3, sourceSql: hrPendingExpenseSource(), values: [users.hr,fixture.company], direction: 'ASC' as const },
     ]
     const anonymous = await playwright.request.newContext({ baseURL: fixture.baseURL }); contexts.push(anonymous)
     const denied = await anonymous.get('/api/expense-notes'); expect(denied.status()).toBe(401); await denied.dispose()
@@ -128,8 +129,8 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
           }) as never }, { sourceSql: definition.sourceSql, values: definition.values, page: { page: 1, pageSize: 20, offset: 0 }, order: { column: 'created_at', direction: definition.direction }, monetary: true })
         } finally { await fixture.runtime.query('ROLLBACK') }
         const paired: { variant: string; repeat: number; ms: number; plan: unknown }[] = []
-        if (definition.name !== 'employee') {
-          const reference = `SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id=en.user_id WHERE ${expenseValidatorSql(definition.name === 'hr' ? 'hr_admin' : 'manager',1,2)} AND en.status='pending'`
+        if (definition.name === 'hr') {
+          const reference = `SELECT en.*, u.name AS author_name FROM expense_notes en JOIN users u ON u.id=en.user_id WHERE ${expenseValidatorSql('hr_admin',1,2)} AND en.status='pending'`
           for (let repeat=0;repeat<(measuring ? 3 : 1);repeat++) {
             let referenceBody: unknown, candidateBody: unknown
             for (const variant of repeat%2 ? ['candidate','reference'] : ['reference','candidate']) {
@@ -158,11 +159,12 @@ for (const volume of [1000, 10000]) test(`${volume}: bounded lists preserve resu
     await fixture.admin.query(up); indexed = true
     expect(await fingerprint()).toEqual(unchanged)
     await assertRuntimeDatabase(fixture.runtime, { DATABASE_URL: fixture.runtimeURL })
+    await fixture.admin.query(down); indexed = false
     outcome = 'passed'
   } finally {
     try {
     await Promise.all(contexts.map(context => context.dispose()))
-    if (!indexed) await fixture.admin.query(up)
+    if (indexed) await fixture.admin.query(down)
     await fixture.admin.query('DELETE FROM expense_notes WHERE user_id=ANY($1::uuid[])', [Object.values(users)])
     await fixture.admin.query('UPDATE users SET manager_id=NULL WHERE id=ANY($1::uuid[])', [Object.values(users)])
     await fixture.admin.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [Object.values(users)])

@@ -5,8 +5,8 @@ import { expenseValidatorSql } from '@/lib/expense-access'
  * scan. The exact shared eligibility predicate and RLS still apply; only the
  * join strategy changes. Parameters remain actor $1 / company $2.
  */
-export function pendingExpenseSource(role: 'manager' | 'hr_admin'): string {
+export function hrPendingExpenseSource(): string {
   return `SELECT en.*, u.name AS author_name FROM users u
     JOIN LATERAL (SELECT * FROM expense_notes WHERE user_id=u.id AND status='pending' OFFSET 0) en ON true
-    WHERE ${expenseValidatorSql(role, 1, 2)}`
+    WHERE ${expenseValidatorSql('hr_admin', 1, 2)}`
 }
