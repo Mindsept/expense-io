@@ -38,3 +38,11 @@ Les tests HTTP ne sont pas des clics dans un navigateur. Les contrôles complets
 ## Données délibérément exclues du dépôt
 
 Pas de `runtime.json`, dump, octets de reçus sauvegardés, fichier `.env`, mot de passe, cookie ou URL signée. Les JSON présents ici sont les résultats expurgés et les compteurs. La preuve de restauration identifie son manifeste par SHA-256 ; celui-ci et l'archive restent privés localement.
+
+## Requalification du 25 octobre sur main actuel — macOS
+
+La branche a intégré **main 888a74d** : EL-04 corrigé par Elyes, pagination obligatoire LE-11 et index LE-09. Sur **c48feff0a61c6ad51b09eac6abb5184aa691bae3**, la chaîne locale passe : **701 unitaires / 242 API / 29 E2E**, lint, typage, collecte, build et nettoyage. [Résultats, codes, durées et empreintes](current-main-macos.json). Ces chiffres ne réétiquettent pas les campagnes Windows antérieures.
+
+Nouvelle capture et restauration réelles sous macOS arm64 / Node 24.22.1 / npm 11.19.1 : deux projets neufs, **3 comptes / 2 notes / 2 PNG**, toutes les empreintes concordent ; trois authentifications HTTP sous expense_web, pages/listes paginées et deux vrais reçus téléchargés. Diagnostic source/cible et nettoyage des deux seuls projets : code 0. Ces consultations sont HTTP ; les 29 E2E de la chaîne commune constituent une campagne distincte, pas des clics sur la cible restaurée.
+
+Le corpus WebP et les contrôles négatifs réels restent ceux de Windows. Relecture Hamza et parcours humain Hugo toujours attendus. Le relevé publié utilise une liste explicite de champs ; il a été comparé à 11 valeurs privées et contrôlé contre les formats URL DB, cookies, URL signées et chemins de configuration : aucune occurrence. Aucun journal brut, archive ou fichier de configuration n'est publié.

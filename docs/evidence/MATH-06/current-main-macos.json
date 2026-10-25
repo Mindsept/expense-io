@@ -1,0 +1,137 @@
+{
+  "ticket": "ARLA-44",
+  "sourceSha": "c48feff0a61c6ad51b09eac6abb5184aa691bae3",
+  "mainSha": "888a74ddae9db28378596adc7709358798986e49",
+  "timezone": "Europe/Paris",
+  "platform": "Darwin",
+  "architecture": "arm64",
+  "node": "24.22.1",
+  "npm": "11.19.1",
+  "fullCi": {
+    "outcome": "passed",
+    "unitPassed": 701,
+    "apiPassed": 242,
+    "e2ePassed": 29,
+    "stages": [
+      {
+        "name": "verify",
+        "exitCode": 0,
+        "durationMs": 7988
+      },
+      {
+        "name": "collect",
+        "exitCode": 0,
+        "durationMs": 1300
+      },
+      {
+        "name": "services",
+        "exitCode": 0,
+        "durationMs": 6946
+      },
+      {
+        "name": "prepare",
+        "exitCode": 0,
+        "durationMs": 1119
+      },
+      {
+        "name": "build",
+        "exitCode": 0,
+        "durationMs": 3619
+      },
+      {
+        "name": "api",
+        "exitCode": 0,
+        "durationMs": 45684
+      },
+      {
+        "name": "e2e",
+        "exitCode": 0,
+        "durationMs": 19352
+      },
+      {
+        "name": "cleanup",
+        "exitCode": 0,
+        "durationMs": 2291
+      }
+    ]
+  },
+  "realRecovery": {
+    "status": "restoration-verified",
+    "verifiedAt": "2026-10-25T22:00:01.459Z",
+    "manifestSha": "23e59fbfbce0bcdff2494ea5cecbd2b07f94e9833fcb09379e097902fcfed331",
+    "schemaSha": "56ac5bdea7e5ce770f8084454aa9a66c30f48ff99d1c7ff5884715392f5f38c5",
+    "applicationSha": "c48feff0a61c6ad51b09eac6abb5184aa691bae3",
+    "toolingSha": "1811ba5d0cb486568d1391988e6d216a5c8139f125da04b551bd76062ae0e853",
+    "accounts": 3,
+    "objects": 2,
+    "allObjectHashesMatched": true,
+    "allTableCountsAndDigestsMatched": true,
+    "runtime": "expense_web",
+    "httpRoles": [
+      {
+        "role": "employee",
+        "authenticated": true,
+        "page": "ok",
+        "list": "ok"
+      },
+      {
+        "role": "manager",
+        "authenticated": true,
+        "page": "ok",
+        "list": "ok"
+      },
+      {
+        "role": "hr_admin",
+        "authenticated": true,
+        "page": "ok",
+        "list": "ok"
+      }
+    ],
+    "uniqueReceiptsRead": 2,
+    "browserOnRestoredTarget": "not-executed",
+    "durationMs": 12018
+  },
+  "cliSteps": [
+    {
+      "name": "prepare",
+      "exitCode": 0,
+      "durationMs": 8442
+    },
+    {
+      "name": "doctor",
+      "exitCode": 0,
+      "durationMs": 156
+    },
+    {
+      "name": "backup",
+      "exitCode": 0,
+      "durationMs": 532
+    },
+    {
+      "name": "restore",
+      "exitCode": 0,
+      "durationMs": 12293
+    },
+    {
+      "name": "restored-doctor",
+      "exitCode": 0,
+      "durationMs": 162
+    },
+    {
+      "name": "down-target",
+      "exitCode": 0,
+      "durationMs": 4715
+    },
+    {
+      "name": "down-source",
+      "exitCode": 0,
+      "durationMs": 4430
+    }
+  ],
+  "rawLogsPublished": false,
+  "archivesOrConfigurationsPublished": false,
+  "humanAcceptance": {
+    "hamza": false,
+    "hugo": false
+  }
+}
