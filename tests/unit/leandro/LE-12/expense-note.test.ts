@@ -46,6 +46,10 @@ describe('shared expense representation', () => {
     expect(dto.author).toEqual({ id: 'owner', displayName: 'Demo' })
     expect(toExpenseNote({ ...row, decided_at: null })).not.toHaveProperty('decidedAt')
   })
+  it('normalizes PostgreSQL JSON timestamps with microsecond precision', () => {
+    const dto = toExpenseNote({ ...row, created_at: '2026-10-21T14:00:00.123456+02:00' })
+    expect(dto.createdAt).toBe('2026-10-21T12:00:00.123Z')
+  })
   it.each(['2023-02-29', '2026-04-31', '0000-01-01', '2026-13-01', '2026-01-00', '2026-1-1', new Date('2026-01-01')])('rejects invalid civil date %s', (expense_date) => {
     expect(() => toExpenseNote({ ...row, expense_date })).toThrow('civil date')
   })
@@ -61,15 +65,15 @@ describe('shared expense representation', () => {
   })
   it('is consumed by the real personal-list handler', async () => {
     mocks.auth.mockResolvedValue({ user: { id: 'owner' } })
-    mocks.query.mockResolvedValue({ rows: [row] })
+    mocks.query.mockResolvedValue({ rows: [{ items: [row], total_count: '1', total_cents: '123456' }] })
     const response = await GET(new NextRequest('http://localhost/api/expense-notes'))
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual([toExpenseNote(row)])
-    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('WHERE user_id = $1'), ['owner'])
+    expect((await response.json()).items).toEqual([toExpenseNote(row)])
+    expect(mocks.query).toHaveBeenCalledWith(expect.stringContaining('WHERE user_id = $1'), ['owner', 20, 0])
   })
   it('keeps a malformed stored value inside the HTTP error boundary', async () => {
     mocks.auth.mockResolvedValue({ user: { id: 'owner' } })
-    mocks.query.mockResolvedValue({ rows: [{ ...row, expense_date: 'invalid-private-value' }] })
+    mocks.query.mockResolvedValue({ rows: [{ items: [{ ...row, expense_date: 'invalid-private-value' }], total_count: '1', total_cents: '123456' }] })
     const log = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       const response = await GET(new NextRequest('http://localhost/api/expense-notes'))

@@ -1,4 +1,4 @@
-import { readPagination, readExpenseOrder, orderBy, queryPage, listResponse } from '@/lib/pagination'
+import { readPagination, readExpenseOrder, queryPage, listResponse } from '@/lib/pagination'
 import { observeHttp } from '@/observability/diagnostics'
 import { closeRejectedUpload } from '@/lib/bounded-form'
 import { auth } from '@/lib/auth'
@@ -16,12 +16,8 @@ export async function GET(request: Request) {
       const parameters = new URL(request.url).searchParams
       const page = readPagination(parameters), order = readExpenseOrder(parameters, 'created_at DESC')
       const sourceSql = 'SELECT * FROM expense_notes WHERE user_id = $1'
-      if (page) {
-        const result = await queryPage(client, { sourceSql, values: [actor.id], order, page, monetary: true })
-        return listResponse({ items: result.rows.map(row => toExpenseNote(row)), pagination: result.pagination, totals: result.totals }, true)
-      }
-      const result = await client.query(`${sourceSql} ORDER BY ${orderBy(order)}`, [actor.id])
-      return listResponse(result.rows.map(row => toExpenseNote(row)), false)
+      const result = await queryPage(client, { sourceSql, values: [actor.id], order, page, monetary: true })
+      return listResponse({ items: result.rows.map(row => toExpenseNote(row)), pagination: result.pagination, totals: result.totals })
     })
   }, observeHttp)
 }

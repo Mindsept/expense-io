@@ -1,16 +1,16 @@
 import { expect, test } from '@playwright/test'
 import { readTestTarget } from '../../../support/test-target'
-import { companyUsers, deferred, employeeNote, ExpenseUi } from '../expense-ui'
+import { companyUsers, deferred, employeeNote, ExpenseUi, pagedDirectory, pagedNotes } from '../expense-ui'
 
 test.use({ baseURL: readTestTarget() })
 
 test('an uncertain submission preserves every field and does not retry automatically', async ({ page }) => {
   let posts = 0
-  await page.route('**/api/expense-notes', async route => {
+  await page.route('**/api/expense-notes*', async route => {
     if (route.request().method() === 'POST') {
       posts += 1
       await route.abort('failed')
-    } else await route.fulfill({ json: [employeeNote] })
+    } else await route.fulfill({ json: pagedNotes([employeeNote]) })
   })
   const ui = new ExpenseUi(page)
   await ui.signIn('EMPLOYEE')
@@ -27,11 +27,11 @@ test('an uncertain submission preserves every field and does not retry automatic
 
 test('a confirmed submission keeps its success message and stale history can be refreshed', async ({ page }) => {
   let reads = 0
-  await page.route('**/api/expense-notes', async route => {
+  await page.route('**/api/expense-notes*', async route => {
     if (route.request().method() === 'POST') return route.fulfill({ status: 201, json: employeeNote })
     reads += 1
     if (reads === 2) return route.fulfill({ status: 500, body: 'private server detail' })
-    return route.fulfill({ json: reads === 1 ? [employeeNote] : [{ ...employeeNote, description: 'Historique actualisé' }] })
+    return route.fulfill({ json: pagedNotes(reads === 1 ? [employeeNote] : [{ ...employeeNote, description: 'Historique actualisé' }]) })
   })
   const ui = new ExpenseUi(page)
   await ui.signIn('EMPLOYEE')
@@ -54,9 +54,9 @@ test('a confirmed submission keeps its success message and stale history can be 
 test('a manager conflict preserves the row until an explicit refresh confirms removal', async ({ page }) => {
   let reads = 0
   let decisions = 0
-  await page.route('**/api/manager/expense-notes', route => {
+  await page.route('**/api/manager/expense-notes*', route => {
     reads += 1
-    return route.fulfill({ json: reads === 1 ? [employeeNote] : [] })
+    return route.fulfill({ json: pagedNotes(reads === 1 ? [employeeNote] : []) })
   })
   await page.route(`**/api/manager/expense-notes/${employeeNote.id}/approve`, route => {
     decisions += 1
@@ -76,10 +76,10 @@ test('a manager conflict preserves the row until an explicit refresh confirms re
 
 test('a successful manager decision is announced independently of a failed refresh', async ({ page }) => {
   let reads = 0
-  await page.route('**/api/manager/expense-notes', route => {
+  await page.route('**/api/manager/expense-notes*', route => {
     reads += 1
     if (reads === 2) return route.fulfill({ status: 200, contentType: 'application/json', body: '{broken' })
-    return route.fulfill({ json: reads === 1 ? [employeeNote] : [] })
+    return route.fulfill({ json: pagedNotes(reads === 1 ? [employeeNote] : []) })
   })
   await page.route(`**/api/manager/expense-notes/${employeeNote.id}/approve`, route => route.fulfill({ json: { status: 'approved' } }))
   await new ExpenseUi(page).signIn('MANAGER', '/manager')
@@ -98,17 +98,23 @@ test('HR assignments lock the whole group and each stale section has its own ret
   let userReads = 0
   let noteReads = 0
   let writes = 0
-  await page.route('**/api/hr/users', route => {
+  await page.route('**/api/hr/users*', route => {
+    const url = new URL(route.request().url())
+    // Manager search is a separate paginated request; only the directory
+    // refresh after assignment should receive the simulated stale error.
+    if (url.searchParams.has('role') || url.searchParams.has('selectedManagerId')) {
+      return route.fulfill({ json: pagedDirectory(companyUsers.filter(user => user.role === 'manager')) })
+    }
     userReads += 1
     return userReads === 2
       ? route.fulfill({ status: 500, json: { error: 'private' } })
-      : route.fulfill({ json: companyUsers })
+      : route.fulfill({ json: pagedDirectory(companyUsers) })
   })
-  await page.route('**/api/hr/expense-notes', route => {
+  await page.route('**/api/hr/expense-notes*', route => {
     noteReads += 1
     return noteReads === 2
       ? route.fulfill({ status: 200, contentType: 'application/json', body: '{broken' })
-      : route.fulfill({ json: [employeeNote] })
+      : route.fulfill({ json: pagedNotes([employeeNote]) })
   })
   await page.route('**/api/hr/users/*/manager', async route => {
     writes += 1

@@ -1,8 +1,8 @@
 import { expect, it, vi } from 'vitest'
 import { directoryFilters, listResponse, orderBy, queryPage, readDirectoryOrder, readExpenseOrder, readPagination } from '@/lib/pagination'
 
-it('keeps legacy calls unpaginated and defaults the other page parameter only after opt-in', () => {
-  expect(readPagination(new URLSearchParams())).toBeUndefined()
+it('bounds every call and defaults omitted page parameters', () => {
+  expect(readPagination(new URLSearchParams())).toEqual({ page: 1, pageSize: 20, offset: 0 })
   expect(readPagination(new URLSearchParams('page=2'))).toEqual({ page: 2, pageSize: 20, offset: 20 })
   expect(readPagination(new URLSearchParams('pageSize=100'))).toEqual({ page: 1, pageSize: 100, offset: 0 })
 })
@@ -54,12 +54,10 @@ it.each([
 ])('refuses corrupt or unrepresentable aggregates instead of inventing a total', async row => {
   await expect(queryPage({ query: vi.fn().mockResolvedValue({ rows: [row] }) }, { sourceSql: 'SELECT * FROM expense_notes', values: [], order: { column: 'amount', direction: 'DESC' }, page: { page: 1, pageSize: 20, offset: 0 }, monetary: true })).rejects.toThrow()
 })
-it('marks the compatibility mode explicitly and prevents caching of personal list data', async () => {
-  for (const paged of [false, true]) {
-    const body = paged ? { items: [] } : []
-    const response = listResponse(body, paged)
-    expect(response.headers.get('x-pagination-mode')).toBe(paged ? 'paged' : 'legacy')
-    expect(response.headers.get('cache-control')).toBe('no-store')
-    expect(await response.json()).toEqual(body)
-  }
+it('marks every list as paged and prevents caching of personal data', async () => {
+  const body = { items: [] }
+  const response = listResponse(body)
+  expect(response.headers.get('x-pagination-mode')).toBe('paged')
+  expect(response.headers.get('cache-control')).toBe('no-store')
+  expect(await response.json()).toEqual(body)
 })
