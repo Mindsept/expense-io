@@ -7,10 +7,10 @@ function requiredString(value: unknown): string {
 }
 
 function timestamp(value: unknown): string {
-  // pg returns timestamptz as Date. Serialized rows must include a timezone.
+  // pg returns timestamptz as Date; JSONB rows retain PostgreSQL's microseconds.
   if (!(value instanceof Date) && (
     typeof value !== 'string' ||
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(value) ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(value) ||
     !isCivilDate(value.slice(0, 10)) ||
     Number(value.slice(11, 13)) > 23 || Number(value.slice(14, 16)) > 59 || Number(value.slice(17, 19)) > 59
   )) throw new Error('Invalid expense row: expected timestamp')
