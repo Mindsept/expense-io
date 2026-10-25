@@ -38,9 +38,13 @@
       "headSha": "ae7d7dc1e72ce04db4cef8fa1c1bdaee67b0df10",
       "runId": 40239646020,
       "validationJobId": 121308522866,
-      "conclusion": null,
-      "statusAtObservation": "in_progress",
-      "counts": null,
+      "conclusion": "success",
+      "statusAtObservation": "completed",
+      "counts": {
+        "unit": 708,
+        "api": 242,
+        "e2e": 29
+      },
       "localCountsOnMeasuredSource": {
         "unit": 708,
         "api": 242,
