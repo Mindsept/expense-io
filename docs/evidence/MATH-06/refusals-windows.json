@@ -1,0 +1,46 @@
+{
+  "observedAt": "2026-10-25T15:13:30.688Z",
+  "cases": [
+    {
+      "name": "development_database_refused",
+      "exitCode": 1,
+      "message": "MATH-06 operation failed. Private driver output was suppressed; inspect the runbook and retained local state.",
+      "outputCreated": false
+    },
+    {
+      "name": "confirmation_required",
+      "exitCode": 1,
+      "message": "MATH-06: confirm_stopped_synthetic_demo_required. See docs/exploitation-locale.md.",
+      "outputCreated": false
+    },
+    {
+      "name": "existing_backup_output_preserved",
+      "exitCode": 1,
+      "message": "MATH-06 operation failed. Private driver output was suppressed; inspect the runbook and retained local state."
+    },
+    {
+      "name": "incomplete_archive_refused",
+      "exitCode": 1,
+      "message": "MATH-06: incomplete_or_invalid_manifest. See docs/exploitation-locale.md.",
+      "outputCreated": false
+    },
+    {
+      "name": "corrupt_database_dump_refused",
+      "exitCode": 1,
+      "message": "MATH-06: database_archive_integrity_failed. See docs/exploitation-locale.md.",
+      "outputCreated": false
+    },
+    {
+      "name": "occupied_port_refused",
+      "exitCode": 1,
+      "message": "MATH-06 operation failed. Private driver output was suppressed; inspect the runbook and retained local state.",
+      "outputCreated": false
+    },
+    {
+      "name": "existing_project_volumes_and_containers_refused",
+      "refused": true
+    }
+  ],
+  "existingArchiveManifestUnchanged": true,
+  "notes": "Real CLI refusals except the separately identified read-only existing-project guard; no development services accessed."
+}

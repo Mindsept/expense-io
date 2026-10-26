@@ -1,0 +1,64 @@
+[
+  {
+    "Service": "localstack",
+    "Image": "localstack/localstack:3.8.1",
+    "Ports": [
+      {
+        "mode": "ingress",
+        "host_ip": "127.0.0.1",
+        "target": 4566,
+        "published": "4567",
+        "protocol": "tcp"
+      }
+    ],
+    "Healthcheck": {
+      "test": [
+        "CMD",
+        "curl",
+        "-sf",
+        "http://localhost:4566/_localstack/health"
+      ],
+      "timeout": "5s",
+      "interval": "5s",
+      "retries": 10
+    },
+    "Volumes": [
+      {
+        "type": "volume",
+        "source": "localstack-data",
+        "target": "/var/lib/localstack",
+        "volume": {}
+      }
+    ]
+  },
+  {
+    "Service": "postgres",
+    "Image": "postgres:16-alpine",
+    "Ports": [
+      {
+        "mode": "ingress",
+        "host_ip": "127.0.0.1",
+        "target": 5432,
+        "published": "5433",
+        "protocol": "tcp"
+      }
+    ],
+    "Healthcheck": {
+      "test": [
+        "CMD-SHELL",
+        "pg_isready -U expense -d expense_io"
+      ],
+      "timeout": "5s",
+      "interval": "5s",
+      "retries": 10
+    },
+    "Volumes": [
+      {
+        "type": "volume",
+        "source": "postgres-data",
+        "target": "/var/lib/postgresql/data",
+        "volume": {}
+      }
+    ]
+  }
+]

@@ -1,0 +1,140 @@
+{
+  "observedAt": "2026-10-25T15:11:51.752Z",
+  "node": "v24.22.1",
+  "sourceProject": "arla-ci-math06-b867e5cbcc93",
+  "cases": [
+    {
+      "name": "all_available",
+      "exitCode": 0,
+      "durationMs": 289,
+      "report": {
+        "ok": true,
+        "components": {
+          "configuration": {
+            "state": "ok",
+            "message": "Explicit configuration present."
+          },
+          "database": {
+            "state": "ok",
+            "message": "PostgreSQL answered a read-only query with the actual restricted expense_web login; this is not a complete RLS audit."
+          },
+          "storage": {
+            "state": "ok",
+            "message": "Authenticated S3 API responded; an open TCP port alone is not used as readiness."
+          },
+          "bucket": {
+            "state": "ok",
+            "message": "Configured bucket is present and accessible; no bucket or object was created."
+          }
+        }
+      }
+    },
+    {
+      "name": "configuration_missing",
+      "exitCode": 1,
+      "durationMs": 290,
+      "report": {
+        "ok": false,
+        "components": {
+          "configuration": {
+            "state": "missing",
+            "message": "Provide DATABASE_URL, S3_ENDPOINT, S3_BUCKET and private S3 credentials explicitly; no .env is loaded."
+          },
+          "database": {
+            "state": "unavailable",
+            "message": "Check the local PostgreSQL service and the private expense_web connection."
+          },
+          "storage": {
+            "state": "unavailable",
+            "message": "Check the local S3 service and credentials."
+          },
+          "bucket": {
+            "state": "unavailable",
+            "message": "Bucket not checked."
+          }
+        }
+      }
+    },
+    {
+      "name": "bucket_absent",
+      "exitCode": 1,
+      "durationMs": 250,
+      "report": {
+        "ok": false,
+        "components": {
+          "configuration": {
+            "state": "ok",
+            "message": "Explicit configuration present."
+          },
+          "database": {
+            "state": "ok",
+            "message": "PostgreSQL answered a read-only query with the actual restricted expense_web login; this is not a complete RLS audit."
+          },
+          "storage": {
+            "state": "ok",
+            "message": "Authenticated S3 API responded; an open TCP port alone is not used as readiness."
+          },
+          "bucket": {
+            "state": "missing",
+            "message": "Configured bucket is absent. Run the explicit isolated preparation if this is a disposable demo."
+          }
+        }
+      }
+    },
+    {
+      "name": "postgres_paused",
+      "exitCode": 1,
+      "durationMs": 2756,
+      "report": {
+        "ok": false,
+        "components": {
+          "configuration": {
+            "state": "ok",
+            "message": "Explicit configuration present."
+          },
+          "database": {
+            "state": "unavailable",
+            "message": "Check the local PostgreSQL service and the private expense_web connection."
+          },
+          "storage": {
+            "state": "ok",
+            "message": "Authenticated S3 API responded; an open TCP port alone is not used as readiness."
+          },
+          "bucket": {
+            "state": "ok",
+            "message": "Configured bucket is present and accessible; no bucket or object was created."
+          }
+        }
+      }
+    },
+    {
+      "name": "localstack_paused",
+      "exitCode": 1,
+      "durationMs": 2792,
+      "report": {
+        "ok": false,
+        "components": {
+          "configuration": {
+            "state": "ok",
+            "message": "Explicit configuration present."
+          },
+          "database": {
+            "state": "ok",
+            "message": "PostgreSQL answered a read-only query with the actual restricted expense_web login; this is not a complete RLS audit."
+          },
+          "storage": {
+            "state": "unavailable",
+            "message": "Check the local S3 service and credentials."
+          },
+          "bucket": {
+            "state": "unavailable",
+            "message": "Bucket not checked."
+          }
+        }
+      }
+    }
+  ],
+  "allDatabaseCountsAndDigestsUnchanged": true,
+  "allReceiptHashesUnchanged": true,
+  "notes": "Real PostgreSQL/LocalStack process suspension and resume on this task-owned synthetic fixture only; CLI exit codes captured. Suspension keeps the in-memory LocalStack fixtures intact."
+}
