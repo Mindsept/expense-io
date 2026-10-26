@@ -55,7 +55,7 @@ for (const staleSection of ['directory', 'notes'] as const) {
     const trigger = staleSection === 'directory' ? 'Pagination des notes RH en attente' : 'Pagination de l’annuaire'
     await page.getByRole('navigation', { name: trigger, exact: true }).getByRole('button', { name: 'Suivant', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Organigramme (25)', exact: true })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Notes des managers racine en attente (25)', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Notes à valider par les RH (25)', exact: true })).toBeVisible()
     await expect.poll(() => delayedReads).toBe(2)
 
     const oldResponse = page.waitForResponse(response => new URL(response.url()).pathname === oldPath && response.status() === 503)

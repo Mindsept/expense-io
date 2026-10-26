@@ -253,8 +253,7 @@ export function AdminConsole() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Espace RH</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Organigramme de votre entreprise et validation des notes de frais
-          des managers sans manager assigné.
+          Organigramme de votre entreprise et notes de frais relevant de votre validation RH.
         </p>
       </div>
 
@@ -361,7 +360,7 @@ export function AdminConsole() {
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <h2 ref={notesHeadingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
-          Notes des managers racine en attente{notesTotals ? ` (${notesPage.totalItems})` : ''}
+          Notes à valider par les RH{notesTotals ? ` (${notesPage.totalItems})` : ''}
         </h2>
         {notesTotals && <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">
           Total des notes en attente : {notesTotals.count} · {currencyFormatter.format(notesTotals.amount ?? 0)}
@@ -390,11 +389,11 @@ export function AdminConsole() {
             Aucune note en attente.
           </p>
         ) : (
-          <div role="region" className="relative overflow-x-auto" tabIndex={0} aria-label="Notes des managers en attente, tableau défilant">
+          <div role="region" className="relative overflow-x-auto" tabIndex={0} aria-label="Notes à valider par les RH, tableau défilant">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
-                  <th className="px-6 py-3 font-medium">Manager</th>
+                  <th className="px-6 py-3 font-medium">Auteur</th>
                   <th className="px-6 py-3 font-medium">Date</th>
                   <th className="px-6 py-3 font-medium">Description</th>
                   <th className="px-6 py-3 text-right font-medium">Montant</th>

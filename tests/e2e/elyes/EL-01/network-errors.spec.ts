@@ -140,7 +140,7 @@ test('HR assignments lock the whole group and each stale section has its own ret
   await expect(page.getByRole('button', { name: 'Réessayer les notes', exact: true })).toBeEnabled()
   await page.getByRole('button', { name: 'Réessayer les notes', exact: true }).click()
   await expect(page.getByRole('main').getByRole('alert')).toHaveCount(0)
-  await expect(page.getByRole('heading', { name: 'Notes des managers racine en attente (1)', exact: true })).toBeFocused()
+  await expect(page.getByRole('heading', { name: 'Notes à valider par les RH (1)', exact: true })).toBeFocused()
   await expect(page.getByRole('status')).toHaveText('Affectation enregistrée.')
   expect(writes).toBe(1)
 })

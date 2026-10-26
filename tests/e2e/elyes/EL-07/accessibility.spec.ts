@@ -9,7 +9,7 @@ const secondNote = { ...firstNote, id: '00000000-0000-4000-8000-000000000102', e
 
 for (const screen of [
   { role: 'MANAGER' as const, path: '/manager', api: 'manager', heading: 'En attente' },
-  { role: 'HR' as const, path: '/hr', api: 'hr', heading: 'Notes des managers racine en attente' },
+  { role: 'HR' as const, path: '/hr', api: 'hr', heading: 'Notes à valider par les RH' },
 ]) {
   test(`${screen.role}: initial loading and failure never announce a fabricated zero total`, async ({ page }) => {
     const response = deferred()
@@ -136,7 +136,7 @@ test('employee submits and opens a receipt with the keyboard, with associated up
 for (const screen of [
   { role: 'EMPLOYEE' as const, path: '/expenses', region: 'Historique des notes de frais, tableau défilant' },
   { role: 'MANAGER' as const, path: '/manager', region: 'Notes en attente, tableau défilant' },
-  { role: 'HR' as const, path: '/hr', region: 'Notes des managers en attente, tableau défilant' },
+  { role: 'HR' as const, path: '/hr', region: 'Notes à valider par les RH, tableau défilant' },
 ]) {
   test(`${screen.role}: small viewport keeps the table in a keyboard scroll region`, async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 720 })
