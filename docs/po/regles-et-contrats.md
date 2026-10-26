@@ -18,19 +18,21 @@
 
 Ces décisions ne sont pas remises en discussion par un ancien paragraphe de préparation encore présent dans une preuve historique.
 
-## Compléments à arbitrer, avec le comportement actuel
+## Compléments validés par Hugo le 26 octobre
 
-Ce tableau sépare les faits de code des propositions. **Aucune des propositions ci-dessous n'est présentée comme approuvée par Hugo.** Elles n'empêchent pas de tester les parcours indépendants ; elles conditionnent la clôture du cadrage produit.
+Hugo a répondu explicitement **« Valider ces règles »** à la proposition dans la conversation du 26 octobre. Le tableau consigne ces choix et leur lien avec le code ; il ne vaut pas réception des parcours de l'application. La limite dite « 10 Mo » dans la question correspond ici à la limite technique existante, **10 MiB = 10 485 760 octets**.
 
-| Sujet | Fait vérifié | Proposition pour cette remise | Effet d'un autre choix |
+| Sujet | Fait vérifié | Décision validée pour cette remise | Effet d'un changement ultérieur |
 | --- | --- | --- | --- |
-| Dates futures | [Validation](../../src/lib/expense-input.ts) : vraie date civile, sans borne « aujourd'hui ». Des tests existants conservent une date future. | Conserver ce comportement dans cette livraison et annoncer l'absence de règle temporelle métier. | Interdire les dates futures impose une règle de fuseau/date de référence, une correction API/UI et les tests correspondants ; ne pas l'ajouter seulement dans l'écran. |
-| Justificatifs | PNG, JPEG, WebP et PDF non vides, au plus **10 MiB = 10 485 760 octets**, MIME et conteneur contrôlés. OCR a ses propres limites et n'est pas promis pour tout justificatif. | Ratifier ces quatre formats et cette limite pour le dépôt. | Réduction de formats ou taille : modifier aide, contrat et tests ensemble ; ne pas retirer silencieusement l'accès aux anciens reçus. |
-| Total affiché | [Pagination](../pagination.md) : total de tout l'ensemble autorisé et filtré ; indépendant de la page. Personnel : tous statuts ; manager/RH : notes en attente actuellement éligibles. | Ratifier cette définition ; conserver l'indication du périmètre dans l'interface. | Un montant « à rembourser » ou « de la page » serait un autre agrégat, à nommer et tester explicitement. |
+| Dates futures | [Validation](../../src/lib/expense-input.ts) : vraie date civile, sans borne « aujourd'hui ». Des tests existants conservent une date future. | **Dates futures acceptées**, en conservant les contrôles de date civile. | Interdire les dates futures impose une règle de fuseau/date de référence, une correction API/UI et les tests correspondants ; ne pas l'ajouter seulement dans l'écran. |
+| Justificatifs | PNG, JPEG, WebP et PDF non vides, au plus **10 MiB = 10 485 760 octets**, MIME et conteneur contrôlés. OCR a ses propres limites et n'est pas promis pour tout justificatif. | **Ces quatre formats et cette limite sont retenus** pour le dépôt. | Réduction de formats ou taille : modifier aide, contrat et tests ensemble ; ne pas retirer silencieusement l'accès aux anciens reçus. |
+| Total affiché | [Pagination](../pagination.md) : total de tout l'ensemble autorisé et filtré ; indépendant de la page. Personnel : tous statuts ; manager/RH : notes en attente actuellement éligibles. | **Total de tout l'ensemble autorisé et filtré**, et non de la seule page ; garder l'indication du périmètre. | Un montant « à rembourser » ou « de la page » serait un autre agrégat, à nommer et tester explicitement. |
 | Récupération de compte | Aucun parcours de récupération en libre-service livré dans les routes examinées. | Hors périmètre de cette remise ; conserver comme amélioration priorisée, sans prétendre qu'une procédure administrative est implémentée. | Nouveau cycle de vie de jetons, preuve d'adresse, révocation et tests nécessaires. |
-| Modification / annulation de note | Aucun parcours public de modification, suppression, réouverture ou annulation de note. La décision terminale est unique ; historique et registre d'idempotence sont conservés. | Hors périmètre de cette remise ; demande incorrecte traitée par refus et nouvelle note selon la règle métier future. | Exige une décision sur historique, justificatifs, idempotence et droits ; ne pas proposer un DELETE direct. |
-| Expiration d'invitation | `ENROLLMENT_INVITATION_TTL_SECONDS` obligatoire, de 60 à 604800 secondes, aucun défaut. Les tests à 3600 secondes sont des fixtures. | **48 heures** en environnement opérationnel, à confirmer et configurer explicitement. | Autre durée dans la borne : configuration et preuve d'expiration ; hors borne : révision du contrat. |
-| Preuve d'adresse | Lien privé envoyé à l'adresse exacte par un bridge de livraison ; deux secrets dont seuls les condensats sont en base ; contrôle de possession et consommation atomique. | Ratifier ce mécanisme. Le fournisseur réel et sa configuration restent distincts de la boîte de test locale. | Aucun email réel ni assurance de livraison fournisseur ne découle des tests `.test`. |
+| Modification / annulation de note | Aucun parcours public de modification, suppression, réouverture ou annulation de note. La décision terminale est unique ; historique et registre d'idempotence sont conservés. | **Hors périmètre de cette remise**, conservé au backlog ; aucune procédure de correction supplémentaire n'est annoncée comme livrée. | Exige une décision sur historique, justificatifs, idempotence et droits ; ne pas proposer un DELETE direct. |
+| Expiration d'invitation | `ENROLLMENT_INVITATION_TTL_SECONDS` obligatoire, de 60 à 604800 secondes, aucun défaut runtime. Les tests à 3600 secondes sont des fixtures. | **48 heures = 172800 secondes**, valeur explicite du modèle `.env.example`, usage unique. | La plage 60 secondes–7 jours reste une borne de sécurité technique ; elle ne remplace pas la règle produit de 48 heures. Une autre durée opérationnelle demande un nouvel arbitrage. |
+| Preuve d'adresse | Lien privé envoyé à l'adresse exacte par un bridge de livraison ; deux secrets dont seuls les condensats sont en base ; contrôle de possession et consommation atomique. | **Lien privé délivré au destinataire exact**, usage unique et expiration de 48 heures. Le fournisseur réel et sa configuration restent distincts de la boîte de test locale. | Aucun email réel ni assurance de livraison fournisseur ne découle des tests `.test`. |
+
+Ces arbitrages sont clos. Pour activer une livraison réelle, fournir séparément et en privé `AUTH_URL`, `ENROLLMENT_DELIVERY_URL` et `ENROLLMENT_DELIVERY_BEARER` ; aucune URL de fournisseur ni clé n'est déduite de la décision. Le runtime continue à refuser une configuration absente ou invalide. La récupération de compte et la modification/annulation restent des améliorations futures, pas des défauts bloquant cette version.
 
 ## Contrats communs effectifs
 
@@ -61,11 +63,11 @@ Ce tableau sépare les faits de code des propositions. **Aucune des propositions
 
 Les tests suivent `tests/{unit,api,e2e}/{owner}/{ID}`. Les transferts se font dans l'ordre après intégration, avec contrat, SHA, tests et limites. Le fait que Codex exécute une revue ou un scénario ne vaut pas signature personnelle du responsable.
 
-## Acceptation documentaire restante
+## Suivi documentaire et réception
 
-- [ ] Hugo tranche le tableau des compléments ou accepte explicitement les propositions.
+- [x] Hugo a validé les compléments par « Valider ces règles », le 26 octobre 2026.
 - [ ] Le relecteur confirme la cohérence technique des contrats / propriétaires.
-- [ ] Le SHA de remise et les preuves finales sont reliés à [MATH-04](../recette-finale.md).
-- [ ] Aucun test professeur non fourni ni validation humaine n'est annoncé comme exécuté.
+- [x] Candidat testé `f6592bc` identifié ; preuves détaillées centralisées par l'intégrateur dans [MATH-04](../recette-finale.md).
+- [x] Aucun test professeur non fourni ni validation humaine absente n'est annoncé comme exécuté.
 
 Choix architectural expliqué : garder un monolithe modulaire et les transactions locales réduit le coût d'intégration pour cette remise. Les ports sont utilisés là où ils isolent un cas d'usage réel ; une distribution en microservices et une file OCR durable sont écartées faute de besoin mesuré justifiant leur exploitation. Références : cours 1–2, diapositives 20, 32, 47–49 ; [audit et preuves](audit-et-preuves.md).

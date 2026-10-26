@@ -7,7 +7,7 @@
   "preparationBranchSha": "6842c59cc674c47fcc7679ff1122cffa131ebd50",
   "markdownValidation": {
     "documents": 6,
-    "relativeLinksChecked": 81,
+    "relativeLinksChecked": 86,
     "pinnedGitObjectLinksChecked": 7,
     "brokenLinks": [],
     "diffWhitespaceCheckExitCode": 0,
@@ -41,9 +41,22 @@
     "namedHumanReviewerAcceptance": false
   },
   "humanAcceptance": {
-    "productComplementsApproved": false,
+    "productComplementsApproved": true,
+    "productComplementsApprovalDate": "2026-10-26",
+    "productComplementsApprovalSource": "Hugo explicitly answered 'Valider ces règles' in the task conversation; recorded in regles-et-contrats.md.",
     "productJourneyAccepted": false,
     "collectiveRehearsalExecuted": false,
     "trainingFeatureExecuted": false
+  },
+  "integratedCandidateCampaign": {
+    "applicationSha": "f6592bcc53ddceb77038bccda43072355673a54c",
+    "source": "Integrator's local CI campaign, detailed evidence centralized in docs/evidence/MATH-04/final-campaign.json.",
+    "successfulStages": 8,
+    "unitTestsPassed": 748,
+    "apiTestsPassed": 254,
+    "e2eTestsPassed": 42,
+    "newDirectNotificationRlsTestSha": "e415113279c4b776efe1b989ef3bc0fa1e6b5225",
+    "newDirectNotificationRlsTestPassed": true,
+    "rlsCoverageLimit": "Five populated notification tables checked without actor and with foreign-company actor; not every mutation/role combination."
   }
 }

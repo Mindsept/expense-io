@@ -36,8 +36,9 @@ Les formats historiques JJ/MM/AAAA (aussi points/tirets), AAAA-MM-JJ, JJ/MM/AA
 et mois français textuels sont conservés. Les années à deux chiffres désignent
 2000–2099, comme auparavant. La validation civile partagée de LE-12 contrôle les
 jours, mois et années bissextiles sans conversion de fuseau. Plusieurs dates
-valides différentes provoquent une abstention sur la date seulement ; aucune
-interdiction de date future n'est ajoutée en l'absence de décision PO-01.
+valides différentes provoquent une abstention sur la date seulement. Les dates
+futures restent acceptées, conformément au choix validé par Hugo le 26 octobre
+dans [PO-01](po/regles-et-contrats.md).
 
 ## Décision et limites
 

@@ -7,6 +7,13 @@ Le header X-Pagination-Mode vaut toujours paged. Les tableaux legacy sont refus�
 par le schéma courant ; les autres opérations et DTO restent inchangés.
 [Guide de migration et retour de version](../runbooks/LE-11-list-migration.md).
 
+Compléments produit validés par Hugo le 26 octobre : dates futures acceptées,
+PNG/JPEG/WebP/PDF jusqu'à 10 MiB, total de tout l'ensemble autorisé filtré,
+récupération de compte et modification/annulation hors version, invitations
+privées de 48 heures à usage unique. Voir les [règles courantes](../po/regles-et-contrats.md).
+Les attentes PO-01 des sections historiques ci-dessous sont donc dépassées ;
+elles ne rouvrent ni ces arbitrages ni ceux multi-RH/OCR du 25 octobre.
+
 Les sections ci-dessous retracent les versions historiques. Les fichiers v1–v4
 sont conservés comme archives ; ils ne décrivent plus le serveur courant.
 

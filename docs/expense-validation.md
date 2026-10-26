@@ -23,8 +23,8 @@ POST exige exactement une occurrence de chaque champ requis :
   `99999999.99`, compatible NUMERIC(10,2). La chaîne validée est liée à SQL sans
   parseFloat ni conversion intermédiaire en flottant.
 - `expenseDate` : vraie date civile `YYYY-MM-DD`, années 0001–9999 et années
-  bissextiles vérifiées par le validateur partagé. Aucune interdiction de date
-  future inventée en l'absence de règle PO-01.
+  bissextiles vérifiées par le validateur partagé. Les dates futures sont
+  acceptées, choix validé par Hugo le 26 octobre dans [PO-01](po/regles-et-contrats.md).
 - `description` : texte trimé non vide, maximum technique de 4000 unités UTF-16,
   sans contrôles C0/DEL hors tabulation/retours de ligne. Ce plafond borne le
   champ applicatif ; ce n'est pas une règle produit présentée comme approuvée.
