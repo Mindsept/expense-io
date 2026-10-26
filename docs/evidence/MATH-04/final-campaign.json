@@ -1,68 +1,549 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "ticket": "ARLA-42",
-  "status": "not-executed",
   "repository": "Mindsept/expense-io",
-  "preparationBaseSha": "888a74ddae9db28378596adc7709358798986e49",
-  "deliverySha": null,
-  "deliveryBranch": null,
-  "workingTree": null,
-  "startedAt": null,
-  "completedAt": null,
+  "status": "technical-campaign-passed-product-acceptance-pending",
+  "updatedOn": "2026-10-26",
   "timezone": "Europe/Paris",
-  "environment": {
-    "os": null,
-    "architecture": null,
-    "node": null,
-    "npm": null,
-    "dockerEngine": null,
-    "compose": null,
-    "postgresImageDigest": null,
-    "storageImageDigest": null,
-    "isolatedProject": null
-  },
-  "commands": [],
-  "commandsRequiredFields": [
-    "text",
-    "exitCode",
-    "durationMs",
-    "report",
-    "sha"
+  "preparationBaseSha": "888a74ddae9db28378596adc7709358798986e49",
+  "candidateSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+  "deliverySha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+  "publicationStatus": "Evidence prepared for publication; GitHub integration tracked separately.",
+  "candidateAuthorization": "Hugo requested completion of all remaining tickets and autonomous tests; the assistant assembled PRs 17/27/30/31/32/33 within that scope. PR30 is already in PR31 ancestry.",
+  "campaigns": [
+    {
+      "id": "windows-integrated-20261026",
+      "status": "passed",
+      "sourceSha": "f6592bcc53ddceb77038bccda43072355673a54c",
+      "branch": "codex/arla-final-integration",
+      "workingTreeBeforeRun": "clean",
+      "startedAt": "2026-10-26T16:53:02.3181606Z",
+      "completedAt": "2026-10-26T17:00:17.2340926Z",
+      "timezone": "Europe/Paris",
+      "utcOffset": "+01:00",
+      "metadata": "windows-integrated-20261026/metadata.json",
+      "summary": "windows-integrated-20261026/summary.json",
+      "environment": {
+        "os": "Microsoft Windows NT 10.0.26200.0",
+        "architecture": "x64",
+        "node": "24.22.1",
+        "npm": "11.19.1",
+        "dockerEngine": "29.9.2",
+        "compose": "5.6.1",
+        "postgresImage": "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+        "storageImage": "localstack/localstack@sha256:b279c01f4cfb8f985a482e4014cabc1e2697b9d7a6c8c8db2e40f4d9f93687c7",
+        "isolatedProject": "arla-ci-086d9f19c2fb"
+      },
+      "entryCommand": "npm run test:ci",
+      "commandTextNote": "npm commands are readable equivalents of the Node/npm executable invocations in tests/support/ci.mjs; Compose arguments are instantiated with the recorded project. Installation timing was not recorded.",
+      "commands": [
+        {
+          "name": "verify",
+          "text": "npm run verify",
+          "exitCode": 0,
+          "durationMs": 63477,
+          "report": "windows-integrated-20261026/verify.log",
+          "sha": "f6592bcc53ddceb77038bccda43072355673a54c"
+        },
+        {
+          "name": "collect",
+          "text": "npm run test:collect",
+          "exitCode": 0,
+          "durationMs": 7572,
+          "report": "windows-integrated-20261026/collect.log",
+          "sha": "f6592bcc53ddceb77038bccda43072355673a54c"
+        },
+        {
+          "name": "services",
+          "text": "docker compose -p arla-ci-086d9f19c2fb -f docker-compose.test.yml up -d --wait --wait-timeout 180",
+          "exitCode": 0,
+          "durationMs": 10132,
+          "report": "windows-integrated-20261026/services.log",
+          "sha": "f6592bcc53ddceb77038bccda43072355673a54c"
+        },
+        {
+          "name": "prepare",
+          "text": "npm run test:prepare",
+          "exitCode": 0,
+          "durationMs": 4710,
+          "report": "windows-integrated-20261026/prepare.log",
+          "sha": "f6592bcc53ddceb77038bccda43072355673a54c"
+        },
+        {
+          "name": "build",
+          "text": "npm run build",
+          "exitCode": 0,
+          "durationMs": 35434,
+          "report": "windows-integrated-20261026/build.log",
+          "sha": "f6592bcc53ddceb77038bccda43072355673a54c"
+        },
+        {
+          "name": "api",
+          "text": "npm run test:api",
+          "exitCode": 0,
+          "durationMs": 222648,
+          "report": "windows-integrated-20261026/api.log",
+          "sha": "f6592bcc53ddceb77038bccda43072355673a54c"
+        },
+        {
+          "name": "e2e",
+          "text": "npm run test:e2e",
+          "exitCode": 0,
+          "durationMs": 84213,
+          "report": "windows-integrated-20261026/e2e.log",
+          "sha": "f6592bcc53ddceb77038bccda43072355673a54c"
+        },
+        {
+          "name": "cleanup",
+          "text": "docker compose -p arla-ci-086d9f19c2fb -f docker-compose.test.yml down --volumes --remove-orphans",
+          "exitCode": 0,
+          "durationMs": 4432,
+          "report": "windows-integrated-20261026/cleanup.log",
+          "sha": "f6592bcc53ddceb77038bccda43072355673a54c"
+        }
+      ],
+      "collection": {
+        "status": "passed",
+        "report": "windows-integrated-20261026/collect.log",
+        "levels": {
+          "unit": {
+            "files": 53,
+            "owners": [
+              "elyes",
+              "hamza",
+              "leandro",
+              "mathis"
+            ]
+          },
+          "api": {
+            "files": 23,
+            "owners": [
+              "hamza",
+              "leandro",
+              "mathis"
+            ]
+          },
+          "e2e": {
+            "files": 16,
+            "owners": [
+              "elyes",
+              "hamza",
+              "leandro",
+              "mathis"
+            ]
+          }
+        },
+        "note": "File discovery does not execute assertions."
+      },
+      "tests": {
+        "unit": {
+          "passed": 748,
+          "failed": 0,
+          "report": "windows-integrated-20261026/verify.log"
+        },
+        "api": {
+          "executed": 254,
+          "passed": 254,
+          "failed": 0,
+          "report": "windows-integrated-20261026/api.log"
+        },
+        "e2e": {
+          "executed": 42,
+          "passed": 42,
+          "failed": 0,
+          "skipped": 0,
+          "report": "windows-integrated-20261026/e2e.log"
+        }
+      },
+      "assistantExecuted": true,
+      "humanAcceptance": false
+    },
+    {
+      "id": "post-hr-label-confirmation",
+      "status": "failed-historical-corrected",
+      "sourceSha": "ebef48dcff5a303f58578580359b5a01951e445a",
+      "startedAt": null,
+      "completedAt": null,
+      "metadata": null,
+      "summary": "windows-label-failure-20261026/summary.json",
+      "tests": {
+        "unit": {
+          "passed": 748,
+          "failed": 0
+        },
+        "api": {
+          "executed": 254,
+          "passed": 254,
+          "failed": 0
+        },
+        "e2e": {
+          "executed": 42,
+          "passed": 41,
+          "failed": 1,
+          "skipped": 0
+        }
+      },
+      "failure": {
+        "test": "EL-07 HR: keyboard decisions distinguish similar notes and restore focus after removal",
+        "location": "tests/e2e/elyes/EL-07/accessibility.spec.ts:53",
+        "observed": "Locator /en attente, tableau défilant/ no longer matches the renamed HR region",
+        "assertion": "toBeFocused",
+        "diagnosisStatus": "Observed locator failure; correction/replay must be recorded separately"
+      },
+      "evidenceNote": "Failure archived with e2e.log; corrected and replayed in windows-final-20261026."
+    },
+    {
+      "id": "windows-final-20261026",
+      "status": "passed",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "branch": "codex/arla-final-integration",
+      "workingTreeBeforeRun": "clean",
+      "startedAt": "2026-10-26T17:36:34.1895294Z",
+      "completedAt": "2026-10-26T17:43:25.396Z",
+      "timezone": "Europe/Paris",
+      "utcOffset": "+01:00",
+      "metadata": "windows-final-20261026/metadata.json",
+      "summary": "windows-final-20261026/summary.json",
+      "environment": {
+        "os": "Microsoft Windows NT 10.0.26200.0",
+        "architecture": "x64",
+        "node": "24.22.1",
+        "npm": "11.19.1",
+        "dockerEngine": "29.9.2",
+        "compose": "5.6.1",
+        "postgresImage": "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+        "storageImage": "localstack/localstack@sha256:b279c01f4cfb8f985a482e4014cabc1e2697b9d7a6c8c8db2e40f4d9f93687c7",
+        "isolatedProject": "arla-ci-583e3db766fb"
+      },
+      "entryCommand": "npm run test:ci",
+      "commandTextNote": "npm commands are readable equivalents of the Node/npm executable invocations in tests/support/ci.mjs; Compose arguments are instantiated with the recorded project. Installation timing was not recorded.",
+      "commands": [
+        {
+          "name": "verify",
+          "text": "npm run verify",
+          "exitCode": 0,
+          "durationMs": 26781,
+          "report": "windows-final-20261026/verify.log",
+          "sha": "e0125dac546b55f535dcd7fd1c963610206c3c1f"
+        },
+        {
+          "name": "collect",
+          "text": "npm run test:collect",
+          "exitCode": 0,
+          "durationMs": 5767,
+          "report": "windows-final-20261026/collect.log",
+          "sha": "e0125dac546b55f535dcd7fd1c963610206c3c1f"
+        },
+        {
+          "name": "services",
+          "text": "docker compose -p arla-ci-583e3db766fb -f docker-compose.test.yml up -d --wait --wait-timeout 180",
+          "exitCode": 0,
+          "durationMs": 15027,
+          "report": "windows-final-20261026/services.log",
+          "sha": "e0125dac546b55f535dcd7fd1c963610206c3c1f"
+        },
+        {
+          "name": "prepare",
+          "text": "npm run test:prepare",
+          "exitCode": 0,
+          "durationMs": 4674,
+          "report": "windows-final-20261026/prepare.log",
+          "sha": "e0125dac546b55f535dcd7fd1c963610206c3c1f"
+        },
+        {
+          "name": "build",
+          "text": "npm run build",
+          "exitCode": 0,
+          "durationMs": 16816,
+          "report": "windows-final-20261026/build.log",
+          "sha": "e0125dac546b55f535dcd7fd1c963610206c3c1f"
+        },
+        {
+          "name": "api",
+          "text": "npm run test:api",
+          "exitCode": 0,
+          "durationMs": 236603,
+          "report": "windows-final-20261026/api.log",
+          "sha": "e0125dac546b55f535dcd7fd1c963610206c3c1f"
+        },
+        {
+          "name": "e2e",
+          "text": "npm run test:e2e",
+          "exitCode": 0,
+          "durationMs": 97348,
+          "report": "windows-final-20261026/e2e.log",
+          "sha": "e0125dac546b55f535dcd7fd1c963610206c3c1f"
+        },
+        {
+          "name": "cleanup",
+          "text": "docker compose -p arla-ci-583e3db766fb -f docker-compose.test.yml down --volumes --remove-orphans",
+          "exitCode": 0,
+          "durationMs": 4469,
+          "report": "windows-final-20261026/cleanup.log",
+          "sha": "e0125dac546b55f535dcd7fd1c963610206c3c1f"
+        }
+      ],
+      "collection": {
+        "status": "passed",
+        "report": "windows-final-20261026/collect.log",
+        "levels": {
+          "unit": {
+            "files": 53,
+            "owners": [
+              "elyes",
+              "hamza",
+              "leandro",
+              "mathis"
+            ]
+          },
+          "api": {
+            "files": 23,
+            "owners": [
+              "hamza",
+              "leandro",
+              "mathis"
+            ]
+          },
+          "e2e": {
+            "files": 16,
+            "owners": [
+              "elyes",
+              "hamza",
+              "leandro",
+              "mathis"
+            ]
+          }
+        },
+        "note": "File discovery does not execute assertions."
+      },
+      "tests": {
+        "unit": {
+          "passed": 748,
+          "failed": 0,
+          "report": "windows-final-20261026/verify.log"
+        },
+        "api": {
+          "executed": 254,
+          "passed": 254,
+          "failed": 0,
+          "report": "windows-final-20261026/api.log"
+        },
+        "e2e": {
+          "executed": 42,
+          "passed": 42,
+          "failed": 0,
+          "skipped": 0,
+          "report": "windows-final-20261026/e2e.log"
+        }
+      },
+      "assistantExecuted": true,
+      "humanAcceptance": false
+    }
   ],
-  "collection": {
-    "status": "not-executed",
-    "ownersByLevel": null,
-    "report": null
-  },
   "runtimeIdentity": {
-    "status": "not-executed",
-    "web": null,
-    "worker": null,
-    "protectedTables": null,
-    "refusalEvidence": []
+    "status": "dedicated-fixtures-passed-final-campaign",
+    "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+    "sharedServerBaseline": "Privileged bootstrap; not evidence of RLS isolation.",
+    "web": "expense_web",
+    "worker": "expense_notifications",
+    "protectedTables": 13,
+    "refusalEvidence": [
+      {
+        "report": "windows-final-20261026/api.log",
+        "test": "the real login is unprivileged, owns no tables and has no context-free business access"
+      },
+      {
+        "report": "windows-final-20261026/api.log",
+        "test": "real HTTP submission, idempotent replay, receipts, decision/history and current-rights revocation work under expense_web"
+      },
+      {
+        "report": "windows-final-20261026/api.log",
+        "test": "pool context is cleared after commit and rollback before reusing the same connection"
+      },
+      {
+        "report": "windows-final-20261026/api.log",
+        "test": "each populated notification table refuses context-free and foreign-company web reads"
+      },
+      {
+        "report": "windows-final-20261026/api.log",
+        "test": "web and worker privileges prevent foreign reads, metadata rewrites and administrator fallback"
+      }
+    ],
+    "notificationTableCheck": {
+      "testCommit": "e415113279c4b776efe1b989ef3bc0fa1e6b5225",
+      "tablesPopulatedBeforeNegativeChecks": 5,
+      "fourTablesWithoutOrForeignActor": "zero rows",
+      "assignmentNotificationOutboxWithoutSelectGrant": "SQLSTATE 42501",
+      "authorizedReadsAlsoChecked": true
+    },
+    "limit": "Not an exhaustive matrix of every mutation, column and role combination; worker cross-company queue access is allowed within its contract.",
+    "matrix": "../../po/matrice-rls.md"
   },
-  "businessJourney": "not-executed",
-  "elyesNetworkRecovery": "not-executed",
-  "e2e": {
-    "collected": null,
-    "executed": 0,
-    "passed": 0,
-    "failed": 0,
-    "successRate": null,
-    "report": null
+  "businessJourney": {
+    "status": "observed-by-assistant",
+    "sourceSha": "f6592bcc53ddceb77038bccda43072355673a54c",
+    "target": "Isolated restored application with synthetic accounts and receipts",
+    "networkInterception": false,
+    "startedAt": null,
+    "completedAt": null,
+    "timestampNote": "Exact start/end times not recorded in this document.",
+    "steps": [
+      {
+        "role": "employee",
+        "action": "Log in, submit a real 18.75 expense with PNG, open receipt",
+        "result": "Submission performed; receipt image 16x16 displayed; manager route visible"
+      },
+      {
+        "role": "manager",
+        "action": "Log in and approve using keyboard",
+        "result": "Decision confirmed, row removed and focus returned to heading"
+      },
+      {
+        "role": "hr",
+        "action": "Remove employee manager, then restore manager",
+        "result": "Pending note appeared in HR fallback then disappeared after manager restoration"
+      },
+      {
+        "role": "hr",
+        "action": "Reject a manager expense using keyboard",
+        "result": "Rejection confirmed and focus returned to heading"
+      }
+    ],
+    "postRestartEmployeeCheck": {
+      "status": "passed",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "result": "18.75 expense still approved; Manager decision dated 2026-10-26 18:07 UTC+1 displayed after restart.",
+      "report": "../EL-07-20261026/README.md"
+    },
+    "humanAcceptance": false
+  },
+  "elyesNetworkRecovery": {
+    "status": "passed-final-campaign",
+    "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+    "report": "windows-final-20261026/e2e.log",
+    "tests": [
+      "EL-01/network-errors.spec.ts",
+      "EL-04/submission-intent.spec.ts",
+      "EL-08/integrated-flows.spec.ts"
+    ],
+    "networkInterception": "targeted test routes",
+    "limit": "UI behavior under controlled lost responses; independent HA-04 and LE-02/03 tests establish real persistence and idempotency."
+  },
+  "accessibility": {
+    "keyboardAndFocus": "observed in actual manager and HR decisions; automated scenarios also pass",
+    "smallViewport320Css": "passed for employee, manager and HR",
+    "screenReader": "not-executed-optional",
+    "browserZoom200Percent": "passed-targeted-native-Chrome-Windows: employee/manager/HR, keyboard navigation and employee horizontal scrolling; zoom restored to 100%",
+    "globalWcagCertification": false,
+    "report": "../EL-07-20261026/README.md"
+  },
+  "historicalEvidence": {
+    "branchReports": [
+      "branch-checks.json",
+      "current-branch-checks.json",
+      "status-review-20261026.md"
+    ],
+    "restoration": {
+      "applicationSha": "349c77e4c2ceb8df83b428f85fd59e2be3e77244",
+      "report": "../MATH-06/current-main-windows-20261026.json",
+      "securityParity": "../MATH-06/security-parity-windows-20261026.json",
+      "separateFromBrowserSha": true
+    },
+    "performance": {
+      "measuredSourceSha": "ad51a01445765e47a6e914dbbe7ecddf9b108e79",
+      "review": "../../po/revue-performance-20261026.md",
+      "rerunOnCandidate": false
+    }
   },
   "teacherE2e": {
     "status": "reference-not-provided",
     "referenceSha": null,
     "result": null
   },
-  "defects": [],
-  "defectsNote": "Empty because the final campaign has not run; this does not assert absence of defects. See the document's dependencies and historical reports.",
-  "screenshots": [],
+  "defects": [
+    {
+      "ticket": "ARLA-38",
+      "description": "Obsolete HR list error could overwrite a newer response",
+      "fixSha": "f6592bcc53ddceb77038bccda43072355673a54c",
+      "verification": "Two stale-response E2E passed in the first integrated campaign"
+    },
+    {
+      "ticket": "ARLA-38",
+      "description": "HR heading said root managers although eligible employees without manager also appear",
+      "foundDuring": "Actual restored-browser walkthrough",
+      "fixSha": "8cb32081df35ebdbea9dac62e2a928e5b08c68e8",
+      "scope": "UI text and matching test locators; assertions retained",
+      "verification": "Residual locator fixed in e0125dac546b55f535dcd7fd1c963610206c3c1f; all 42 E2E, including 10 EL-07, passed in windows-final-20261026. Assertions retained."
+    }
+  ],
+  "defectsNote": "Known findings and fixes are retained; passing assertions do not establish absence of all defects.",
+  "screenshots": [
+    {
+      "path": "../EL-07-20261026/employee-200.png",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "date": "2026-10-26",
+      "syntheticData": true
+    },
+    {
+      "path": "../EL-07-20261026/employee-decision-200.png",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "date": "2026-10-26",
+      "syntheticData": true
+    },
+    {
+      "path": "../EL-07-20261026/employee-history-200.png",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "date": "2026-10-26",
+      "syntheticData": true
+    },
+    {
+      "path": "../EL-07-20261026/employee-table-keyboard-200.png",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "date": "2026-10-26",
+      "syntheticData": true
+    },
+    {
+      "path": "../EL-07-20261026/hr-200.png",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "date": "2026-10-26",
+      "syntheticData": true
+    },
+    {
+      "path": "../EL-07-20261026/hr-fallback-200.png",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "date": "2026-10-26",
+      "syntheticData": true
+    },
+    {
+      "path": "../EL-07-20261026/hr-keyboard-200.png",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "date": "2026-10-26",
+      "syntheticData": true
+    },
+    {
+      "path": "../EL-07-20261026/manager-200.png",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "date": "2026-10-26",
+      "syntheticData": true
+    },
+    {
+      "path": "../EL-07-20261026/manager-keyboard-200.png",
+      "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+      "date": "2026-10-26",
+      "syntheticData": true
+    }
+  ],
+  "screenshotsNote": "Native Chrome captures from the restored synthetic target; no signed URL or credential is included.",
   "humanAcceptance": {
-    "hugo": false,
-    "hamzaRuntimeReview": false,
+    "productRulesApprovedByHugo": true,
+    "productRulesApprovalDate": "2026-10-26",
+    "productRulesSource": "Explicit 'Valider ces règles' in the conversation",
+    "hugoProductJourneyAccepted": false,
+    "hamzaFormalRuntimeApproval": false,
+    "leandroPerformanceAcceptance": false,
     "otherMemberReproduction": false,
-    "collectiveRehearsal": false
-  }
+    "collectiveRehearsal": false,
+    "trainingFeatureExecuted": false
+  },
+  "latestSuccessfulCampaign": "windows-final-20261026"
 }

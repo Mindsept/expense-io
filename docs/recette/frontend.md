@@ -139,3 +139,13 @@ sont vérifiées dans deux fuseaux et l'OCR tardif ne remplace pas une saisie.
 Ces tests rendent les comportements de l'interface reproductibles ; les
 tests serveur, la restauration et la revue humaine apportent les preuves
 complémentaires. »
+
+## Complément du 26 octobre 2026 — blocage levé
+
+Le sélecteur RH résiduel est corrigé dans `e0125dac546b55f535dcd7fd1c963610206c3c1f` sans retirer
+l'assertion de focus. La campagne complète sur ce code passe : **748 unitaires,
+254 API, 42 E2E, dont 10 EL-07**. Le [contrôle natif Chrome à 200 %](../evidence/EL-07-20261026/README.md)
+a été réalisé sur employé, manager et RH, avec captures, navigation clavier,
+défilement du tableau employé et contrôle de l'historique persisté. Cette preuve
+complète les passages historiques ci-dessus ; lecteur d'écran et certification
+globale ne sont pas revendiqués. L'acceptation personnelle ARLA-8 reste distincte.
