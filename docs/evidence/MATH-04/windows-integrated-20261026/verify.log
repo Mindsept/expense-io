@@ -1,0 +1,34 @@
+
+> expense-io-version-b@0.1.0 verify
+> npm run lint && npm run typecheck && npm run test:unit
+
+
+> expense-io-version-b@0.1.0 lint
+> eslint
+
+
+C:\Users\hugos\Documents\ChatGPT\ARLA\expense-io-final\tests\api\hamza\HA-09\runtime-notifications.spec.ts
+  7:66  warning  'deliverOneAssignment' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+
+
+> expense-io-version-b@0.1.0 typecheck
+> tsc --noEmit
+
+
+> expense-io-version-b@0.1.0 test:unit
+> vitest run
+
+
+ RUN  v5.0.5 C:/Users/hugos/Documents/ChatGPT/ARLA/expense-io-final
+
+
+ Test Files  53 passed (53)
+      Tests  748 passed (748)
+   Start at  17:53:59
+   Duration  6.20s (transform 52%, tests 30%, import 18%, worker 1%)
+
+    Isolate  53 workers spawned · ~428ms startup each (spawn + environment, per file)
+             at least ~558ms faster with isolate: false — reuses workers across files instead of one per file
+
