@@ -2,7 +2,7 @@
 
 Ce dossier distingue les campagnes automatisées, le parcours réel réalisé par l'assistant et la réception personnelle d'Hugo. Voir [le dossier de recette](../../recette-finale.md) pour les scénarios, limites et actions restantes.
 
-- [final-campaign.json](final-campaign.json) : index structuré des versions, résultats, parcours et limites ; l'acceptation produit PO-03 et la répétition PO-04 ne sont pas déclarées faites.
+- [final-campaign.json](final-campaign.json) : index structuré des versions, résultats, parcours et limites ; [l'acceptation produit PO-03](../../po/reception-20261026.md) a été donnée par Hugo. La répétition PO-04 reste à faire.
 - [windows-integrated-20261026/metadata.json](windows-integrated-20261026/metadata.json) : première campagne complète sur `f6592bcc53ddceb77038bccda43072355673a54c`, checkout propre ; Windows x64, Node 24.22.1, npm 11.19.1 et images identifiées.
 - [windows-integrated-20261026/summary.json](windows-integrated-20261026/summary.json) : huit étapes réussies, codes 0 et durées réelles. Les journaux adjacents établissent **748 unitaires, 254 API et 42 E2E réussis**.
 - [branch-checks.json](branch-checks.json), [current-branch-checks.json](current-branch-checks.json), [status-review-20261026.md](status-review-20261026.md) : relevés historiques conservés avec leur SHA. Leurs attentes anciennes ne sont plus un état courant de la campagne.

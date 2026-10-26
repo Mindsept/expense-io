@@ -1,6 +1,6 @@
 # ARLA-42 / MATH-04 — recette du candidat intégré
 
-**État au 26 octobre 2026 : campagne finale technique réussie sur `e0125da`, 748 unitaires / 254 API / 42 E2E ; zoom natif à 200 % vérifié sur les trois écrans.** L'acceptation personnelle d'Hugo (PO-03) et la répétition collective (PO-04) restent à réaliser. Les [règles PO-01](po/regles-et-contrats.md) sont, elles, explicitement validées.
+**État au 26 octobre 2026 : campagne finale technique réussie sur `e0125da`, 748 unitaires / 254 API / 42 E2E ; zoom natif à 200 % vérifié sur les trois écrans.** Hugo a ensuite répondu **« Je valide la réception »** : [décision PO-03 et périmètre accepté](po/reception-20261026.md). La répétition collective (PO-04) reste à réaliser. Les [règles PO-01](po/regles-et-contrats.md) sont également validées.
 
 Le périmètre demandé par Hugo réunit les livrables restants des PR #17/#27/#30/#31/#32/#33, exclusivement dans le fork [Mindsept/expense-io](https://github.com/Mindsept/expense-io). Le correctif #30 est déjà inclus dans l'ascendance de #31. L'assistant a choisi le candidat dans cette autorisation ; aucun nouvel arbitrage de la liste des PR n'est attendu. Les résultats ci-dessous n'affirment ni publication ni fusion sur main.
 
@@ -10,8 +10,7 @@ Le périmètre demandé par Hugo réunit les livrables restants des PR #17/#27/#
 | --- | --- | --- | --- |
 | Première campagne intégrée Windows | `f6592bcc53ddceb77038bccda43072355673a54c`, branche `codex/arla-final-integration`, checkout propre | **748 unitaires, 254 API, 42 E2E réussis ; 8 étapes à code 0** | [Métadonnées](evidence/MATH-04/windows-integrated-20261026/metadata.json), [résumé](evidence/MATH-04/windows-integrated-20261026/summary.json) |
 | Parcours navigateur réel sur la cible restaurée | Application `f6592bc` ; données fictives de restauration, puis manipulations décrites au §3 | Soumission/reçu, approbation manager, recours RH et refus RH observés | Exécuté par l'assistant via le navigateur, sans interception réseau ; ce n'est pas une réception d'Hugo |
-| Rejeu après correction de libellé RH | `ebef48dcff5a303f58578580359b5a01951e445a`, contient le correctif `8cb3208` | **748 unitaires et 254 API réussis ; 41 E2E réussis / 1 échoué** | EL-07 ligne 53 cherche encore la région avec l'ancien libellé. Assertion de focus à conserver, sélecteur à corriger puis rejouer. [Échec archivé](evidence/MATH-04/windows-label-failure-20261026/e2e.log), corrigé et rejoué dans la campagne suivante. |
-
+| Rejeu après correction de libellé RH | `ebef48dcff5a303f58578580359b5a01951e445a`, contient le correctif `8cb3208` | **748 unitaires et 254 API réussis ; 41 E2E réussis / 1 échoué** | EL-07 ligne 53 cherche encore la région avec l'ancien libellé. Assertion de focus conservée dans le correctif suivant. [Échec archivé](evidence/MATH-04/windows-label-failure-20261026/e2e.log), corrigé et rejoué dans la campagne suivante. |
 | Campagne finale après correction EL-07 | `e0125dac546b55f535dcd7fd1c963610206c3c1f`, checkout propre au lancement | **748 unitaires, 254 API, 42/42 E2E dont 10/10 EL-07 ; 8 étapes à zéro** | [Métadonnées](evidence/MATH-04/windows-final-20261026/metadata.json), [résumé](evidence/MATH-04/windows-final-20261026/summary.json), [E2E](evidence/MATH-04/windows-final-20261026/e2e.log) |
 
 La campagne finale s'est déroulée de 18:36 à 18:43 (Europe/Paris). Les commandes, durées et versions de cette campagne sont dans [la fiche structurée](evidence/MATH-04/final-campaign.json).
@@ -99,9 +98,9 @@ Les [captures de contrôle natif](evidence/EL-07-20261026/README.md) sont rattac
 
 **Script oral, environ 60 secondes :**
 
-> Le candidat réunit les livrables autorisés dans le fork Mindsept. La première campagne Windows a réussi ses huit étapes : 748 tests unitaires, 254 API et 42 E2E. Le navigateur réel a permis de soumettre une note, ouvrir son reçu, approuver au clavier et vérifier le recours RH après changement de manager. Cette visite a aussi révélé un libellé RH corrigé, dont nous conservons le rejeu séparément. Les preuves de rôle limité viennent des fixtures HA-04 et HA-09, pas du serveur bootstrap. Les pannes simulées d'interface restent distinctes des tests SQL/S3. Les règles produit sont validées ; la réception personnelle et la répétition collective restent à faire.
+> Le candidat réunit les livrables autorisés dans le fork Mindsept. La campagne finale Windows a réussi ses huit étapes : 748 tests unitaires, 254 API et 42 E2E. Le navigateur réel a permis de soumettre une note, ouvrir son reçu, approuver au clavier et vérifier le recours RH après changement de manager. Cette visite a aussi révélé un libellé RH corrigé, dont nous conservons le rejeu séparément. Les preuves de rôle limité viennent des fixtures HA-04 et HA-09, pas du serveur bootstrap. Les pannes simulées d'interface restent distinctes des tests SQL/S3. Les règles et la réception produit sont validées par Hugo ; la répétition collective reste à faire.
 
-## 7. Réception restant réellement humaine
+## 7. Réception et transfert humain
 
 - [x] Première campagne rattachée à son SHA, ses assertions, commandes, durées et journaux.
 - [x] Collecte des propriétaires et niveaux vérifiée ; 42/42 E2E de l'équipe réussis.
@@ -109,7 +108,7 @@ Les [captures de contrôle natif](evidence/EL-07-20261026/README.md) sont rattac
 - [x] Véritables logins limités et contrôle des cinq tables de notifications exécutés ; portée non exhaustive explicitée.
 - [x] Panne ciblée et reprise des tests Elyes réussies ; persistance réelle prouvée séparément.
 - [x] Rejeu complet sur `e0125da` : 42/42 E2E ; zoom natif 200 % et retour employé après redémarrage observés.
-- [ ] Hugo accepte personnellement les parcours et limites de remise (PO-03).
+- [x] Hugo accepte la livraison et ses limites par « Je valide la réception » : [décision PO-03](po/reception-20261026.md). Les tests et parcours exécutés par Codex restent attribués à Codex.
 - [ ] Un autre membre reproduit le protocole et consigne son résultat.
 - [ ] L'équipe répète la soutenance et l'exercice assisté (PO-04).
 
