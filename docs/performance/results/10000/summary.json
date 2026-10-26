@@ -1,0 +1,161 @@
+{
+  "lists": [
+    {
+      "scenario": "employee",
+      "all": {
+        "attempts": 90,
+        "errors": 0,
+        "errorRate": 0,
+        "medianMs": 46.445,
+        "p95Ms": 64.641,
+        "minMs": 16.122,
+        "maxMs": 74.638
+      },
+      "passes": [
+        {
+          "pass": 1,
+          "attempts": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "medianMs": 48.335499999999996,
+          "p95Ms": 67.821,
+          "minMs": 22.248,
+          "maxMs": 74.638
+        },
+        {
+          "pass": 2,
+          "attempts": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "medianMs": 46.625,
+          "p95Ms": 55.204,
+          "minMs": 16.122,
+          "maxMs": 58.018
+        },
+        {
+          "pass": 3,
+          "attempts": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "medianMs": 46.3125,
+          "p95Ms": 55.475,
+          "minMs": 29.325,
+          "maxMs": 55.755
+        }
+      ]
+    },
+    {
+      "scenario": "manager",
+      "all": {
+        "attempts": 90,
+        "errors": 0,
+        "errorRate": 0,
+        "medianMs": 35.274,
+        "p95Ms": 48.612,
+        "minMs": 14.902,
+        "maxMs": 53.533
+      },
+      "passes": [
+        {
+          "pass": 1,
+          "attempts": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "medianMs": 37.889,
+          "p95Ms": 52.043,
+          "minMs": 14.902,
+          "maxMs": 53.533
+        },
+        {
+          "pass": 2,
+          "attempts": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "medianMs": 33.528000000000006,
+          "p95Ms": 42.213,
+          "minMs": 25.242,
+          "maxMs": 49.306
+        },
+        {
+          "pass": 3,
+          "attempts": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "medianMs": 34.226,
+          "p95Ms": 42.051,
+          "minMs": 24.187,
+          "maxMs": 44.874
+        }
+      ]
+    },
+    {
+      "scenario": "hr",
+      "all": {
+        "attempts": 90,
+        "errors": 0,
+        "errorRate": 0,
+        "medianMs": 28.2915,
+        "p95Ms": 38.878,
+        "minMs": 11.465,
+        "maxMs": 43.413
+      },
+      "passes": [
+        {
+          "pass": 1,
+          "attempts": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "medianMs": 29.133,
+          "p95Ms": 39.075,
+          "minMs": 11.465,
+          "maxMs": 43.413
+        },
+        {
+          "pass": 2,
+          "attempts": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "medianMs": 28.719,
+          "p95Ms": 32.28,
+          "minMs": 14.531,
+          "maxMs": 39.507
+        },
+        {
+          "pass": 3,
+          "attempts": 30,
+          "errors": 0,
+          "errorRate": 0,
+          "medianMs": 27.564999999999998,
+          "p95Ms": 38.878,
+          "minMs": 16.203,
+          "maxMs": 39.766
+        }
+      ]
+    }
+  ],
+  "diagnostic": {
+    "attempts": 1,
+    "errors": 1,
+    "errorRate": 1,
+    "medianMs": 35.54,
+    "p95Ms": null,
+    "minMs": 35.54,
+    "maxMs": 35.54
+  },
+  "warmups": {
+    "attempts": 9,
+    "errors": 0,
+    "errorRate": 0,
+    "medianMs": 17.78,
+    "p95Ms": null,
+    "minMs": 13.143,
+    "maxMs": 32.166
+  },
+  "ocr": {
+    "recognitions": 24,
+    "correct": 24,
+    "pureTextParserCorrect": 24,
+    "percentile": null,
+    "note": "Small synthetic corpus; report individual values, no population precision or OCR p95."
+  }
+}

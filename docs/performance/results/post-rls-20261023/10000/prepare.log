@@ -1,0 +1,10 @@
+
+> expense-io-version-b@0.1.0 bench:prepare
+> node scripts/bench.mjs prepare 10000
+
+(node:95774) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/mathisgalliano/Documents/Travail/ARLA/expense-io/src/lib/runtime-database.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/mathisgalliano/Documents/Travail/ARLA/expense-io/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Disposable test migrations, bucket and three-role baseline are ready; privileged bootstrap is not RLS evidence.
+{"prepared":10000,"distribution":[{"status":"approved","count":2000},{"status":"pending","count":7000},{"status":"rejected","count":1000}],"extraSeedNotes":2,"receipts":"No S3 receipt per generated list row; OCR uses versioned PNG corpus separately."}

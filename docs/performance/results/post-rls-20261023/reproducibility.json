@@ -1,0 +1,22 @@
+{
+  "volume": 1000,
+  "protocol": "math05-v3-limited-runtime-20261023",
+  "originalDigest": "60da41a3bd0cbe7fe0494186830b4246",
+  "regeneratedDigest": "60da41a3bd0cbe7fe0494186830b4246",
+  "sameDigest": true,
+  "sameDistribution": true,
+  "distribution": [
+    {
+      "status": "approved",
+      "count": 200
+    },
+    {
+      "status": "pending",
+      "count": 700
+    },
+    {
+      "status": "rejected",
+      "count": 100
+    }
+  ]
+}

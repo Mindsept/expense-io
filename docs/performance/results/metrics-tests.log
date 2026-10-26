@@ -1,0 +1,13 @@
+
+> expense-io-version-b@0.1.0 test:unit
+> vitest run tests/unit/mathis/MATH-05
+
+
+ RUN  v5.0.5 /Users/mathisgalliano/Documents/Travail/ARLA/expense-io
+
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  15:08:27
+   Duration  66ms (transform 60%, import 22%, tests 9%, worker 9%)
+

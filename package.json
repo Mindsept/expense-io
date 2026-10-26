@@ -25,7 +25,10 @@
     "demo:prepare": "node scripts/mathis/MATH-03/demo.mjs prepare",
     "demo:start": "node scripts/mathis/MATH-03/demo.mjs start",
     "demo:reset": "node scripts/mathis/MATH-03/demo.mjs reset",
-    "demo:down": "node scripts/mathis/MATH-03/demo.mjs down"
+    "demo:down": "node scripts/mathis/MATH-03/demo.mjs down",
+    "bench:prepare": "node scripts/bench.mjs prepare",
+    "bench:run": "node scripts/bench.mjs run",
+    "bench:down": "node scripts/bench.mjs down"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",
