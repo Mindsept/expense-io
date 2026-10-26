@@ -15,9 +15,9 @@ test('the employee sees server-provided routing and decision history', async ({ 
   }))
 
   await new ExpenseUi(page).signIn('EMPLOYEE')
-  await page.getByRole('button', { name: 'Voir le circuit pour Taxi de recette', exact: true }).click()
+  await page.getByRole('button', { name: 'Voir le circuit pour Taxi de recette, 16 oct. 2026', exact: true }).click()
   await expect(page.getByRole('status').filter({ hasText: 'En attente de validation par votre manager direct.' })).toBeVisible()
-  await page.getByRole('button', { name: 'Voir la décision pour Taxi de recette', exact: true }).click()
+  await page.getByRole('button', { name: 'Voir la décision pour Taxi de recette, 16 oct. 2026', exact: true }).click()
   await expect(page.getByText(/Approuvée par Vérificateur Test le/)).toBeVisible()
 })
 
@@ -27,7 +27,7 @@ test('manager queue uses authorized author names from its DTOs', async ({ page }
   await page.route('**/api/manager/expense-notes*', route => route.fulfill({ json: pagedNotes([managerNote, missingAuthorNote]) }))
   await new ExpenseUi(page).signIn('MANAGER', '/manager')
   await expect(page.getByRole('cell', { name: 'Alice Manager DTO', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Approuver la note de Alice Manager DTO, Taxi de recette', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Approuver la note de Alice Manager DTO, Taxi de recette, 16 oct. 2026', exact: true })).toBeVisible()
   await expect(page.getByRole('cell', { name: 'Auteur non disponible', exact: true })).toBeVisible()
   await expect(page.getByText(employeeNote.userId)).toHaveCount(0)
 })
@@ -39,5 +39,5 @@ test('HR queue uses authorized author names from its DTOs', async ({ page }) => 
   ]) }))
   await new ExpenseUi(page).signIn('HR', '/hr')
   await expect(page.getByRole('cell', { name: 'Alice HR DTO', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Approuver la note de Alice HR DTO, Taxi de recette', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Approuver la note de Alice HR DTO, Taxi de recette, 16 oct. 2026', exact: true })).toBeVisible()
 })

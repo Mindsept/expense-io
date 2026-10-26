@@ -1,0 +1,102 @@
+{
+  "protocol": "math05-v4-paged-runtime-20261025",
+  "at": "2026-10-25T22:11:03.934Z",
+  "timezone": "Europe/Paris",
+  "otherServices": "Not inventoried; other host activity is unknown.",
+  "otherServicesSource": "not-inventoried",
+  "sha": "ad51a01445765e47a6e914dbbe7ecddf9b108e79",
+  "workingTree": "?? docs/performance/results/runs/",
+  "hashes": {
+    "scripts/bench.mjs": "70b74d6727a865db0867aca7a959de30a6fb666f8b305a4309f7cbd660ddcf68",
+    "scripts/mathis/MATH-05/metrics.mjs": "e9fd144397f1f2aa7ff75609be8bd1e0a9a3ed3e29c3dffdcb74fceadf649d6b",
+    "scripts/mathis/MATH-05/runtime.mjs": "b31313421661c855c80d3be56b0f17241a58b125eb7a75104718b892cb587dce",
+    "scripts/mathis/MATH-05/http.mjs": "5218607c6fb7a0c5fde0d817a433d6fca8a4bd64b764226bc459f8e38bcf315a",
+    "scripts/mathis/MATH-05/campaign.mjs": "77184a0847773e837ad775d1ad966e4ccc80c14713f14e050b53f3355ddcf4f3",
+    "scripts/mathis/MATH-05/sql.mjs": "f7acd746635078a8ae1756f2633999b3f4b0d2407269a8e921b593a030cf4731",
+    "src/lib/pending-expense-source.ts": "b62d2b5ab5f9120d6a7c10447e3f245e99f24b67eeb148fdaedb732a9eae4135",
+    "src/lib/runtime-database.ts": "7fca9e2ee59bac78b9a7c1323df671f596020915a5ab2ace29d2adaddcad62ea",
+    "src/lib/expense-access.ts": "12966fedd8e70972685f7cf5cd2e611a6a8c74e20b260358fc55e35cf57de0ed",
+    "src/lib/pagination.ts": "e9239b92ca523e406a542ac8d492e9c61ef15937e6a4ac7a8851f5c7fabc8fa2",
+    "src/lib/ocr.ts": "c6786c99749af0bef1451d5ceb9ccf9d150cfd7ab0c6dbc17b02a0ca547c4f0d",
+    "src/lib/ocr-parser.ts": "8772d49586b3cdc29c791a9fb8a312e97a8b3118099c53e05717972071d3d771",
+    "package-lock.json": "cdedc30bc5e33f3d6a958834c04b33498f67db33936043762cad4a7a2ee67d88",
+    "src/app/api/expense-notes/route.ts": "10e448f20ff4cc8c8031a68efdb7c9153e1f2a6b3e812cfdb567ee2ae8a8e170",
+    "src/app/api/manager/expense-notes/route.ts": "ad33ac83457b0688e25ee4437b8c2d20a532bff38167d99c98c61c4bd308536c",
+    "src/app/api/hr/expense-notes/route.ts": "72e7a7543a10a75b47804738aa53820120345228b8eb23349fbcf31a5b4e864f"
+  },
+  "node": "v24.22.1",
+  "npm": "npm/11.19.1 node/v24.22.1 darwin arm64 workspaces/false",
+  "os": {
+    "platform": "darwin",
+    "release": "27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M5",
+    "logicalCpus": 10,
+    "totalMemory": 17179869184,
+    "freeMemory": 437452800,
+    "loadAverage": [
+      2.54443359375,
+      2.09033203125,
+      2.578125
+    ]
+  },
+  "db": {
+    "database": "expense_io_test",
+    "role": "expense_web",
+    "login": "expense_web",
+    "rolsuper": false,
+    "rolbypassrls": false,
+    "rolcreatedb": false,
+    "rolcreaterole": false,
+    "rolinherit": false,
+    "version": "PostgreSQL 16.15 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "startupIsolationCheck": "passed",
+    "notesWithoutActor": 0
+  },
+  "preparationDb": {
+    "database": "expense_io_test",
+    "role": "expense_test",
+    "login": "expense_test",
+    "rolsuper": true,
+    "rolbypassrls": true,
+    "rolcreatedb": true,
+    "rolcreaterole": true,
+    "rolinherit": true,
+    "version": "PostgreSQL 16.15 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit"
+  },
+  "webEnvironment": {
+    "maintenanceCredentials": false,
+    "bootstrapException": false
+  },
+  "fixture": {
+    "protocol": "math05-v4-paged-runtime-20261025",
+    "volume": 10000,
+    "distribution": [
+      {
+        "status": "approved",
+        "count": 2000
+      },
+      {
+        "status": "pending",
+        "count": 7000
+      },
+      {
+        "status": "rejected",
+        "count": 1000
+      }
+    ],
+    "digest": "67f54b7940a5cdf97e6d8d6060e45cac",
+    "extraSeedCompanies": 1,
+    "extraSeedUsers": 3,
+    "extraSeedNotes": 2,
+    "benchmarkCompanies": 1,
+    "benchmarkUsers": 3
+  },
+  "passes": 3,
+  "concurrency": 4,
+  "requestsPerPass": 30,
+  "pagination": "first page=1&pageSize=100; exact authorized total and filtered totals checked; separate protocol from historical full-list series",
+  "warmup": "3 GETs per route excluded and preserved separately; OS/DB caches not flushed",
+  "receiptBytesPerListRow": 0,
+  "limits": "actual expense_web runtime with HA-04 startup check; SQL plans under the same restricted role; this benchmark is not the exhaustive security matrix or a production capacity test; OCR below is a standalone diagnostic, not the bounded HTTP OCR pool"
+}

@@ -1,0 +1,32 @@
+{
+  "sourceSha": "e0125dac546b55f535dcd7fd1c963610206c3c1f",
+  "branch": "codex/arla-final-integration",
+  "repository": "Mindsept/expense-io",
+  "workingTreeBeforeRun": "clean",
+  "startedAt": "2026-10-26T17:36:34.1895294Z",
+  "completedAt": "2026-10-26T17:43:25.396Z",
+  "timezone": "Europe/Paris",
+  "os": "Microsoft Windows NT 10.0.26200.0",
+  "architecture": "x64",
+  "node": "24.22.1",
+  "npm": "11.19.1",
+  "dockerEngine": "29.9.2",
+  "compose": "5.6.1",
+  "project": "arla-ci-583e3db766fb",
+  "counts": {
+    "e2e": 42,
+    "api": 254,
+    "unit": 748
+  },
+  "result": "passed",
+  "bootstrapLimit": "Privileged bootstrap role; this run does not prove RLS isolation.",
+  "restrictedRuntimeProofs": [
+    "HA-04 runtime-isolation and enrollment",
+    "HA-09 runtime-notifications and direct populated-table isolation"
+  ],
+  "postgresImage": "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+  "storageImage": "localstack/localstack@sha256:b279c01f4cfb8f985a482e4014cabc1e2697b9d7a6c8c8db2e40f4d9f93687c7",
+  "assistantExecuted": true,
+  "humanAcceptance": false,
+  "workingTreeDuringRun": "Only documentation and screenshots were added after build; application/test/dependency files unchanged."
+}

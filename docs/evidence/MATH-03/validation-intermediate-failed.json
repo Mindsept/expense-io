@@ -1,0 +1,58 @@
+{
+  "outcome": "failed",
+  "node": "v24.22.1",
+  "baseline": "Privileged bootstrap role; this run does not prove RLS isolation.",
+  "suites": [
+    {
+      "name": "verify",
+      "exitCode": 0,
+      "durationMs": 6886
+    },
+    {
+      "name": "collect",
+      "exitCode": 0,
+      "durationMs": 1037
+    },
+    {
+      "name": "services",
+      "exitCode": 0,
+      "durationMs": 6816
+    },
+    {
+      "name": "prepare",
+      "exitCode": 0,
+      "durationMs": 1221
+    },
+    {
+      "name": "build",
+      "exitCode": 0,
+      "durationMs": 2113
+    },
+    {
+      "name": "api",
+      "exitCode": 1,
+      "durationMs": 36208
+    },
+    {
+      "name": "service-logs",
+      "exitCode": 0,
+      "durationMs": 130
+    },
+    {
+      "name": "service-state",
+      "exitCode": 0,
+      "durationMs": 53
+    },
+    {
+      "name": "storage-health",
+      "exitCode": 0,
+      "durationMs": 220
+    },
+    {
+      "name": "cleanup",
+      "exitCode": 0,
+      "durationMs": 2027
+    }
+  ],
+  "error": "api failed (exit 1). See .ci-output/api.log."
+}

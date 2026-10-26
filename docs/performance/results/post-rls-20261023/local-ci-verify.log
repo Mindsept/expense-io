@@ -1,0 +1,28 @@
+
+> expense-io-version-b@0.1.0 verify
+> npm run lint && npm run typecheck && npm run test:unit
+
+
+> expense-io-version-b@0.1.0 lint
+> eslint
+
+
+> expense-io-version-b@0.1.0 typecheck
+> tsc --noEmit
+
+
+> expense-io-version-b@0.1.0 test:unit
+> vitest run
+
+
+ RUN  v5.0.5 /Users/mathisgalliano/Documents/Travail/ARLA/expense-io
+
+
+ Test Files  44 passed (44)
+      Tests  665 passed (665)
+   Start at  23:51:26
+   Duration  3.82s (tests 76%, transform 12%, import 10%, worker 1%)
+
+    Isolate  44 workers spawned · ~65ms startup each (spawn + environment, per file)
+             at least ~252ms faster with isolate: false — reuses workers across files instead of one per file
+

@@ -1,0 +1,125 @@
+
+> expense-io-version-b@0.1.0 test:e2e
+> playwright test --config playwright.config.ts --project=e2e
+
+
+Running 40 tests using 1 worker
+
+(node:28408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [e2e] › tests\e2e\elyes\EL-01\network-errors.spec.ts:7:5 › an uncertain submission preserves every field and does not retry automatically (1.6s)
+  ok  2 [e2e] › tests\e2e\elyes\EL-01\network-errors.spec.ts:28:5 › a confirmed submission keeps its success message and stale history can be refreshed (702ms)
+  ok  3 [e2e] › tests\e2e\elyes\EL-01\network-errors.spec.ts:54:5 › a manager conflict preserves the row until an explicit refresh confirms removal (817ms)
+  ok  4 [e2e] › tests\e2e\elyes\EL-01\network-errors.spec.ts:77:5 › a successful manager decision is announced independently of a failed refresh (772ms)
+  ok  5 [e2e] › tests\e2e\elyes\EL-01\network-errors.spec.ts:96:5 › HR assignments lock the whole group and each stale section has its own retry (818ms)
+  ok  6 [e2e] › tests\e2e\elyes\EL-02\civil-dates.spec.ts:9:9 › Europe/Paris › civil dates keep their day and repeated receipt actions identify their note (546ms)
+  ok  7 [e2e] › tests\e2e\elyes\EL-02\civil-dates.spec.ts:9:9 › America/New_York › civil dates keep their day and repeated receipt actions identify their note (539ms)
+  ok  8 [e2e] › tests\e2e\elyes\EL-03\ocr-suggestions.spec.ts:7:5 › submitting while OCR is pending ends its spinner and ignores the old suggestion (685ms)
+  ok  9 [e2e] › tests\e2e\elyes\EL-03\ocr-suggestions.spec.ts:43:5 › the newer file wins when B finishes before A and manual edits stay intact (700ms)
+  ok 10 [e2e] › tests\e2e\elyes\EL-04\submission-intent.spec.ts:7:5 › a retry after a lost response reuses the same key, fields and receipt (732ms)
+  ok 11 [e2e] › tests\e2e\elyes\EL-04\submission-intent.spec.ts:40:5 › a changed uncertain form cannot silently create a new intent (782ms)
+  ok 12 [e2e] › tests\e2e\elyes\EL-04\submission-intent.spec.ts:67:5 › after a reload, the old file is not restored and history must be checked first (786ms)
+  ok 13 [e2e] › tests\e2e\elyes\EL-05\pagination.spec.ts:39:5 › employee history pages show server-wide totals and only the requested items (580ms)
+  ok 14 [e2e] › tests\e2e\elyes\EL-05\pagination.spec.ts:56:5 › HR pages the directory and searches managers beyond the current directory page (699ms)
+  ok 15 [e2e] › tests\e2e\elyes\EL-06\workflow-visibility.spec.ts:7:5 › the employee sees server-provided routing and decision history (636ms)
+  ok 16 [e2e] › tests\e2e\elyes\EL-06\workflow-visibility.spec.ts:24:5 › manager queue uses authorized author names from its DTOs (607ms)
+  ok 17 [e2e] › tests\e2e\elyes\EL-06\workflow-visibility.spec.ts:35:5 › HR queue uses authorized author names from its DTOs (629ms)
+  ok 18 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:14:7 › MANAGER: initial loading and failure never announce a fabricated zero total (614ms)
+  ok 19 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:35:7 › MANAGER: keyboard decisions distinguish similar notes and restore focus after removal (650ms)
+  ok 20 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:14:7 › HR: initial loading and failure never announce a fabricated zero total (640ms)
+  ok 21 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:35:7 › HR: keyboard decisions distinguish similar notes and restore focus after removal (620ms)
+  ok 22 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:60:5 › HR homonyms have distinct manager labels and a late decision does not steal typing focus (752ms)
+  ok 23 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:84:5 › employee workflow has dated names and a single announcement region, including failures (604ms)
+  ok 24 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:110:5 › employee submits and opens a receipt with the keyboard, with associated upload help (671ms)
+  x  25 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:141:7 › EMPLOYEE: small viewport keeps the table in a keyboard scroll region (5.4s)
+(node:35156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  26 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:141:7 › MANAGER: small viewport keeps the table in a keyboard scroll region (5.8s)
+(node:9860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  27 [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:141:7 › HR: small viewport keeps the table in a keyboard scroll region (16.4s)
+(node:29008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 28 [e2e] › tests\e2e\elyes\EL-08\integrated-flows.spec.ts:10:5 › keyboard pagination survives an uncertain submission and a failed post-success refresh (1.0s)
+  ok 29 [e2e] › tests\e2e\hamza\HA-04\runtime-enrollment.spec.ts:9:5 › HR invitation and recipient enrollment/login work in the actual limited web process (1.9s)
+  ok 30 [e2e] › tests\e2e\hamza\HA-05\invited-enrollment.spec.ts:24:5 › an HR sends a private address-bound invitation and its recipient creates an employee in that company (1.9s)
+  ok 31 [e2e] › tests\e2e\hamza\HA-05\invited-enrollment.spec.ts:59:5 › revocation from the HR screen invalidates the delivered link without creating an account (1.3s)
+  ok 32 [e2e] › tests\e2e\hamza\HA-05\invited-enrollment.spec.ts:81:5 › a failed delivery does not expose capabilities and leaves a revoked invitation (547ms)
+  ok 33 [e2e] › tests\e2e\hamza\HA-05\signup.spec.ts:6:5 › public signup explains the invitation requirement and preserves the existing-account login path (285ms)
+  ok 34 [e2e] › tests\e2e\hamza\HA-09\runtime-notifications.spec.ts:26:5 › actual limited web page persists read state after worker delivery and hides reassigned work (3.2s)
+  ok 35 [e2e] › tests\e2e\hamza\HA-09\runtime-notifications.spec.ts:57:5 › two notified HR see the first decision as processed and a later decision is refused (1.3s)
+  ok 36 [e2e] › tests\e2e\leandro\LE-01\submission.spec.ts:57:5 › real form preserves fields after a spoofed receipt rejection and accepts a corrected receipt (825ms)
+  ok 37 [e2e] › tests\e2e\leandro\LE-08\support-reference.spec.ts:19:5 › the support reference visible after a real S3 failure retrieves its internal cause without leaking input (1.0s)
+  ok 38 [e2e] › tests\e2e\mathis\MATH-01\roles.smoke.spec.ts:16:7 › employee signs in through the form and opens the authorized screen (612ms)
+  ok 39 [e2e] › tests\e2e\mathis\MATH-01\roles.smoke.spec.ts:16:7 › manager signs in through the form and opens the authorized screen (624ms)
+  ok 40 [e2e] › tests\e2e\mathis\MATH-01\roles.smoke.spec.ts:16:7 › hr signs in through the form and opens the authorized screen (588ms)
+
+
+  1) [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:141:7 › EMPLOYEE: small viewport keeps the table in a keyboard scroll region 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      149 |     await region.focus()
+      150 |     await expect(region).toBeFocused()
+    > 151 |     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+          |                                                                                                             ^
+      152 |     await page.keyboard.press('ArrowRight')
+      153 |     await expect.poll(() => region.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+      154 |     await page.keyboard.press('Tab')
+        at C:\Users\hugos\Documents\ChatGPT\ARLA\expense-io-mindsept\tests\e2e\elyes\EL-07\accessibility.spec.ts:151:109
+
+    Error Context: test-results\elyes-EL-07-accessibility--0a873-in-a-keyboard-scroll-region-e2e\error-context.md
+
+  2) [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:141:7 › MANAGER: small viewport keeps the table in a keyboard scroll region 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      149 |     await region.focus()
+      150 |     await expect(region).toBeFocused()
+    > 151 |     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+          |                                                                                                             ^
+      152 |     await page.keyboard.press('ArrowRight')
+      153 |     await expect.poll(() => region.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+      154 |     await page.keyboard.press('Tab')
+        at C:\Users\hugos\Documents\ChatGPT\ARLA\expense-io-mindsept\tests\e2e\elyes\EL-07\accessibility.spec.ts:151:109
+
+    Error Context: test-results\elyes-EL-07-accessibility--d0c09-in-a-keyboard-scroll-region-e2e\error-context.md
+
+  3) [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:141:7 › HR: small viewport keeps the table in a keyboard scroll region 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      149 |     await region.focus()
+      150 |     await expect(region).toBeFocused()
+    > 151 |     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+          |                                                                                                             ^
+      152 |     await page.keyboard.press('ArrowRight')
+      153 |     await expect.poll(() => region.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+      154 |     await page.keyboard.press('Tab')
+        at C:\Users\hugos\Documents\ChatGPT\ARLA\expense-io-mindsept\tests\e2e\elyes\EL-07\accessibility.spec.ts:151:109
+
+    Error Context: test-results\elyes-EL-07-accessibility--2fabc-in-a-keyboard-scroll-region-e2e\error-context.md
+
+  3 failed
+    [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:141:7 › EMPLOYEE: small viewport keeps the table in a keyboard scroll region 
+    [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:141:7 › MANAGER: small viewport keeps the table in a keyboard scroll region 
+    [e2e] › tests\e2e\elyes\EL-07\accessibility.spec.ts:141:7 › HR: small viewport keeps the table in a keyboard scroll region 
+  37 passed (1.2m)

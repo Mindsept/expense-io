@@ -1,0 +1,63 @@
+{
+  "outcome": "failed",
+  "node": "v24.22.1",
+  "baseline": "Privileged bootstrap role; this run does not prove RLS isolation.",
+  "suites": [
+    {
+      "name": "verify",
+      "exitCode": 0,
+      "durationMs": 15119
+    },
+    {
+      "name": "collect",
+      "exitCode": 0,
+      "durationMs": 4011
+    },
+    {
+      "name": "services",
+      "exitCode": 0,
+      "durationMs": 9479
+    },
+    {
+      "name": "prepare",
+      "exitCode": 0,
+      "durationMs": 2140
+    },
+    {
+      "name": "build",
+      "exitCode": 0,
+      "durationMs": 12956
+    },
+    {
+      "name": "api",
+      "exitCode": 0,
+      "durationMs": 63497
+    },
+    {
+      "name": "e2e",
+      "exitCode": 1,
+      "durationMs": 71962
+    },
+    {
+      "name": "service-logs",
+      "exitCode": 0,
+      "durationMs": 592
+    },
+    {
+      "name": "service-state",
+      "exitCode": 0,
+      "durationMs": 435
+    },
+    {
+      "name": "storage-health",
+      "exitCode": 0,
+      "durationMs": 695
+    },
+    {
+      "name": "cleanup",
+      "exitCode": 0,
+      "durationMs": 4313
+    }
+  ],
+  "error": "e2e failed (exit 1). See .ci-output/e2e.log."
+}

@@ -1,0 +1,52 @@
+
+> expense-io-version-b@0.1.0 build
+> next build
+
+▲ Next.js 16.4.3 (Turbopack)
+✓ Running next.config.ts took 175ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1813ms
+  Running TypeScript ...
+  Finished TypeScript in 7.1s ...
+  Collecting page data using 23 workers ...
+  Generating static pages using 23 workers (0/15) ...
+  Generating static pages using 23 workers (3/15) 
+  Generating static pages using 23 workers (7/15) 
+  Generating static pages using 23 workers (11/15) 
+✓ Generating static pages using 23 workers (15/15) in 1244ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/expense-notes
+├ ƒ /api/expense-notes/[id]/history
+├ ƒ /api/expense-notes/[id]/receipt-url
+├ ƒ /api/expense-notes/[id]/validation-status
+├ ƒ /api/expense-notes/receipt-suggestion
+├ ƒ /api/hr/expense-notes
+├ ƒ /api/hr/expense-notes/[id]/approve
+├ ƒ /api/hr/expense-notes/[id]/receipt-url
+├ ƒ /api/hr/expense-notes/[id]/reject
+├ ƒ /api/hr/users
+├ ƒ /api/hr/users/[id]/access
+├ ƒ /api/hr/users/[id]/manager
+├ ƒ /api/manager/expense-notes
+├ ƒ /api/manager/expense-notes/[id]/approve
+├ ƒ /api/manager/expense-notes/[id]/receipt-url
+├ ƒ /api/manager/expense-notes/[id]/reject
+├ ƒ /expenses
+├ ƒ /hr
+├ ƒ /hr/invitations
+├ ƒ /login
+├ ƒ /manager
+├ ƒ /notifications
+└ ƒ /signup
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand
+

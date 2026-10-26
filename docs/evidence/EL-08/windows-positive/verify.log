@@ -1,0 +1,30 @@
+
+> expense-io-version-b@0.1.0 verify
+> npm run lint && npm run typecheck && npm run test:unit
+
+
+> expense-io-version-b@0.1.0 lint
+> eslint
+
+
+<workspace>\tests\api\hamza\HA-09\runtime-notifications.spec.ts
+  7:66  warning  'deliverOneAssignment' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+
+
+> expense-io-version-b@0.1.0 typecheck
+> tsc --noEmit
+
+
+> expense-io-version-b@0.1.0 test:unit
+> vitest run
+
+
+ RUN  v5.0.5 <workspace>
+
+
+ Test Files  45 passed (45)
+      Tests  673 passed (673)
+   Start at  16:19:13
+   Duration  4.53s (tests 69%, import 16%, transform 12%, worker 2%)

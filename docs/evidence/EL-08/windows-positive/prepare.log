@@ -1,0 +1,5 @@
+
+> expense-io-version-b@0.1.0 test:prepare
+> node tests/support/prepare.mjs
+
+Disposable test migrations, bucket and three-role baseline are ready; privileged bootstrap is not RLS evidence.

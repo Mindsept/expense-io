@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "observedOn": "2026-10-25",
+  "timezone": "Europe/Paris",
+  "preparationBaseSha": "888a74ddae9db28378596adc7709358798986e49",
+  "scope": "Branch checks after push, distinct from an unexecuted final delivery campaign. Historical observations are retained separately.",
+  "method": "GitHub run metadata, latest-attempt jobs and completed validation job logs; selected fields only.",
+  "checks": [
+    {
+      "ticket": "ARLA-41",
+      "pr": 27,
+      "headSha": "82e88df8cb383fd771ce47ed660a9b6ff6d6edf2",
+      "runId": 40238564482,
+      "validationJobId": 121305265496,
+      "conclusion": "success",
+      "counts": {
+        "unit": 695,
+        "api": 253,
+        "e2e": 29
+      }
+    },
+    {
+      "ticket": "ARLA-44",
+      "pr": 33,
+      "headSha": "d566e3277117b74e26887d8e8748e268f0c430c6",
+      "runId": 40238545915,
+      "validationJobId": 121305319192,
+      "conclusion": "success",
+      "counts": {
+        "unit": 701,
+        "api": 242,
+        "e2e": 29
+      }
+    },
+    {
+      "ticket": "ARLA-43",
+      "pr": 17,
+      "headSha": "ae7d7dc1e72ce04db4cef8fa1c1bdaee67b0df10",
+      "runId": 40239646020,
+      "validationJobId": 121308522866,
+      "conclusion": "success",
+      "statusAtObservation": "completed",
+      "counts": {
+        "unit": 708,
+        "api": 242,
+        "e2e": 29
+      },
+      "localCountsOnMeasuredSource": {
+        "unit": 708,
+        "api": 242,
+        "e2e": 29
+      },
+      "measuredSourceSha": "ad51a01445765e47a6e914dbbe7ecddf9b108e79"
+    }
+  ],
+  "finalCampaignStatus": "not-executed",
+  "deliverySha": null
+}

@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-23T22:30:24.186Z",
+  "timezone": "Europe/Paris",
+  "node": "v24.22.1",
+  "source": "8b03c59ea68477a9d6383571f41267b3b39c1697",
+  "workingTree": "?? docs/evidence/MATH-03/demo-smoke.log\n?? docs/evidence/MATH-03/live-demo.json",
+  "hashes": {
+    "scripts/seed.mjs": "23db5974f70ff2b7018aa46d1f6eb8aadbfa6158ff878404f0c70018bc350aa9",
+    "scripts/seed-repair.mjs": "ba174ec7eda93fdd502e0d8a75a53137ceb2d2ab93c873dc17e8808735402283",
+    "scripts/mathis/MATH-03/settings.mjs": "e9b0236c3ea75e4b59697c17f27ffab38472a673d483f578613528f5f1bff8bd",
+    "scripts/mathis/MATH-03/storage.mjs": "33773e54287b14dcb14dfe01dad165c694c07b06503ceb2a1d20bc70702c0570",
+    "scripts/mathis/MATH-03/seed.ts": "0b290fb704721d0398e7a9fc20387a344fb9541b6d576ab3d613b7347119bcba",
+    "scripts/mathis/MATH-03/demo.mjs": "a390698a9b2e9a963dfb4b5cf9ff760b6c108e46e3c81e1a126755cd7a98339a",
+    "scripts/mathis/MATH-03/cli.mjs": "72a0132a8d308869bf669118a75c01ee0c3e8aa1e1c0b38e4fadd3b3023b1d22",
+    "scripts/mathis/MATH-03/load.mjs": "3047ce2c34100f7a430c5ab6981699b101875ebbed2b0c80b94184400ba2bbdf",
+    "tests/support/prepare.mjs": "8981d01cff3e029bd6abe43dc25702cc2863b947725a249d1168c476060f362d",
+    "package-lock.json": "cdedc30bc5e33f3d6a958834c04b33498f67db33936043762cad4a7a2ee67d88"
+  },
+  "actualRuntime": {
+    "role": "expense_web",
+    "login": "expense_web",
+    "rolsuper": false,
+    "rolbypassrls": false
+  },
+  "counts": {
+    "users": 3,
+    "notes": 2,
+    "objects": 2
+  },
+  "roles": [
+    {
+      "role": "EMPLOYEE",
+      "login": 302,
+      "list": 200,
+      "rows": 1,
+      "receiptUrl": 200,
+      "receiptObject": 200,
+      "receiptBytes": 68
+    },
+    {
+      "role": "MANAGER",
+      "login": 302,
+      "list": 200,
+      "rows": 1,
+      "receiptUrl": 200,
+      "receiptObject": 200,
+      "receiptBytes": 68
+    },
+    {
+      "role": "HR",
+      "login": 302,
+      "list": 200,
+      "rows": 1,
+      "receiptUrl": 200,
+      "receiptObject": 200,
+      "receiptBytes": 68
+    }
+  ],
+  "browserSmoke": {
+    "exitCode": 0,
+    "tests": 3
+  },
+  "limits": "Synthetic disposable demo; existing three-role browser smoke reused. Not a substitute for Hamza/Hugo human acceptance or native Windows execution."
+}

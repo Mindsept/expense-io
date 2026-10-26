@@ -75,7 +75,7 @@ test('HR pages the directory and searches managers beyond the current directory 
   const directory = page.getByRole('heading', { name: 'Organigramme (25)', exact: true }).locator('xpath=..')
   await expect(directory.getByRole('row')).toHaveCount(21)
   await page.getByLabel('Rechercher parmi les managers actifs de l’entreprise').fill('Manager outside page')
-  const managerSelect = page.getByLabel('Manager de Alice Test', { exact: true })
+  const managerSelect = page.getByLabel('Manager de Alice Test (employee1@example.test)', { exact: true })
   await expect(managerSelect.locator('option', { hasText: 'Manager outside page' })).toHaveCount(1)
   await expect(managerSelect).toHaveValue('00000000-0000-4000-8000-000000000399')
   await page.getByRole('navigation', { name: 'Pagination de l’annuaire' }).getByRole('button', { name: 'Suivant' }).click()

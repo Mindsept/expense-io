@@ -1,0 +1,5 @@
+
+> expense-io-version-b@0.1.0 demo:reset
+> node scripts/mathis/MATH-03/demo.mjs reset
+
+Explicit --confirm-disposable required. Stop demo:start first; this removes only its owned test volumes.

@@ -1,0 +1,7 @@
+{
+  "outcome": "passed",
+  "expired": false,
+  "httpAttempts": 280,
+  "sqlPlans": 9,
+  "realOcrRecognitions": 24
+}

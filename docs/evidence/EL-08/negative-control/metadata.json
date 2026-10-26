@@ -1,0 +1,30 @@
+{
+  "ticket": "ARLA-38",
+  "repository": "Mindsept/expense-io",
+  "baseSha": "02ec22e2392eb92458b63089da683da59dc1560e",
+  "date": "2026-10-25",
+  "timezone": "Europe/Paris",
+  "command": "npm run test:ci",
+  "sourceState": "Temporary uncommitted mutation; this is deliberately not an execution of the clean base SHA.",
+  "mutation": "Generate a new idempotency key on the explicit retry instead of reusing the pending submission key.",
+  "expectedFailures": [
+    "EL-04/submission-intent.spec.ts: a retry after a lost response reuses the same key, fields and receipt",
+    "EL-08/integrated-flows.spec.ts: keyboard pagination survives an uncertain submission and a failed post-success refresh"
+  ],
+  "actualFailures": 2,
+  "e2ePassed": 38,
+  "e2eTotal": 40,
+  "e2eExitCode": 1,
+  "cleanupExitCode": 0,
+  "assertionReached": "Both failures compare the second submitted key with the first and observe distinct values.",
+  "mutationCommitted": false,
+  "restoration": {
+    "operatorVerifiedByteForByte": true,
+    "trackedSourceAndTestsMatchBaseAfterRestoration": true,
+    "file": "src/app/expenses/page.tsx",
+    "restoredFileSha256": "8ecefef048e4d7e69c722e0e2f56cdaf0ab05de4e6e77025616434d16cbaff84",
+    "positiveRerun": "../windows-positive/metadata.json"
+  },
+  "redaction": "Absolute workspace prefix replaced with <workspace>; trailing whitespace and blank EOF lines normalized; synthetic UUIDs used by the equality assertions are retained.",
+  "claim": "The existing EL-04 and new EL-08 assertions detect this concrete client retry regression; no claim of exhaustive defect detection."
+}

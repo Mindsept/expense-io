@@ -1,4 +1,25 @@
-# Défauts et dépendances encore ouverts — constat du 22 octobre 2026
+# Défauts, limites et historique
+
+## État courant — 26 octobre 2026
+
+La base publiée `888a74ddae9db28378596adc7709358798986e49` intègre HA-04/RLS, HA-09/notifications, LE-01/02/03, pagination LE-07/EL-05/LE-11, index LE-09, MATH-02 et les mises à jour MATH-07. **Les blocages d'intégration décrits le 22 octobre ci-dessous ne sont plus l'état courant.** Leurs constats restent conservés comme historique.
+
+À la demande d'Hugo du 26 octobre de terminer les tickets, l'assistant a constitué le candidat qui réunit les livrables des PR #17/#27/#30/#31/#32/#33 dans le fork Mindsept. Le correctif #30 est également présent dans l'ascendance de #31 : il n'est pas dupliqué. Le candidat testé est `f6592bcc53ddceb77038bccda43072355673a54c`, choisi dans ce périmètre autorisé. Ses huit étapes de CI locale ont réussi : 748 tests unitaires, 254 API et 42 E2E. Cette intégration locale n'est pas une déclaration de fusion sur main ni une réception produit par Hugo.
+
+| Sujet restant au point documentaire | Action / preuve à rattacher |
+| --- | --- |
+| PO-01 — arbitrages clos | Hugo a validé le 26 octobre les dates futures, formats/total, périmètre et invitation de 48 h. [Règles décidées](po/regles-et-contrats.md). Configuration privée de livraison à fournir si un environnement réel est activé. |
+| Campagne finale MATH-04 | CI locale réussie sur `f6592bc` ; dossier de campagne et preuves de parcours centralisés par l'intégrateur dans [final-campaign.json](evidence/MATH-04/final-campaign.json). La réception personnelle reste distincte. |
+| Portée RLS | [Matrice des assertions](po/matrice-rls.md) : le contrôle direct ajouté des cinq tables peuplées, sans acteur / acteur étranger, passe sur `f6592bc` avec la campagne 748/254/42. La portée reste distincte d'une matrice exhaustive de toutes les mutations/rôles. |
+| Seed / restauration | Rattacher la qualification Windows et le parcours de la cible restaurée ; ne pas présenter une CI Linux comme preuve Windows ou comme réception utilisateur. |
+| Accessibilité / recette produit | Consigner les contrôles navigateur réalisables ; une approbation personnelle d'Hugo et une certification globale ne sont pas déduites des tests. |
+| Performance | [Nouvelle référence et revue des bruts](po/revue-performance-20261026.md), sans gain calculé contre l'ancien protocole ni approbation nominative inventée. |
+| Soutenance | [Déroulé et exercice préparés](po/soutenance.md) ; répétition collective et capacité de chacun à expliquer restent à observer. |
+| E2E enseignants séparés | Référence non fournie ; conservation de leurs parcours non certifiable en leur absence. |
+
+Les fonctionnalités hors version **validées** dans PO-01 restent visibles dans le backlog produit, sans faux livrable. Aucune anomalie technique nouvelle n'est créée uniquement parce qu'une preuve est encore à produire. Tout échec réel doit garder étapes, attendu/observé, SHA, propriétaire et résultat de correction.
+
+## Historique — constat du 22 octobre 2026
 
 Ce registre ne remplace ni les tickets des auteurs ni leurs preuves. Le statut
 « ouvert » signifie que la correction n'est pas intégrée et validée dans la
@@ -20,3 +41,10 @@ Sources : descriptions Jira ARLA-39 à 45, fichiers cités sur la référence,
 [PR #8](https://github.com/Mindsept/expense-io/pull/8),
 [PR #12](https://github.com/Mindsept/expense-io/pull/12).
 
+
+## Suivi complémentaire Mathis — 22 octobre 2026
+
+- MATH-02 : la version intégrée via #14 reste la référence. La PR parallèle #15 est fermée comme remplacée ; ARLA-45 et ARLA-43 conservent les corrections de main.
+- Portabilité macOS du test Hamza `tests/unit/hamza/HA-01/owned-node-process.test.ts` : `kill EPERM` dans le helper commun intégré. Reproduction locale sur Node 24.22.1 : 278 succès/1 échec ; Linux intégré : 279/279. Aucun changement du test tiers, pas de contournement. Voir [preuves ARLA-45](evidence/MATH-07-validation.md).
+- Dépendances : correctifs intégrés dans la branche ARLA-45 ; audit production zéro alerte. Avis braces `GHSA-vfj7-8cjw-p6xm` toujours ouvert (développement), exception non acceptée, revue proposée 28 octobre 2026 ; ESLint 9 hors support reste une dette séparée. Requalification/OS de livraison à Hamza et acceptation à Hugo.
+- MATH-03/06 : contrats HA-04 et validation de l’approche encore nécessaires. MATH-04 : campagne finale non exécutée sur le SHA de remise ; les campagnes de branches ne la remplacent pas.

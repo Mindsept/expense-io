@@ -12,6 +12,10 @@
     "migrate:down": "node-pg-migrate down --envPath .env",
     "ensure-bucket": "node scripts/ensure-bucket.mjs",
     "seed": "node scripts/seed.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "backup:demo": "node scripts/backup-demo.mjs",
+    "restore:demo": "node scripts/restore-demo.mjs",
+    "operations:demo": "node scripts/operations-demo.mjs",
     "test:unit": "vitest run",
     "test:api": "playwright test --config playwright.config.ts --project=api",
     "test:e2e": "playwright test --config playwright.config.ts --project=e2e",
@@ -19,7 +23,16 @@
     "test:collect": "node tests/support/check-collection.mjs",
     "verify": "npm run lint && npm run typecheck && npm run test:unit",
     "test:prepare": "node tests/support/prepare.mjs",
-    "test:ci": "node tests/support/ci.mjs"
+    "test:ci": "node tests/support/ci.mjs",
+    "seed:repair": "node scripts/seed-repair.mjs",
+    "test:tooling": "playwright test --config playwright.config.ts --project=api tests/api/mathis/MATH-03",
+    "demo:prepare": "node scripts/mathis/MATH-03/demo.mjs prepare",
+    "demo:start": "node scripts/mathis/MATH-03/demo.mjs start",
+    "demo:reset": "node scripts/mathis/MATH-03/demo.mjs reset",
+    "demo:down": "node scripts/mathis/MATH-03/demo.mjs down",
+    "bench:prepare": "node scripts/bench.mjs prepare",
+    "bench:run": "node scripts/bench.mjs run",
+    "bench:down": "node scripts/bench.mjs down"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",

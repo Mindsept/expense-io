@@ -1,6 +1,6 @@
 # HA-05: explicit invitation enrollment
 
-Implements PO-01's company-bound, verified-address, expiring, single-use invitation direction. The implementation verifies possession through a private link delivered to the intended address. No form field can assert verified identity, company or role. The operational expiry is required configuration; the tests' one-hour value is a fixture, not a default product decision. Document the deployed delivery method and chosen expiry with PO-01 before operating a real environment.
+Implements PO-01's company-bound, verified-address, expiring, single-use invitation direction. The implementation verifies possession through a private link delivered to the intended address. No form field can assert verified identity, company or role. On 26 October 2026, Hugo explicitly approved a **48-hour operational expiry** and private delivery to the exact intended address. Configure `ENROLLMENT_INVITATION_TTL_SECONDS=172800`, as shown in `.env.example`; the runtime still has no implicit default and fails closed on missing configuration. The tests' one-hour value is a fixture. Document and configure the actual private delivery provider separately before operating a real environment.
 
 ## Application behavior
 
@@ -15,7 +15,7 @@ Account creation commits before automatic login. A credential-provider error sho
 ## Required private configuration
 
 - Existing `AUTH_URL`: canonical application origin, HTTPS outside an explicitly isolated loopback test.
-- `ENROLLMENT_INVITATION_TTL_SECONDS`: explicitly chosen integer, 60–604800 seconds. No default is selected. The bound is a technical guard, not an assertion that PO approved a particular duration.
+- `ENROLLMENT_INVITATION_TTL_SECONDS`: **172800 seconds (48 hours)** for this version, approved by Hugo on 26 October. The accepted 60–604800-second range remains a technical validation bound used by tests and lower-level calls, not permission to choose another operational product policy. No implicit runtime default is added.
 - `ENROLLMENT_DELIVERY_URL`: private HTTPS mail-bridge endpoint, without embedded credentials, query or fragment. No client-supplied URL is read; redirects are refused.
 - `ENROLLMENT_DELIVERY_BEARER`: separately provisioned private bridge bearer (at least 32 characters), never a browser variable.
 

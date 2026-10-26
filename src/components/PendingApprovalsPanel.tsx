@@ -24,7 +24,7 @@ const currencyFormatter = new Intl.NumberFormat('fr-FR', {
 export function PendingApprovalsPanel() {
   const [notes, setNotes] = useState<ExpenseNote[]>([])
   const [notesPage, setNotesPage] = useState<PageInfo>({ page: 1, pageSize: 20, totalItems: 0 })
-  const [notesTotals, setNotesTotals] = useState<PageTotals>({ count: 0, amount: 0, scope: 'filtered' })
+  const [notesTotals, setNotesTotals] = useState<PageTotals | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -83,11 +83,13 @@ export function PendingApprovalsPanel() {
   }
 
   async function retryPending() {
+    const source = document.activeElement
     await loadPending()
-    headingRef.current?.focus()
+    if (document.activeElement === source || document.activeElement === document.body) headingRef.current?.focus()
   }
 
   async function handleDecide(id: string, decision: 'approve' | 'reject') {
+    const source = document.activeElement
     setDecidingId(id)
     setError(null)
     setNotice(null)
@@ -96,7 +98,7 @@ export function PendingApprovalsPanel() {
       if (response.ok) {
         setNotice(decision === 'approve' ? 'Note de frais approuvée.' : 'Note de frais rejetée.')
         await loadPending()
-        headingRef.current?.focus()
+        if (document.activeElement === source || document.activeElement === document.body) headingRef.current?.focus()
       } else if (isConflict(response)) {
         setError('Cette note a été modifiée depuis son affichage. Actualise la liste avant de décider.')
       } else {
@@ -124,7 +126,7 @@ export function PendingApprovalsPanel() {
           <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
             {error}
           </p>
-          <button type="button" onClick={retryPending} disabled={loading || decidingId !== null} className="mt-2 text-sm font-medium text-brand-600 hover:underline disabled:opacity-60">
+          <button type="button" onClick={retryPending} disabled={loading || decidingId !== null} className="mt-2 text-sm font-medium text-brand-600 hover:underline dark:text-brand-200 disabled:opacity-60">
             {loading ? 'Actualisation…' : 'Réessayer'}
           </button>
         </div>
@@ -133,11 +135,11 @@ export function PendingApprovalsPanel() {
 
       <section className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <h2 ref={headingRef} tabIndex={-1} className="border-b border-gray-200 px-6 py-4 text-base font-semibold focus:outline focus:outline-2 focus:outline-brand-500 dark:border-gray-800">
-          En attente ({notesPage.totalItems})
+          En attente{notesTotals ? ` (${notesPage.totalItems})` : ''}
         </h2>
-        <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">
+        {notesTotals && <p className="px-6 pt-3 text-sm text-gray-500 dark:text-gray-400">
           Total des notes en attente : {notesTotals.count} · {currencyFormatter.format(notesTotals.amount ?? 0)}
-        </p>
+        </p>}
         {loading && notes.length === 0 ? (
           <p role="status" className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
             Chargement…
@@ -151,7 +153,7 @@ export function PendingApprovalsPanel() {
             Aucune note en attente.
           </p>
         ) : (
-          <div className="overflow-x-auto" tabIndex={0} aria-label="Notes en attente, tableau défilant">
+          <div role="region" className="relative overflow-x-auto" tabIndex={0} aria-label="Notes en attente, tableau défilant">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -159,7 +161,7 @@ export function PendingApprovalsPanel() {
                   <th className="px-6 py-3 font-medium">Date</th>
                   <th className="px-6 py-3 font-medium">Description</th>
                   <th className="px-6 py-3 text-right font-medium">Montant</th>
-                  <th className="px-6 py-3" />
+                  <th className="px-6 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -178,27 +180,27 @@ export function PendingApprovalsPanel() {
                     <td className="px-6 py-3 text-right whitespace-nowrap">
                       <button
                         type="button"
-                        aria-label={`Voir le reçu de ${note.author?.displayName || 'l’auteur non disponible'}, ${note.description}`}
+                        aria-label={`Voir le reçu de ${note.author?.displayName || 'l’auteur non disponible'}, ${note.description}, ${formatCivilDate(note.expenseDate)}`}
                         onClick={() => handleViewReceipt(note.id)}
-                        className="mr-3 text-sm font-medium text-brand-600 hover:underline"
+                        className="mr-3 text-sm font-medium text-brand-600 hover:underline dark:text-brand-200"
                       >
                         Voir le reçu
                       </button>
                       <button
                         type="button"
                         disabled={decidingId !== null}
-                        aria-label={`Approuver la note de ${note.author?.displayName || 'l’auteur non disponible'}, ${note.description}`}
+                        aria-label={`Approuver la note de ${note.author?.displayName || 'l’auteur non disponible'}, ${note.description}, ${formatCivilDate(note.expenseDate)}`}
                         onClick={() => handleDecide(note.id, 'approve')}
-                        className="mr-3 text-sm font-medium text-green-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                        className="mr-3 text-sm font-medium text-green-700 hover:underline dark:text-green-400 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Approuver
                       </button>
                       <button
                         type="button"
                         disabled={decidingId !== null}
-                        aria-label={`Rejeter la note de ${note.author?.displayName || 'l’auteur non disponible'}, ${note.description}`}
+                        aria-label={`Rejeter la note de ${note.author?.displayName || 'l’auteur non disponible'}, ${note.description}, ${formatCivilDate(note.expenseDate)}`}
                         onClick={() => handleDecide(note.id, 'reject')}
-                        className="text-sm font-medium text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                        className="text-sm font-medium text-red-600 hover:underline dark:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Rejeter
                       </button>

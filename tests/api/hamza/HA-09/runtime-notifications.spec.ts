@@ -33,6 +33,32 @@ async function note(){
   expect(response.status()).toBe(201);return(await response.json()).id as string
 }
 
+test('each populated notification table refuses context-free and foreign-company web reads',async()=>{
+  const expense=await note()
+  await fixture.runWorker()
+  expect((await scoped(ids.manager,client=>client.query('SELECT event_id FROM assignment_inbox WHERE expense_id=$1',[expense]))).rowCount).toBe(1)
+  expect((await contexts[1].post(`/api/manager/expense-notes/${expense}/approve`)).status()).toBe(200)
+  await fixture.runWorker()
+
+  const tables=['decision_notification_outbox','decision_inbox','expense_notification_routes','assignment_notification_outbox','assignment_inbox'] as const
+  for(const table of tables){
+    // Positive setup control: an empty table must not make an isolation assertion pass.
+    expect(Number((await fixture.admin.query(`SELECT count(*) FROM ${table} WHERE expense_id=$1`,[expense])).rows[0].count),table).toBeGreaterThan(0)
+    const query=`SELECT count(*)::int AS count FROM ${table} WHERE expense_id=$1`
+    if(table==='assignment_notification_outbox'){
+      // The web login intentionally has no SELECT grant on the worker's queue.
+      await expect(fixture.runtime.query(query,[expense])).rejects.toMatchObject({code:'42501'})
+      await expect(scoped(ids.foreign,client=>client.query(query,[expense]))).rejects.toMatchObject({code:'42501'})
+    }else{
+      expect((await fixture.runtime.query(query,[expense])).rows,`${table}: no actor`).toEqual([{count:0}])
+      expect((await scoped(ids.foreign,client=>client.query(query,[expense]))).rows,`${table}: foreign actor`).toEqual([{count:0}])
+    }
+  }
+  // Real authorized readers retain their access; the test does not accept blanket denial.
+  expect((await scoped(ids.owner,client=>client.query('SELECT event_id FROM decision_inbox WHERE expense_id=$1',[expense]))).rowCount).toBe(1)
+  expect((await scoped(ids.manager,client=>client.query('SELECT event_id FROM decision_notification_outbox WHERE expense_id=$1',[expense]))).rowCount).toBe(1)
+})
+
 test('the actual worker CLI delivers one assignment and rechecks current rights after reassignment',async()=>{
   const expense=await note()
   const first=await fixture.runWorker();expect(first.delivered).toBeGreaterThan(0)

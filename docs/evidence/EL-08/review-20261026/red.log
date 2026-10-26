@@ -1,0 +1,69 @@
+
+Running 2 tests using 1 worker
+
+(node:21592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 .ci-output\frontend-review\stale-responses.spec.ts:8:7 › HR: an obsolete directory HTTP failure cannot replace a newer successful list (16.8s)
+(node:40304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 .ci-output\frontend-review\stale-responses.spec.ts:8:7 › HR: an obsolete notes HTTP failure cannot replace a newer successful list (6.3s)
+
+
+  1) .ci-output\frontend-review\stale-responses.spec.ts:8:7 › HR: an obsolete directory HTTP failure cannot replace a newer successful list 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('main').getByRole('alert')
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('main').getByRole('alert') with timeout 5000ms
+      - waiting for getByRole('main').getByRole('alert')
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      65 |     // arbitrary sleep or a third request that could clear a spurious alert.
+      66 |     await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+    > 67 |     await expect(page.getByRole('main').getByRole('alert')).toHaveCount(0)
+         |                                                             ^
+      68 |     await expect(page.getByText(staleSection === 'directory' ? 'Alice Test' : 'Employee 21', { exact: true })).toBeVisible()
+      69 |     await expect(page.getByRole('cell', { name: staleSection === 'directory' ? 'Note concurrente 21' : 'Note concurrente 1', exact: true })).toBeVisible()
+      70 |     await expect(page.getByRole('button', { name: /Réessayer/ })).toHaveCount(0)
+        at <worktree>\.ci-output\frontend-review\stale-responses.spec.ts:67:61
+
+    Error Context: test-results\stale-responses-HR-an-obso-57265-ace-a-newer-successful-list\error-context.md
+
+  2) .ci-output\frontend-review\stale-responses.spec.ts:8:7 › HR: an obsolete notes HTTP failure cannot replace a newer successful list 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('main').getByRole('alert')
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('main').getByRole('alert') with timeout 5000ms
+      - waiting for getByRole('main').getByRole('alert')
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      65 |     // arbitrary sleep or a third request that could clear a spurious alert.
+      66 |     await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+    > 67 |     await expect(page.getByRole('main').getByRole('alert')).toHaveCount(0)
+         |                                                             ^
+      68 |     await expect(page.getByText(staleSection === 'directory' ? 'Alice Test' : 'Employee 21', { exact: true })).toBeVisible()
+      69 |     await expect(page.getByRole('cell', { name: staleSection === 'directory' ? 'Note concurrente 21' : 'Note concurrente 1', exact: true })).toBeVisible()
+      70 |     await expect(page.getByRole('button', { name: /Réessayer/ })).toHaveCount(0)
+        at <worktree>\.ci-output\frontend-review\stale-responses.spec.ts:67:61
+
+    Error Context: test-results\stale-responses-HR-an-obso-8b54e-ace-a-newer-successful-list\error-context.md
+
+  2 failed
+    .ci-output\frontend-review\stale-responses.spec.ts:8:7 › HR: an obsolete directory HTTP failure cannot replace a newer successful list 
+    .ci-output\frontend-review\stale-responses.spec.ts:8:7 › HR: an obsolete notes HTTP failure cannot replace a newer successful list 
+

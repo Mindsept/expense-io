@@ -1,0 +1,79 @@
+{
+  "checkedAt": "2026-10-26T16:50:23.786Z",
+  "applicationSha": "349c77e4c2ceb8df83b428f85fd59e2be3e77244",
+  "platform": "win32-x64",
+  "node": "24.22.1",
+  "npm": "11.19.1",
+  "dockerEngine": "29.9.2",
+  "scope": "MATH-03 and MATH-06 native Windows verification on synthetic isolated services",
+  "unit": {
+    "passed": 40,
+    "math03": 17,
+    "math06": 23,
+    "exitCode": 0
+  },
+  "initialSandboxAttempt": {
+    "passed": 39,
+    "failed": 1,
+    "reason": "EPERM creating hard link before assertion",
+    "resolution": "Authorized native Windows replay; no source or assertion changes"
+  },
+  "typecheckExitCode": 0,
+  "prepareExitCode": 0,
+  "seedRuns": [
+    {
+      "notesPreserved": 2,
+      "notesCreated": 0,
+      "usersPreserved": 3,
+      "exitCode": 0,
+      "receiptsUploaded": 0,
+      "usersCreated": 0
+    },
+    {
+      "notesPreserved": 2,
+      "notesCreated": 0,
+      "usersPreserved": 3,
+      "exitCode": 0,
+      "receiptsUploaded": 0,
+      "usersCreated": 0
+    }
+  ],
+  "api": {
+    "passed": 11,
+    "seconds": 16.5,
+    "exitCode": 0,
+    "database": "PostgreSQL 16",
+    "storage": "LocalStack 3.8.1",
+    "failureInjection": "Callback between real PostgreSQL/S3 operations; not a machine power loss"
+  },
+  "server": {
+    "checkedAt": "2026-10-26T16:48:51.083Z",
+    "platform": "win32",
+    "guide": "docs/demo.md",
+    "command": "npm run demo:start",
+    "roles": [
+      {
+        "role": "employee",
+        "authenticated": true,
+        "page": "ok"
+      },
+      {
+        "role": "manager",
+        "authenticated": true,
+        "page": "ok"
+      },
+      {
+        "role": "hr_admin",
+        "authenticated": true,
+        "page": "ok"
+      }
+    ],
+    "ownedServerStopped": true
+  },
+  "sourceCleanup": {
+    "exitCode": 0,
+    "scope": "Only the newly created source project and its owned volumes",
+    "restoredTarget": "Retained for separate browser verification"
+  },
+  "humanAcceptance": "Not claimed; HTTP checks are not browser actions or human signoff"
+}

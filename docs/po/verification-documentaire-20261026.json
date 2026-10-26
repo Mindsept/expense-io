@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-26",
+  "timezone": "Europe/Paris",
+  "method": "Local source reading, git-object link checks and recomputation of published JSON statistics; no new benchmark or human acceptance.",
+  "repository": "Mindsept/expense-io",
+  "baseSha": "888a74ddae9db28378596adc7709358798986e49",
+  "preparationBranchSha": "6842c59cc674c47fcc7679ff1122cffa131ebd50",
+  "markdownValidation": {
+    "documents": 6,
+    "relativeLinksChecked": 86,
+    "pinnedGitObjectLinksChecked": 7,
+    "brokenLinks": [],
+    "diffWhitespaceCheckExitCode": 0,
+    "remoteJiraAndActionsLinksCheckedByThisReview": false
+  },
+  "courseFiles": [
+    {
+      "name": "2026_ARLA_Cours 1 & 2.pptx",
+      "sha256": "b731673b93e3cc2fb6145cbfb871f8b488563e94757f627c5894b9b35e51924d",
+      "slideXmlTextRead": [15,20,32,37,38,39,40,44,45,46,47,48,49]
+    },
+    {
+      "name": "ARLA 2026 Cours 3.pptx",
+      "sha256": "138d5f714b37022b41bdc80d95541ce888781edb85842abd2ee75d42b1613d42",
+      "slideXmlTextRead": [7,18,19,20,21,23,24,25,26,27,28,30,31,32,38],
+      "limit": "The graphical grading table on slide 38 was not transcribed; this review does not claim to verify its numeric weights."
+    }
+  ],
+  "performanceReview": {
+    "publicationSha": "ae7d7dc1e72ce04db4cef8fa1c1bdaee67b0df10",
+    "measuredSourceSha": "ad51a01445765e47a6e914dbbe7ecddf9b108e79",
+    "publicationDiffOnlyDocumentationAndEvidence": true,
+    "measuredRequests": 540,
+    "measuredErrors": 0,
+    "warmups": 18,
+    "separateAnonymousDiagnostics": 2,
+    "roleVolumeGroupsRecomputed": 6,
+    "allMediansAndP95Match": true,
+    "absoluteToleranceMs": 0.0000001,
+    "benchmarkExecutedByThisReview": false,
+    "namedHumanReviewerAcceptance": false
+  },
+  "humanAcceptance": {
+    "productComplementsApproved": true,
+    "productComplementsApprovalDate": "2026-10-26",
+    "productComplementsApprovalSource": "Hugo explicitly answered 'Valider ces règles' in the task conversation; recorded in regles-et-contrats.md.",
+    "productJourneyAccepted": false,
+    "collectiveRehearsalExecuted": false,
+    "trainingFeatureExecuted": false
+  },
+  "integratedCandidateCampaign": {
+    "applicationSha": "f6592bcc53ddceb77038bccda43072355673a54c",
+    "source": "Integrator's local CI campaign, detailed evidence centralized in docs/evidence/MATH-04/final-campaign.json.",
+    "successfulStages": 8,
+    "unitTestsPassed": 748,
+    "apiTestsPassed": 254,
+    "e2eTestsPassed": 42,
+    "newDirectNotificationRlsTestSha": "e415113279c4b776efe1b989ef3bc0fa1e6b5225",
+    "newDirectNotificationRlsTestPassed": true,
+    "rlsCoverageLimit": "Five populated notification tables checked without actor and with foreign-company actor; not every mutation/role combination."
+  }
+}

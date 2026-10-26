@@ -1,0 +1,6 @@
+
+> expense-io-version-b@0.1.0 bench:run
+> node scripts/bench.mjs run
+
+Conflicting external test target refused before writes.
+Owned cleanup failed; use bench:down with the retained private configuration.
