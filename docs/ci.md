@@ -19,7 +19,7 @@ navigateur sont déjà présentes. Le lanceur fonctionne sans shell Bash.
    Valider le marqueur `isolated`, la cible loopback, les ports distincts,
    la base `expense_io_test`, le bucket `receipts-ci-test` et le projet Compose
    neuf `arla-ci-<identifiant>`. Refuser tout port occupé avant préparation.
-2. Exécuter `verify` (lint, types, unitaires) puis `test:collect`, qui vérifie
+2. Exécuter `verify` (lint, types, unitaires avec couverture V8) puis `test:collect`, qui vérifie
    la présence des suites et de leurs exemples connus sans les faire passer
    pour des tests exécutés.
 3. Démarrer `docker-compose.test.yml` avec une attente santé de 180 secondes.
@@ -75,6 +75,13 @@ du statut se fait dans un autre runner sans checkout ni exécution d'artefact de
 Il n'y a pas de `pull_request_target` exécutant le code d'une PR.
 
 ## Preuves et limites
+
+La couverture unitaire est produite par `npm run test:coverage`, aussi appelé par
+`verify`. Le résumé du job présente les lignes, instructions, fonctions et
+branches couvertes. L'artefact `unit-coverage-<run>-<tentative>` contient les
+rapports HTML, LCOV et JSON, conservés 14 jours. Les rapports sont aussi publiés
+après un échec si Vitest a pu les produire ; ils ne remplacent pas le résultat
+des tests. Voir [le périmètre et la lecture de la couverture](test-coverage.md).
 
 `.ci-output/` contient les logs texte expurgés de chaque étape, les logs du serveur
 et `summary.json` avec les codes de sortie. GitHub les conserve cinq jours, y compris

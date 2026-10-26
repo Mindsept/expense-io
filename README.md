@@ -62,6 +62,12 @@ Voir `.env.example` et [la configuration d'authentification](docs/authentication
 
 ## Autres commandes
 
+Tests et couverture : `npm run test:unit` lance les tests unitaires seuls ;
+`npm run test:coverage` génère leur couverture dans `coverage/unit/index.html`.
+`npm run verify` exécute lint, typage et couverture unitaire. Le pipeline complet
+`npm run test:ci` ajoute build, API et E2E sur une stack jetable.
+Voir [la couverture et ses limites](docs/test-coverage.md) et [la CI](docs/ci.md).
+
 ```bash
 make build   # build de production
 make start   # build puis démarre en production
