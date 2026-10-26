@@ -1,0 +1,39 @@
+
+Running 3 tests using 1 worker
+
+(node:37276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 .ci-output\rehearsal\description-counter.spec.ts:7:5 › description counter follows trimmed UTF-16 length without a live region or moving focus (5.7s)
+  ok 2 .ci-output\rehearsal\description-counter.spec.ts:27:5 › description counter displays the exact boundary and excess without weakening the submission contract (684ms)
+  x  3 .ci-output\rehearsal\description-counter.spec.ts:42:5 › description count and text survive an uncertain submission and reset only after success (895ms)
+
+
+  1) .ci-output\rehearsal\description-counter.spec.ts:42:5 › description count and text survive an uncertain submission and reset only after success
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('status')
+    Expected: "Note de frais enregistrée."
+    Error: strict mode violation: getByRole('status') resolved to 2 elements:
+        1) <p role="status" class="text-sm text-green-700 dark:text-green-300">Note de frais enregistrée.</p> aka getByText('Note de frais enregistrée.')
+        2) <p role="status" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">Chargement…</p> aka getByText('Chargement…')
+
+    Call log:
+      - Expect "toHaveText" getByRole('status') with timeout 5000ms
+      - waiting for getByRole('status')
+
+
+      56 |   await expect(page.locator('#description-counter')).toHaveText('3993 caractères restants')
+      57 |   await page.getByRole('button', { name: 'Réessayer la même soumission', exact: true }).click()
+    > 58 |   await expect(page.getByRole('status')).toHaveText('Note de frais enregistrée.')
+         |                                          ^
+      59 |   await expect(page.getByLabel('Description', { exact: true })).toHaveValue('')
+      60 |   await expect(page.locator('#description-counter')).toHaveText('4000 caractères restants')
+      61 |   expect(posts).toBe(2)
+        at <worktree>\.ci-output\rehearsal\description-counter.spec.ts:58:42
+
+    Error Context: test-results\description-counter-descri-d7057-nd-reset-only-after-success\error-context.md
+
+  1 failed
+    .ci-output\rehearsal\description-counter.spec.ts:42:5 › description count and text survive an uncertain submission and reset only after success
+  2 passed (9.6s)

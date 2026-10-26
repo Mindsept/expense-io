@@ -1,0 +1,12 @@
+
+> expense-io-version-b@0.1.0 test:unit
+> vitest run tests/unit/elyes/EL-08/description-contract.test.ts tests/unit/leandro/LE-01/input.test.ts
+
+
+ RUN  v5.0.5 C:/Users/hugos/Documents/ChatGPT/ARLA/expense-io-rehearsal
+
+
+ Test Files  2 passed (2)
+      Tests  43 passed (43)
+   Start at  18:14:29
+   Duration  631ms (tests 58%, import 21%, transform 16%, worker 5%)

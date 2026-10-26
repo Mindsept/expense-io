@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:32460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 .ci-output\rehearsal\description-counter.spec.ts:7:5 › description counter follows trimmed UTF-16 length without a live region or moving focus (2.3s)
+  ok 2 .ci-output\rehearsal\description-counter.spec.ts:27:5 › description counter displays the exact boundary and excess without weakening the submission contract (672ms)
+  ok 3 .ci-output\rehearsal\description-counter.spec.ts:42:5 › description count and text survive an uncertain submission and reset only after success (927ms)
+
+  3 passed (6.1s)

@@ -1,0 +1,44 @@
+{
+  "exercise": "ARLA-9 description counter",
+  "actor": "Codex technical rehearsal, no human rehearsal",
+  "baseCommit": "f6592bcc",
+  "branch": "codex/arla-rehearsal-description-counter",
+  "startedAtUtc": "2026-10-26T17:08:10.0000000+00:00",
+  "finishedAtUtc": "2026-10-26T17:19:44.6361104+00:00",
+  "durationSeconds": 694.636,
+  "budgetSeconds": 900,
+  "withinBudget": true,
+  "completionScope": "Implementation, targeted tests, review, evidence prepared, preview stopped; Git packaging follows",
+  "phases": [
+    {
+      "startedAtUtc": "2026-10-26T17:08:10Z",
+      "name": "read-plan",
+      "finishedAtUtc": "2026-10-26T17:09:41Z"
+    },
+    {
+      "startedAtUtc": "2026-10-26T17:09:41Z",
+      "name": "implementation-and-test-setup",
+      "finishedAtUtc": "2026-10-26T17:11:09Z"
+    },
+    {
+      "startedAtUtc": "2026-10-26T17:11:09Z",
+      "name": "verification-and-selector-repair",
+      "finishedAtUtc": "2026-10-26T17:17:30Z"
+    },
+    {
+      "startedAtUtc": "2026-10-26T17:17:30Z",
+      "name": "evidence-and-explanation",
+      "finishedAtUtc": "2026-10-26T17:19:44.6361104+00:00"
+    }
+  ],
+  "results": {
+    "domCasesPassed": 3,
+    "lintExit": 0,
+    "unitCasesPassed": 43,
+    "diffCheckExit": 0,
+    "typecheckExit": 0
+  },
+  "noApiOrDependencyChange": true,
+  "mergedIntoDelivery": false,
+  "humanRehearsalPerformed": false
+}

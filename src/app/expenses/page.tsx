@@ -37,6 +37,10 @@ type WorkflowDetails =
 const inputClass =
   'w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-brand-900'
 
+// Keep aligned with MAX_DESCRIPTION_LENGTH in the server's expense-input contract.
+// Its validator trims outer whitespace and counts JavaScript UTF-16 code units.
+const descriptionLimit = 4000
+
 const currencyFormatter = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
   currency: 'EUR',
@@ -122,6 +126,7 @@ export default function ExpensesPage() {
   const [suggestionNotice, setSuggestionNotice] = useState<string | null>(null)
   const [amount, setAmount] = useState('')
   const [expenseDate, setExpenseDate] = useState('')
+  const [descriptionLength, setDescriptionLength] = useState(0)
   const [submissionNotice, setSubmissionNotice] = useState<string | null>(null)
   const [workflowDetails, setWorkflowDetails] = useState<Record<string, WorkflowDetails>>({})
   const [expandedWorkflowId, setExpandedWorkflowId] = useState<string | null>(null)
@@ -242,6 +247,7 @@ export default function ExpensesPage() {
       form.reset()
       setAmount('')
       setExpenseDate('')
+      setDescriptionLength(0)
       setSuggestionNotice(null)
       suggestionGeneration.current += 1
       setExtracting(false)
@@ -397,6 +403,7 @@ export default function ExpensesPage() {
   }
 
   const total = notesTotals.amount ?? 0
+  const descriptionRemaining = descriptionLimit - descriptionLength
   const visibleError = reloadNeedsHistoryCheck
     ? 'Une tentative précédente a peut-être été enregistrée avant le rechargement. Son reçu ne peut pas être restauré ici : vérifie l’historique avant de recommencer.'
     : error
@@ -461,8 +468,18 @@ export default function ExpensesPage() {
               type="text"
               placeholder="Ex. Taxi aéroport, repas client…"
               required
+              aria-describedby="description-counter description-help"
+              onInput={(event) => setDescriptionLength(event.currentTarget.value.trim().length)}
               className={inputClass}
             />
+            <p id="description-counter" className="text-xs text-gray-500 dark:text-gray-400">
+              {descriptionRemaining >= 0
+                ? `${descriptionRemaining} caractère${descriptionRemaining > 1 ? 's' : ''} restant${descriptionRemaining > 1 ? 's' : ''}`
+                : `${-descriptionRemaining} caractère${descriptionRemaining < -1 ? 's' : ''} en trop`}
+            </p>
+            <p id="description-help" className="text-xs text-gray-500 dark:text-gray-400">
+              Les espaces au début et à la fin ne sont pas comptés. Certains symboles comptent pour deux caractères.
+            </p>
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="receipt" className="text-sm font-medium">
