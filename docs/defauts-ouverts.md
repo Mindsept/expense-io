@@ -1,4 +1,25 @@
-# Défauts et dépendances encore ouverts — constat du 22 octobre 2026
+# Défauts, limites et historique
+
+## État courant — 26 octobre 2026
+
+La base publiée `888a74ddae9db28378596adc7709358798986e49` intègre HA-04/RLS, HA-09/notifications, LE-01/02/03, pagination LE-07/EL-05/LE-11, index LE-09, MATH-02 et les mises à jour MATH-07. **Les blocages d'intégration décrits le 22 octobre ci-dessous ne sont plus l'état courant.** Leurs constats restent conservés comme historique.
+
+À la demande d'Hugo du 26 octobre de terminer les tickets, l'assistant prépare le candidat qui réunit les livrables des PR #17/#27/#30/#31/#32/#33 dans le fork Mindsept. Le correctif #30 est également présent dans l'ascendance de #31 : ne pas le dupliquer. L'intégrateur choisit et fige le SHA de test dans ce périmètre autorisé ; il n'est pas nécessaire d'attendre un second arbitrage du lot de PR par Hugo. Cette intégration locale n'est pas une déclaration de fusion sur main ni une recette finale réussie.
+
+| Sujet restant au point documentaire | Action / preuve à rattacher |
+| --- | --- |
+| Compléments PO-01 | Réponse produit sur dates futures, formats/total, récupération/édition/annulation et TTL d'invitation. [Règles et propositions séparées](po/regles-et-contrats.md). |
+| Campagne finale MATH-04 | Figer le candidat après corrections, exécuter les suites et parcours, consigner SHA, environnement et limites dans [final-campaign.json](evidence/MATH-04/final-campaign.json). |
+| Portée RLS | [Matrice des assertions](po/matrice-rls.md) : distinguer contrôles structurels et refus réels par table ; toute assertion ajoutée doit être exécutée avant d'annoncer son résultat. |
+| Seed / restauration | Rattacher la qualification Windows et le parcours de la cible restaurée ; ne pas présenter une CI Linux comme preuve Windows ou comme réception utilisateur. |
+| Accessibilité / recette produit | Consigner les contrôles navigateur réalisables ; une approbation personnelle d'Hugo et une certification globale ne sont pas déduites des tests. |
+| Performance | [Nouvelle référence et revue des bruts](po/revue-performance-20261026.md), sans gain calculé contre l'ancien protocole ni approbation nominative inventée. |
+| Soutenance | [Déroulé et exercice préparés](po/soutenance.md) ; répétition collective et capacité de chacun à expliquer restent à observer. |
+| E2E enseignants séparés | Référence non fournie ; conservation de leurs parcours non certifiable en leur absence. |
+
+Les fonctionnalités hors version proposées dans PO-01 restent visibles dans le backlog produit, sans faux livrable. Aucune anomalie technique nouvelle n'est créée uniquement parce qu'une preuve est encore à produire. Tout échec réel doit garder étapes, attendu/observé, SHA, propriétaire et résultat de correction.
+
+## Historique — constat du 22 octobre 2026
 
 Ce registre ne remplace ni les tickets des auteurs ni leurs preuves. Le statut
 « ouvert » signifie que la correction n'est pas intégrée et validée dans la

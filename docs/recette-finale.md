@@ -1,6 +1,6 @@
 # ARLA-42 / MATH-04 — dossier de recette et transfert
 
-**État au 26 octobre 2026 : préparation documentaire. La recette finale n'est pas exécutée et le SHA de remise n'est pas choisi.** Responsable de l'assemblage : Mathis ; relecteur et décision de remise : Hugo. Les preuves de chaque correction restent celles de son auteur.
+**État documentaire au 26 octobre 2026 : candidat d'intégration en préparation, recette finale non encore déclarée exécutée dans ce dossier.** Hugo a demandé de terminer l'ensemble des tickets et de tester de manière autonome ce qui peut l'être. L'assistant assemble le candidat dans ce périmètre ; l'acceptation personnelle du produit reste distincte. Les preuves de chaque correction restent celles de son auteur.
 
 Ce dossier répond à [ARLA-42](https://mindsept.atlassian.net/browse/ARLA-42). Les références « C1/C9, cours 1–2 s47/s49, cours 3 s38 » ci-dessous sont celles du ticket ; les supports de cours n'ont pas été relus pour cette préparation. Le dépôt examiné est exclusivement [Mindsept/expense-io](https://github.com/Mindsept/expense-io), base `888a74ddae9db28378596adc7709358798986e49`. Cette base de lecture n'est pas déclarée version de remise.
 
@@ -8,12 +8,12 @@ Le petit dossier [evidence/MATH-04](evidence/MATH-04/README.md) contient un rele
 
 ## 1. Fixer la version avant d'exécuter
 
-Hugo choisit les tickets retenus et le SHA qui les intègre. Mathis renseigne [final-campaign.json](evidence/MATH-04/final-campaign.json) avant le lancement, puis relève les résultats réels, sans modifier les preuves historiques.
+La demande d'Hugo du 26 octobre autorise l'intégration des livrables restants des PR #17/#27/#30/#31/#32/#33. L'assistant choisit le candidat dans ce périmètre, préserve les contrats et fige son SHA après corrections. Il n'est pas nécessaire d'attendre un second choix du lot de PR par Hugo. L'intégrateur renseigne [final-campaign.json](evidence/MATH-04/final-campaign.json) avant le lancement, puis relève les résultats réels, sans modifier les preuves historiques. L'acceptation produit et la répétition collective restent des actes humains à consigner séparément.
 
 | Élément à consigner | État de la campagne finale |
 | --- | --- |
 | Dépôt et remote | Fork `https://github.com/Mindsept/expense-io.git` ; à revérifier sur le checkout d'exécution |
-| SHA et branche de remise | **Non choisis** ; ne pas substituer un head de PR |
+| SHA et branche du candidat | Périmètre choisi conformément à la demande d'Hugo ; SHA intégré à figer après corrections, puis à consigner dans la fiche de campagne. Ne pas substituer un head de PR isolée. |
 | État du dossier | À relever avec `git status --porcelain` ; toute modification locale doit être identifiée et jointe, ou la campagne repart d'un checkout propre |
 | Début/fin et fuseau | À relever en ISO 8601 et `Europe/Paris`, avec le décalage effectif du jour |
 | OS et architecture | À relever sur le poste/runner qui exécute la campagne |
@@ -70,6 +70,8 @@ Les fichiers EL-01 et EL-04 sont présents dans la base de lecture. Le collecteu
 Ces scénarios démontrent le comportement de l'interface face à des réponses/interceptions contrôlées. La preuve réelle DB/S3 et de non-duplication reste celle de Leandro et de HA-04. Ne pas couper le réseau de toute la machine. Si ces tests ne sont pas intégrés ou ne sont pas exécutés sur le SHA de remise, conserver « ouvert/non livré » ou « non exécuté », selon le cas.
 
 ## 5. Sous-matrice RLS et identités réelles
+
+La [matrice détaillée par table](po/matrice-rls.md) relie désormais les assertions réellement présentes aux 13 tables, et précise leurs limites. Elle distingue la référence intégrée `888a74d` du contrôle direct supplémentaire des cinq tables de notification ajouté au candidat dans `e415113` ; le résultat de ce nouveau scénario reste à rattacher à la campagne finale.
 
 La base lue contient **13 tables protégées** dans [runtime-database.ts](../src/lib/runtime-database.ts). Sur la remise, Mathis rattache les assertions et résultats déjà livrés à l'inventaire réel, y compris toute table ajoutée depuis. Les attentes ci-dessous reprennent les contrats existants ; Mathis ne définit pas de nouvelle policy.
 
@@ -135,7 +137,7 @@ Pour chaque étape, copier **le texte exact, le code de sortie, la durée observ
 
 | Écart / dépendance | Action et propriétaire | Impact sur la conclusion |
 | --- | --- | --- |
-| SHA de remise et périmètre non fixés | Hugo choisit les tickets acceptés ; Mathis relève le checkout exact | La campagne finale ne peut pas être déclarée réussie |
+| SHA intégré à figer après corrections | Périmètre autorisé par la demande d'Hugo ; l'intégrateur relève le checkout exact puis exécute | Ne pas annoncer une campagne finale réussie avant son résultat ; aucun nouvel arbitrage des PR requis |
 | PR #17/#27/#33 encore en revue ; #29/#34/#35 intégrées | Choisir les livraisons retenues et vérifier les CI au SHA final ; réception des auteurs/relecteurs | Les preuves de branche restent utilisables seulement dans leur portée historique |
 | Traçabilité RLS/outbox de la remise à assembler | Mathis relie les suites HA-04/HA-09 déjà livrées et les rejoue sur le SHA choisi | Dépendance technique levée ; conserver la portée des assertions sans annoncer une isolation exhaustive |
 | Recette navigateur et reprise sur poste de remise non exécutées | Mathis rejoue les suites existantes ; Elyes examine ses échecs ; Hugo assiste au parcours | Démo finale non acceptée |
@@ -150,7 +152,7 @@ Trois captures utiles maximum, **aucune produite pour cette préparation** : (1)
 
 **Script oral, environ 60 secondes :**
 
-> Notre recette relie chaque exigence à un scénario, à son auteur et à une preuve sur une version précise. Aujourd'hui, le dossier rassemble les références des branches ; la version de remise reste à choisir et sa recette n'est pas annoncée réussie. Pour la valider, nous relançons la chaîne isolée et conservons commandes, codes, durées et résultats. Les tests d'Elyes montrent l'erreur réseau ciblée puis la reprise ; les tests SQL et HTTP de Hamza et Leandro vérifient les données et les droits réels. Le serveur limité et les tables de notifications demandent leurs propres preuves. Un écran ou une CI verte ne démontre pas tout. Les cas non exécutés et les défauts restent visibles. Un autre membre repart du même SHA et suit le protocole, puis Hugo décide des écarts acceptables avant la soutenance.
+> Notre recette relie chaque exigence à un scénario, à son auteur et à une preuve sur une version précise. Le candidat rassemble les livrables demandés par Hugo ; sa réussite finale se lit dans la fiche d'exécution, pas dans une intention de test. Nous relançons la chaîne isolée et conservons commandes, codes, durées et résultats. Les tests d'Elyes montrent l'erreur réseau ciblée puis la reprise ; les tests SQL et HTTP de Hamza et Leandro vérifient les données et les droits réels. Le serveur limité et les tables de notifications demandent leurs propres preuves. Un écran ou une CI verte ne démontre pas tout. Les cas non exécutés et les défauts restent visibles. Un autre membre repart du même SHA et suit le protocole, puis Hugo accepte les comportements et écarts réellement observés avant la soutenance.
 
 Checklist de réception humaine, à compléter après exécution :
 
