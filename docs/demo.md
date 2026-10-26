@@ -57,7 +57,7 @@ npm run seed -- --config "$demoConfig"
 npm run seed:repair -- --config "$demoConfig"
 ```
 
-La procédure PowerShell est fournie avec sa syntaxe propre ; son exécution native Windows reste à confirmer par un membre équipé. Les fonctions de gestion des processus réutilisent le helper commun MATH-02.
+La procédure PowerShell a été exécutée nativement le 26 octobre 2026 : préparation, deux relances sans doublon ni upload, 11 scénarios API sur PostgreSQL/LocalStack réels, démarrage du serveur et connexions HTTP des trois rôles. Voir [la qualification Windows](evidence/MATH-03/windows-20261026.json). Les fonctions de gestion des processus réutilisent le helper commun MATH-02. Cette campagne assistée ne vaut pas une approbation personnelle d'Hugo ni le passage du guide par un autre membre humain.
 
 Après une préparation neuve : **3 comptes / 2 notes / 2 objets**. Les deux relances doivent annoncer `usersCreated:0`, `notesCreated:0`, `receiptsUploaded:0`, tout en conservant un rattachement/nom/rôle/mot de passe modifié. Les personnes et notes ajoutées manuellement restent présentes : les totaux peuvent donc augmenter après une démo métier et le script ne les remet pas arbitrairement à trois/deux.
 

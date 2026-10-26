@@ -35,7 +35,18 @@ Le runner commun garde sa déclaration de baseline privilégiée. La preuve d'ap
 
 La démo trois rôles et le reset conservent leurs SHA historiques dans les preuves. Le correctif de création privée exclusive est couvert sur le code final par les tests ; la matrice de seed/réparation complète est rejouée sur la source finale. Les versions et empreintes ne sont pas réétiquetées rétroactivement.
 
-**Encore attendus :** revue Hamza des droits/du script, validation Hugo du parcours et passage du guide par un autre membre sur base vierge. Les commandes PowerShell ont été écrites avec leur syntaxe native mais n'ont pas été exécutées sur Windows ; les validations locales sont sous macOS arm64 / Node 24.22.1 / npm 11.19.1, services sous Colima. Aucune case humaine cochée automatiquement. Le Makefile historique reste à coordonner avec son propriétaire ; la procédure livrée est `demo:*`.
+La revue assistée des droits/scripts par Hamza est déjà consignée dans Jira, comme le rappelle ARLA-41 le 26 octobre. Elle reste distincte d'une approbation formelle. **Réception humaine encore distincte :** validation Hugo du parcours et passage du guide par un autre membre sur base vierge. La qualification native Windows a depuis été réalisée ci-dessous ; les anciennes preuves macOS conservent leur environnement et leur SHA. Aucune case humaine cochée automatiquement. Le Makefile historique reste à coordonner avec son propriétaire ; la procédure livrée est `demo:*`.
+
+## Qualification native Windows du 26 octobre
+
+[Preuve expurgée](windows-20261026.json), sur `349c77e4c2ceb8df83b428f85fd59e2be3e77244` : intégration locale de main `888a74d`, PR #27 `82e88df` et PR #33 `d566e32`, avec deck documentaire consolidé de PR #32. Aucun correctif applicatif ajouté dans cette campagne.
+
+- Node 24.22.1 / npm 11.19.1, Windows x64, moteur Docker 29.9.2 ; dépendances du lockfile installées sans modification.
+- 17 tests unitaires MATH-03 et 23 MATH-06 passent, typage sans erreur. La première tentative dans le bac à sable Windows a échoué avant l'assertion du cas de lien dur (`EPERM`) ; le rejeu natif autorisé passe les 40 cas sans modification, skip ni assertion affaiblie.
+- `demo:prepare`, puis les deux commandes PowerShell `seed`, passent. Chaque relance conserve les 3 comptes et 2 notes, crée zéro compte/note et n'uploade aucun reçu.
+- Les 11 tests API MATH-03 passent en 16,5 s contre PostgreSQL/LocalStack réels, notamment préservation des attributs, interruptions injectées avant/après upload, acquittement de COMMIT perdu, ambiguïtés et refus d'identité étrangère.
+- `demo:start` démarre réellement. Les trois rôles s'authentifient et lisent leur page par HTTP. L'arbre de processus créé pour le test est arrêté par le helper commun ; port 3215 vérifié libre. Ce test n'affirme pas un Ctrl+C interactif ni des clics dans un navigateur.
+- Après capture/restauration MATH-06 et contrôle de préservation de la source, `demo:down -- --confirm-disposable` supprime uniquement le projet source de cette campagne. La cible restaurée distincte reste disponible pour une campagne navigateur séparée.
 
 Les anciens reçus de démo sans nouveau marqueur demandent une revue ; aucune donnée personnelle de développement n'est modifiée. Les archives et fichiers de configuration privés ne font pas partie de ces preuves. La CI distante de la tête publiée est liée dans Jira et dans la PR.
 

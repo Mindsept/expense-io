@@ -1,0 +1,52 @@
+{
+  "checkedAt": "2026-10-26T16:50:23.786Z",
+  "scope": "Isolated synthetic source and restored databases; metadata only, no credential hashes.",
+  "categories": {
+    "tables": {
+      "count": 14,
+      "sourceSha256": "c8cd5096d022088ba9007297f91d10eea17daaf993d039ac05748cd2515c1b09",
+      "restoredSha256": "c8cd5096d022088ba9007297f91d10eea17daaf993d039ac05748cd2515c1b09",
+      "identical": true
+    },
+    "policies": {
+      "count": 44,
+      "sourceSha256": "d8b371499848c0d3aee7170efe734c7162ed201fc7bad63dce69a3fc4689f55f",
+      "restoredSha256": "d8b371499848c0d3aee7170efe734c7162ed201fc7bad63dce69a3fc4689f55f",
+      "identical": true
+    },
+    "functions": {
+      "count": 37,
+      "sourceSha256": "7e220c5f8877a76c7551500b980520ea1957a44bcc7ea4144e6dc784080f6b80",
+      "restoredSha256": "7e220c5f8877a76c7551500b980520ea1957a44bcc7ea4144e6dc784080f6b80",
+      "identical": true
+    },
+    "roles": {
+      "count": 4,
+      "sourceSha256": "b82b6ef7af6df99bd69ee4de04e96dd82afa603f2588671c3cc993caddb92582",
+      "restoredSha256": "b82b6ef7af6df99bd69ee4de04e96dd82afa603f2588671c3cc993caddb92582",
+      "identical": true
+    }
+  },
+  "protectedTables": [
+    "assignment_inbox",
+    "assignment_notification_outbox",
+    "companies",
+    "decision_inbox",
+    "decision_notification_outbox",
+    "enrollment_invitations",
+    "expense_decision_history",
+    "expense_notes",
+    "expense_notification_routes",
+    "expense_submission_attempts",
+    "expense_submission_operations",
+    "management_changes",
+    "users"
+  ],
+  "ok": true,
+  "sourcePreserved": {
+    "tables": true,
+    "accounts": 3,
+    "objects": true,
+    "objectCount": 2
+  }
+}

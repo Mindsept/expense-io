@@ -1,0 +1,44 @@
+{
+  "status": "restoration-verified",
+  "verifiedAt": "2026-10-26T16:49:50.266Z",
+  "manifestSha": "522d465074fa6c83a1cdf729e10fb17c1e189a6bf4a165f793709b4e27c17ff0",
+  "applicationSha": "349c77e4c2ceb8df83b428f85fd59e2be3e77244",
+  "schemaSha": "ec4f3e01ed95f1bb481fabab7c6a024cb50ba81f4c430a84811e822a329fb47a",
+  "toolingSha": "8e5ff62e140132da78f26760621f951f1adc5e9721fbced4241c02236341fbb2",
+  "project": "arla-ci-math06-17a25a956753",
+  "database": "expense_io_test",
+  "accounts": 3,
+  "objects": 2,
+  "allObjectHashesMatched": true,
+  "allTableCountsAndDigestsMatched": true,
+  "runtime": "expense_web",
+  "http": {
+    "roles": [
+      {
+        "role": "employee",
+        "authenticated": true,
+        "page": "ok",
+        "list": "ok",
+        "notes": 1
+      },
+      {
+        "role": "manager",
+        "authenticated": true,
+        "page": "ok",
+        "list": "ok",
+        "notes": 1
+      },
+      {
+        "role": "hr_admin",
+        "authenticated": true,
+        "page": "ok",
+        "list": "ok",
+        "notes": 1
+      }
+    ],
+    "uniqueReceiptsRead": 2,
+    "protocol": "HTTP credentials sessions, server-rendered pages, authorized lists and signed receipt bytes; not a browser interaction test"
+  },
+  "durationMs": 45169,
+  "humanReview": "Hamza review and manual browser walkthrough remain separate."
+}
