@@ -8,8 +8,8 @@ const firstNote = { ...employeeNote, author: { id: employeeNote.userId, displayN
 const secondNote = { ...firstNote, id: '00000000-0000-4000-8000-000000000102', expenseDate: '2026-10-17' }
 
 for (const screen of [
-  { role: 'MANAGER' as const, path: '/manager', api: 'manager', heading: 'En attente' },
-  { role: 'HR' as const, path: '/hr', api: 'hr', heading: 'Notes à valider par les RH' },
+  { role: 'MANAGER' as const, path: '/manager', api: 'manager', heading: 'En attente', region: 'Notes en attente, tableau défilant' },
+  { role: 'HR' as const, path: '/hr', api: 'hr', heading: 'Notes à valider par les RH', region: 'Notes à valider par les RH, tableau défilant' },
 ]) {
   test(`${screen.role}: initial loading and failure never announce a fabricated zero total`, async ({ page }) => {
     const response = deferred()
@@ -50,7 +50,7 @@ for (const screen of [
     await expect(page.getByRole('heading', { name: `${screen.heading} (1)`, exact: true })).toBeFocused()
     await expect(page.getByRole('status')).toHaveText('Note de frais approuvée.')
     await page.keyboard.press('Tab')
-    await expect(page.getByRole('region', { name: /en attente, tableau défilant/ })).toBeFocused()
+    await expect(page.getByRole('region', { name: screen.region, exact: true })).toBeFocused()
     await page.keyboard.press('Tab')
     await expect(page.getByRole('button', { name: 'Voir le reçu de Alice Test, Taxi de recette, 17 oct. 2026', exact: true })).toBeFocused()
     await expect(second).toBeEnabled()
