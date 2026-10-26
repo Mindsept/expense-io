@@ -1,0 +1,36 @@
+
+> expense-io-version-b@0.1.0 test:e2e
+> playwright test --config playwright.config.ts --project=e2e
+
+
+Running 25 tests using 1 worker
+
+(node:232) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [e2e] › tests/e2e/elyes/EL-01/network-errors.spec.ts:7:5 › an uncertain submission preserves every field and does not retry automatically (623ms)
+  ✓   2 [e2e] › tests/e2e/elyes/EL-01/network-errors.spec.ts:28:5 › a confirmed submission keeps its success message and stale history can be refreshed (558ms)
+  ✓   3 [e2e] › tests/e2e/elyes/EL-01/network-errors.spec.ts:54:5 › a manager conflict preserves the row until an explicit refresh confirms removal (616ms)
+  ✓   4 [e2e] › tests/e2e/elyes/EL-01/network-errors.spec.ts:77:5 › a successful manager decision is announced independently of a failed refresh (575ms)
+  ✓   5 [e2e] › tests/e2e/elyes/EL-01/network-errors.spec.ts:96:5 › HR assignments lock the whole group and each stale section has its own retry (579ms)
+  ✓   6 [e2e] › tests/e2e/elyes/EL-02/civil-dates.spec.ts:9:9 › Europe/Paris › civil dates keep their day and repeated receipt actions identify their note (419ms)
+  ✓   7 [e2e] › tests/e2e/elyes/EL-02/civil-dates.spec.ts:9:9 › America/New_York › civil dates keep their day and repeated receipt actions identify their note (419ms)
+  ✓   8 [e2e] › tests/e2e/elyes/EL-03/ocr-suggestions.spec.ts:7:5 › submitting while OCR is pending ends its spinner and ignores the old suggestion (507ms)
+  ✓   9 [e2e] › tests/e2e/elyes/EL-03/ocr-suggestions.spec.ts:43:5 › the newer file wins when B finishes before A and manual edits stay intact (508ms)
+  ✓  10 [e2e] › tests/e2e/elyes/EL-04/submission-intent.spec.ts:7:5 › a retry after a lost response reuses the same key, fields and receipt (540ms)
+  ✓  11 [e2e] › tests/e2e/elyes/EL-04/submission-intent.spec.ts:40:5 › a changed uncertain form cannot silently create a new intent (600ms)
+  ✓  12 [e2e] › tests/e2e/elyes/EL-04/submission-intent.spec.ts:67:5 › after a reload, the old file is not restored and history must be checked first (618ms)
+  ✓  13 [e2e] › tests/e2e/elyes/EL-06/workflow-visibility.spec.ts:7:5 › the employee sees server-provided routing and decision history (527ms)
+  ✓  14 [e2e] › tests/e2e/elyes/EL-06/workflow-visibility.spec.ts:24:5 › manager queue uses authorized author names from its DTOs (461ms)
+  ✓  15 [e2e] › tests/e2e/elyes/EL-06/workflow-visibility.spec.ts:35:5 › HR queue uses authorized author names from its DTOs (455ms)
+  ✓  16 [e2e] › tests/e2e/hamza/HA-04/runtime-enrollment.spec.ts:9:5 › HR invitation and recipient enrollment/login work in the actual limited web process (1.4s)
+  ✓  17 [e2e] › tests/e2e/hamza/HA-05/invited-enrollment.spec.ts:24:5 › an HR sends a private address-bound invitation and its recipient creates an employee in that company (1.3s)
+  ✓  18 [e2e] › tests/e2e/hamza/HA-05/invited-enrollment.spec.ts:59:5 › revocation from the HR screen invalidates the delivered link without creating an account (806ms)
+  ✓  19 [e2e] › tests/e2e/hamza/HA-05/invited-enrollment.spec.ts:81:5 › a failed delivery does not expose capabilities and leaves a revoked invitation (242ms)
+  ✓  20 [e2e] › tests/e2e/hamza/HA-05/signup.spec.ts:6:5 › public signup explains the invitation requirement and preserves the existing-account login path (135ms)
+  ✓  21 [e2e] › tests/e2e/leandro/LE-01/submission.spec.ts:57:5 › real form preserves fields after a spoofed receipt rejection and accepts a corrected receipt (623ms)
+  ✓  22 [e2e] › tests/e2e/leandro/LE-08/support-reference.spec.ts:19:5 › the support reference visible after a real S3 failure retrieves its internal cause without leaking input (688ms)
+  ✓  23 [e2e] › tests/e2e/mathis/MATH-01/roles.smoke.spec.ts:16:7 › employee signs in through the form and opens the authorized screen (455ms)
+  ✓  24 [e2e] › tests/e2e/mathis/MATH-01/roles.smoke.spec.ts:16:7 › manager signs in through the form and opens the authorized screen (456ms)
+  ✓  25 [e2e] › tests/e2e/mathis/MATH-01/roles.smoke.spec.ts:16:7 › hr signs in through the form and opens the authorized screen (446ms)
+
+  25 passed (16.2s)

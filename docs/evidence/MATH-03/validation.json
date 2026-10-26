@@ -1,0 +1,39 @@
+{
+  "source": "2c943d75743c62317014940c791d3536362b5fcc",
+  "timezone": "Europe/Paris",
+  "node": "24.22.1",
+  "npm": "11.19.1",
+  "os": {
+    "platform": "Darwin",
+    "release": "27.0.0",
+    "machine": "arm64"
+  },
+  "sourceHashes": {
+    "scripts/seed.mjs": "23db5974f70ff2b7018aa46d1f6eb8aadbfa6158ff878404f0c70018bc350aa9",
+    "scripts/seed-repair.mjs": "ba174ec7eda93fdd502e0d8a75a53137ceb2d2ab93c873dc17e8808735402283",
+    "scripts/ensure-bucket.mjs": "85bca3109e43fc2d6e2d6ef576141973f5c6a61176471a3dfb2a3be0face3154",
+    "scripts/mathis/MATH-03/seed.ts": "0267a9f305d5341310f4899533225a3e6deda674679e6ee41e86c89419116beb",
+    "scripts/mathis/MATH-03/settings.mjs": "e9b0236c3ea75e4b59697c17f27ffab38472a673d483f578613528f5f1bff8bd",
+    "scripts/mathis/MATH-03/storage.mjs": "33773e54287b14dcb14dfe01dad165c694c07b06503ceb2a1d20bc70702c0570",
+    "scripts/mathis/MATH-03/cli.mjs": "72a0132a8d308869bf669118a75c01ee0c3e8aa1e1c0b38e4fadd3b3023b1d22",
+    "scripts/mathis/MATH-03/load.mjs": "3047ce2c34100f7a430c5ab6981699b101875ebbed2b0c80b94184400ba2bbdf",
+    "scripts/mathis/MATH-03/demo.mjs": "5a9a5aeeafc9a1a3f72d82ee2882869a1006f68889088426d8ca1726c9f76039",
+    "scripts/mathis/MATH-03/private-files.mjs": "0fba33b9140f0c895c3a4c92ec51a01e8b7f287e26a8602c7e5d8401349ad24d",
+    "tests/support/prepare.mjs": "8981d01cff3e029bd6abe43dc25702cc2863b947725a249d1168c476060f362d",
+    "package.json": "d5af4e77c907603f3da47fa6a2578e40e8db4f3b545209a135e10e88d77aadef",
+    "package-lock.json": "cdedc30bc5e33f3d6a958834c04b33498f67db33936043762cad4a7a2ee67d88"
+  },
+  "validation": {
+    "exitCode": 0,
+    "unit": 672,
+    "api": 234,
+    "e2e": 25,
+    "ownUnit": 17,
+    "ownApi": 11
+  },
+  "limits": [
+    "The common runner advertises its privileged baseline; the separate live demo used expense_web.",
+    "Native PowerShell/Windows execution and human Hamza/Hugo acceptance were not performed.",
+    "Live demo and reset retain their original source SHAs; final full suites run the final code source recorded above."
+  ]
+}
