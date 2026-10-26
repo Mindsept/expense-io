@@ -1,0 +1,49 @@
+{
+  "ticket": "ARLA-38",
+  "relatedTicket": "ARLA-37",
+  "repository": "Mindsept/expense-io",
+  "sourceSha": "02ec22e2392eb92458b63089da683da59dc1560e",
+  "branch": "codex/arla-38-frontend-recipe",
+  "command": "npm run test:ci",
+  "exitCode": 0,
+  "date": "2026-10-25",
+  "timezone": "Europe/Paris",
+  "utcOffset": "+01:00",
+  "summaryWrittenAtUtc": "2026-10-25T15:21:27.7347789Z",
+  "trackedChangesAtRun": [],
+  "untrackedAtRun": ["docs/evidence/EL-08/negative-control/"],
+  "environment": {
+    "os": "Windows",
+    "node": "v24.22.1",
+    "npm": "11.19.1",
+    "dockerDesktop": "4.96.3",
+    "dockerEngine": "29.9.2",
+    "isolatedProject": "arla-ci-8cba5e96afe6"
+  },
+  "results": {
+    "unit": { "passed": 673, "total": 673 },
+    "api": { "passed": 239, "total": 239 },
+    "e2e": { "passed": 40, "total": 40, "reporterSeconds": 41.7, "stepDurationMs": 42420 },
+    "elyesE2e": { "passed": 28, "total": 28 },
+    "el07E2e": { "passed": 10, "total": 10 },
+    "el08E2e": { "passed": 1, "total": 1 },
+    "cleanupExitCode": 0,
+    "lintWarnings": 1,
+    "lintErrors": 0
+  },
+  "collectedFiles": { "unit": 45, "api": 21, "e2e": 15 },
+  "github": {
+    "run": 40205740218,
+    "sourceSha": "02ec22e2392eb92458b63089da683da59dc1560e",
+    "status": "completed",
+    "conclusion": "success",
+    "startedAt": "2026-10-25T15:11:12Z",
+    "updatedAt": "2026-10-25T15:15:08Z",
+    "url": "https://github.com/Mindsept/expense-io/actions/runs/40205740218",
+    "testCountsRetrieved": false
+  },
+  "scope": "Real local Auth.js/Next production server; Elyes business responses intercepted by Playwright. Shared bootstrap baseline is not itself a complete RLS proof; HA-04/HA-09 use separate real limited-role fixtures.",
+  "redaction": "Runner-sanitized logs; absolute workspace prefixes replaced with <workspace>; trailing whitespace and blank EOF lines normalized. No raw production log, credentials, cookies, signed URLs or browser traces copied.",
+  "humanAcceptance": false,
+  "finalDeliveryAcceptance": false
+}

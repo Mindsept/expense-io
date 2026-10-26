@@ -181,8 +181,9 @@ export default function ExpensesPage() {
   }
 
   async function retryHistory() {
+    const source = document.activeElement
     await loadNotes()
-    historyHeadingRef.current?.focus()
+    if (document.activeElement === source || document.activeElement === document.body) historyHeadingRef.current?.focus()
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -473,6 +474,7 @@ export default function ExpensesPage() {
               name="receipt"
               type="file"
               accept="image/png,image/jpeg,image/webp,application/pdf"
+              aria-describedby="receipt-help"
               required
               onChange={() => {
                 suggestionGeneration.current += 1
@@ -481,11 +483,15 @@ export default function ExpensesPage() {
               }}
               className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100 dark:text-gray-400 dark:file:bg-gray-800 dark:file:text-brand-300"
             />
+            <p id="receipt-help" className="text-xs text-gray-500 dark:text-gray-400">
+              PNG, JPEG, WebP ou PDF, jusqu’à 10 Mio (10 485 760 octets) pour la soumission.
+              Le pré-remplissage analyse uniquement les images ; les PDF se renseignent manuellement.
+            </p>
             <button
               type="button"
               onClick={handleSuggestFields}
               disabled={extracting}
-              className="self-start text-sm font-medium text-brand-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+              className="self-start text-sm font-medium text-brand-600 hover:underline dark:text-brand-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {extracting ? 'Analyse du reçu…' : 'Pré-remplir depuis le reçu'}
             </button>
@@ -535,7 +541,7 @@ export default function ExpensesPage() {
         {historyError && (
           <div className="px-6 py-4">
             <p role="alert" className="text-sm text-red-700 dark:text-red-300">{historyError}</p>
-            <button type="button" onClick={retryHistory} disabled={loading} className="mt-2 text-sm font-medium text-brand-600 hover:underline disabled:opacity-60">
+            <button type="button" onClick={retryHistory} disabled={loading} className="mt-2 text-sm font-medium text-brand-600 hover:underline dark:text-brand-200 disabled:opacity-60">
               {loading ? 'Actualisation…' : 'Réessayer'}
             </button>
           </div>
@@ -553,7 +559,7 @@ export default function ExpensesPage() {
             Aucune note de frais pour le moment.
           </p>
         ) : (
-          <div className="overflow-x-auto" tabIndex={0} aria-label="Historique des notes de frais, tableau défilant">
+          <div role="region" className="overflow-x-auto" tabIndex={0} aria-label="Historique des notes de frais, tableau défilant">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
@@ -584,21 +590,22 @@ export default function ExpensesPage() {
                       <button
                         type="button"
                         aria-expanded={expandedWorkflowId === note.id}
-                        aria-label={`${expandedWorkflowId === note.id ? 'Masquer' : 'Voir'} ${note.status === 'pending' ? 'le circuit' : 'la décision'} pour ${note.description}`}
+                        aria-controls={expandedWorkflowId === note.id ? `workflow-${note.id}` : undefined}
+                        aria-label={`${expandedWorkflowId === note.id ? 'Masquer' : 'Voir'} ${note.status === 'pending' ? 'le circuit' : 'la décision'} pour ${note.description}, ${formatCivilDate(note.expenseDate)}`}
                         onClick={() => toggleWorkflowDetails(note)}
                         disabled={workflowLoadingId === note.id}
-                        className="text-sm font-medium text-brand-600 hover:underline disabled:opacity-60"
+                        className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-200 disabled:opacity-60"
                       >
                         {workflowLoadingId === note.id ? 'Chargement…' : expandedWorkflowId === note.id ? 'Masquer' : note.status === 'pending' ? 'Voir le circuit' : 'Voir la décision'}
                       </button>
                       {expandedWorkflowId === note.id && details && (
-                        <div className="mt-2 min-w-56 text-xs text-gray-600 dark:text-gray-300" aria-live="polite">
+                        <div id={`workflow-${note.id}`} role={details.error ? 'alert' : 'status'} aria-atomic="true" className="mt-2 min-w-56 text-xs text-gray-600 dark:text-gray-300">
                           {details.loading ? (
-                            <p role="status">Chargement du circuit…</p>
+                            <p>Chargement du circuit…</p>
                           ) : details.error ? (
-                            <p role="alert">{details.error}</p>
+                            <p>{details.error}</p>
                           ) : details.kind === 'validation' ? (
-                            <p role="status">{details.validation?.message}</p>
+                            <p>{details.validation?.message}</p>
                           ) : details.kind === 'history' ? (
                             details.items?.length ? (
                               <ul className="space-y-1">
@@ -609,7 +616,7 @@ export default function ExpensesPage() {
                                 ))}
                               </ul>
                             ) : (
-                              <p role="status">L’historique de décision ne contient aucun événement.</p>
+                              <p>L’historique de décision ne contient aucun événement.</p>
                             )
                           ) : null}
                         </div>
@@ -620,7 +627,7 @@ export default function ExpensesPage() {
                         type="button"
                         aria-label={`Voir le reçu pour ${note.description}, ${formatCivilDate(note.expenseDate)}`}
                         onClick={() => handleViewReceipt(note.id)}
-                        className="text-sm font-medium text-brand-600 hover:underline"
+                        className="text-sm font-medium text-brand-600 hover:underline dark:text-brand-200"
                       >
                         Voir le reçu
                       </button>
