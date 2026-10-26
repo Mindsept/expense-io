@@ -1,0 +1,10 @@
+
+Running 2 tests using 1 worker
+
+(node:36408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 .ci-output\frontend-review\stale-responses.spec.ts:8:7 › HR: an obsolete directory HTTP failure cannot replace a newer successful list (1.2s)
+  ok 2 .ci-output\frontend-review\stale-responses.spec.ts:8:7 › HR: an obsolete notes HTTP failure cannot replace a newer successful list (740ms)
+
+  2 passed (3.8s)
+

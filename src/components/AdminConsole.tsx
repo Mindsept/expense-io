@@ -67,7 +67,8 @@ export function AdminConsole() {
     try {
       const response = await fetch(`/api/hr/users?page=${usersPage.page}&pageSize=${usersPage.pageSize}`)
       if (!response.ok) {
-        setUsersError(await getClientErrorMessage(response, "Impossible de charger l'annuaire."))
+        const message = await getClientErrorMessage(response, "Impossible de charger l'annuaire.")
+        if (generation === usersRequestGeneration.current) setUsersError(message)
         return
       }
       const result: unknown = await response.json()
@@ -91,7 +92,8 @@ export function AdminConsole() {
     try {
       const response = await fetch(`/api/hr/expense-notes?page=${notesPage.page}&pageSize=${notesPage.pageSize}`)
       if (!response.ok) {
-        setNotesError(await getClientErrorMessage(response, 'Impossible de charger les notes en attente.'))
+        const message = await getClientErrorMessage(response, 'Impossible de charger les notes en attente.')
+        if (generation === notesRequestGeneration.current) setNotesError(message)
         return
       }
       const result: unknown = await response.json()
