@@ -7,7 +7,9 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['tests/unit/**/*.test.ts'],
+    // test:ci uses a production parent environment; React's act requires its test build.
+    env: { NODE_ENV: 'test' },
+    include: ['tests/unit/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',
       // Include unimported production files as well as files exercised by tests.
@@ -16,6 +18,7 @@ export default defineConfig({
       reportsDirectory: 'coverage/unit',
       reporter: ['text-summary', 'html', 'lcovonly', 'json-summary'],
       reportOnFailure: true,
+      thresholds: { lines: 90, statements: 90, functions: 90, branches: 90 },
     },
   },
 })

@@ -81,7 +81,9 @@ La couverture unitaire est produite par `npm run test:coverage`, aussi appelé p
 branches couvertes. L'artefact `unit-coverage-<run>-<tentative>` contient les
 rapports HTML, LCOV et JSON, conservés 14 jours. Les rapports sont aussi publiés
 après un échec si Vitest a pu les produire ; ils ne remplacent pas le résultat
-des tests. Voir [le périmètre et la lecture de la couverture](test-coverage.md).
+des tests. Chacune des quatre métriques doit atteindre le seuil global de 90 %.
+Les tests unitaires React utilisent `NODE_ENV=test` dans Vitest ; le build et les
+tests API/E2E restent en production. Voir [le périmètre et la lecture de la couverture](test-coverage.md).
 
 `.ci-output/` contient les logs texte expurgés de chaque étape, les logs du serveur
 et `summary.json` avec les codes de sortie. GitHub les conserve cinq jours, y compris

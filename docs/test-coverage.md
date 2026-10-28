@@ -53,27 +53,42 @@ ou filtrée ne constitue pas une référence complète.
 
 ## Seuils
 
-Première référence observée le 26 octobre 2026 sous Windows, Node 24.22.1,
-Vitest/V8 5.0.5, sur le code applicatif de `main` à `a8b70ef` avec
-l'instrumentation de cette PR : **53 fichiers de tests, 748 tests réussis**.
-Les exécutions `test:coverage` et `verify` ont donné les mêmes résultats :
+`vitest.config.mts` impose un minimum global de **90 % pour chacun des quatre
+indicateurs** : lignes, instructions, fonctions et branches. Un résultat inférieur
+fait échouer `test:coverage`, donc aussi `verify` et `test:ci`. Ce seuil est global,
+pas un minimum imposé séparément à chaque fichier. Il ne réduit pas le périmètre.
 
-| Mesure | Exécuté / total | Couverture |
-| --- | ---: | ---: |
-| Lignes | 1 143 / 3 095 | 36,93 % |
-| Instructions | 1 425 / 4 373 | 32,58 % |
-| Fonctions | 279 / 709 | 39,35 % |
-| Branches | 1 161 / 3 106 | 37,37 % |
+Référence observée le 28 octobre 2026 sous Windows, Node 24.22.1 et Vitest/V8
+5.0.5 : **81 fichiers de tests, 1 390 tests réussis**. Le code applicatif est celui
+de `main` à `1a381b6` ; seuls les tests, leur configuration et leur documentation
+ont été enrichis. La première mesure du 26 octobre portait sur 748 tests.
 
-Le rapport répertorie 141 fichiers, dont 62 avec des lignes exécutables à 0 %.
-Par exemple, l'écran `src/app/expenses/page.tsx` reste visible à 0 % dans la
-mesure unitaire ; ses parcours Playwright sont des preuves distinctes. Ces
-chiffres sont une référence datée, pas une promesse pour les futurs commits.
+| Mesure | Première mesure | Exécuté / total actuel | Couverture actuelle |
+| --- | ---: | ---: | ---: |
+| Lignes | 36,93 % | 3 080 / 3 095 | 99,51 % |
+| Instructions | 32,58 % | 4 234 / 4 373 | 96,82 % |
+| Fonctions | 39,35 % | 668 / 709 | 94,21 % |
+| Branches | 37,37 % | 2 913 / 3 106 | 93,78 % |
 
-Cette première instrumentation publie la mesure sans imposer de pourcentage
-arbitraire. Aucun fichier applicatif n'est retiré pour augmenter le résultat.
-Un futur seuil doit partir de la référence complète et des risques métier,
-avec un périmètre stable ; il pourra être ajouté sans modifier les assertions.
+Le rapport conserve les **141 fichiers et les mêmes dénominateurs**. Les tests
+ajoutés couvrent les interfaces employé/manager/RH, les invitations, les droits
+courants, l'idempotence, les transactions, les notifications, la réconciliation
+et les commandes d'exploitation. Ils vérifient succès, refus, pannes et reprises.
+Les dépendances externes (SQL, S3, réseau, processus et fichiers des commandes)
+sont simulées dans ces suites ; les véritables intégrations restent vérifiées
+séparément par API/E2E. Ces chiffres sont une référence datée, pas une promesse
+pour les futurs commits ni une preuve de qualité à eux seuls.
+
+Les tests React utilisent jsdom, Testing Library et `NODE_ENV=test`, défini
+uniquement dans les workers Vitest. Cela permet d'utiliser `act` même lorsque
+`test:ci` est lancé avec un environnement parent de production ; le build et
+les tests navigateur continuent à utiliser l'application en production.
+
+Le contrôle négatif du seuil a été vérifié en exécutant une seule suite avec
+la couverture complète du dépôt : les assertions passent, mais le processus
+renvoie le code 1 parce que les quatre métriques sont inférieures à 90 %.
+Pour travailler sur une suite seule, utiliser `npx vitest run <fichier>` sans
+couverture ; seule une campagne complète produit une référence comparable.
 
 Références : [guide Vitest](https://vitest.dev/guide/coverage.html) et
 [configuration de couverture](https://vitest.dev/config/coverage).
