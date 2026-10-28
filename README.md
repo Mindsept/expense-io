@@ -144,8 +144,13 @@ isolément nécessitent la configuration décrite dans le [guide CI](docs/ci.md)
 npm run lint
 npm run typecheck
 npm run test:unit
+npm run test:coverage
 npm run test:collect
 ```
+
+`test:coverage` génère la couverture unitaire dans `coverage/unit/index.html`.
+`npm run verify` exécute lint, typage et couverture ; `test:ci` publie aussi
+le rapport dans GitHub Actions. Voir [le périmètre et les seuils](docs/test-coverage.md).
 
 La [recette finale](docs/recette-finale.md) rattache chaque résultat à son commit,
 à son environnement et à ses limites. Elle distingue tests sur doubles,

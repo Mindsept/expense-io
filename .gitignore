@@ -39,6 +39,7 @@ yarn-error.log*
 next-env.d.ts
 
 # test output and authentication state
+/coverage/
 /test-results/
 /playwright-report/
 /playwright/.cache/

@@ -82,6 +82,39 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Lint, types, unit, isolated services, production build, API and E2E
         run: npm run test:ci
+      - name: Summarize unit coverage
+        if: always() && hashFiles('coverage/unit/coverage-summary.json') != ''
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile, appendFile } from 'node:fs/promises';
+          const report = JSON.parse(await readFile('coverage/unit/coverage-summary.json', 'utf8'));
+          const rows = ['lines', 'statements', 'functions', 'branches'].map(name => {
+            const metric = report.total[name];
+            return `| ${name} | ${metric.covered} / ${metric.total} | ${metric.pct}% |`;
+          });
+          await appendFile(process.env.GITHUB_STEP_SUMMARY, [
+            '## Unit test coverage',
+            '',
+            'V8 coverage of JavaScript/TypeScript in `src/` and `scripts/`, including unimported files.',
+            'API/E2E runs, child processes and SQL are not included in this measurement.',
+            '',
+            '| Metric | Covered / total | Coverage |',
+            '| --- | ---: | ---: |',
+            ...rows,
+            '',
+            'Download the `unit-coverage` artifact and open `index.html` for file and line details.',
+            'Reports may also be produced after failed tests; check the job result before interpreting them.',
+            '',
+          ].join('\n'));
+          NODE
+      - name: Preserve unit coverage reports
+        if: always() && hashFiles('coverage/unit/coverage-summary.json') != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unit-coverage-${{ github.run_id }}-${{ github.run_attempt }}
+          path: coverage/unit/
+          if-no-files-found: error
+          retention-days: 14
       - name: Preserve sanitized text evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
